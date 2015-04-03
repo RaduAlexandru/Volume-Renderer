@@ -186,8 +186,8 @@ void DicomViewer2DGL::setFrame(int frame)
 			//if (angle!=225)
 				//outputFile << "angle is " << angle << std::endl;
 
-			if (magnitude<2500)
-			//if (magnitude<30)
+			//if (magnitude<2500)
+			if (magnitude<30)
 				gradient.push_back(255*multiplier_angle);
 			else
 				gradient.push_back(angle* multiplier_angle  );
