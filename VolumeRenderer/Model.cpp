@@ -51,3 +51,14 @@ Model::Model()
 Model::~Model()
 {
 }
+
+int Model::getPixelValue(int x, int y, int z){
+
+	unsigned char* dataPointer;
+	int value;
+
+	dataPointer = &(pixelData[z][0]);
+	dataPointer = dataPointer + (x + y*pixelDataWidth)*numberOfBytes;
+	memcpy(&value, dataPointer, numberOfBytes);
+	return value;
+}

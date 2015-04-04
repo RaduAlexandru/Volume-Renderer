@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <list>
+#include <glm/glm.hpp>
 //#include <boost/variant.hpp>
 //#include <boost/any.hpp>
 
@@ -30,12 +31,9 @@ class Model
 public:
 	Model();
 	~Model();
+	int getPixelValue(int x, int y, int z);
 
-	typedef struct{
-		float x;
-		float y;
-		float z;
-	}POINTF;
+	
 
 	/*struct return_visitor: public boost::static_visitor <double >{
 	public:
@@ -58,7 +56,7 @@ public:
 	};*/
 
 	int isoLevel;
-	std::vector<POINTF> totalPoints;
+	std::vector<glm::vec3> totalPoints;
 	std::vector<float> verts;
 	std::vector<float> normals;
 	int cellSizeX;

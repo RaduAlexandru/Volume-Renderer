@@ -4,10 +4,10 @@
 #include <QtWidgets/QMainWindow>
 #include "ui_volumerenderer.h"
 #include <stdlib.h>
-#include "cuda.h"
-#include "cuda_runtime.h"
+
 #include "glwidget.h"
 #include "Model.h"
+#include <glm/glm.hpp>
 
 
 class VolumeRenderer : public QMainWindow
@@ -18,13 +18,22 @@ public:
 	VolumeRenderer(QWidget *parent = 0);
 	~VolumeRenderer();
 
-	
+	typedef struct {
+		glm::vec3 position;
+		glm::vec3 normal;
+		double value;
+	} Vertex;
 
 	typedef struct {
-		float3 position[8];	//Position of the 8 vertices
-		float3 normal[8];	//normals of those vertices
+		glm::vec3 position[8];	//Position of the 8 vertices
+		glm::vec3 normal[8];	//normals of those vertices
 		double val[8];		//value at those vertices
+
+		Vertex vertices[8];
+
 	} CELL;
+
+	
 
 	
 	
@@ -36,12 +45,14 @@ private:
 
 	int readPixelData(QString, void*&, int, int);
 	int getRepresentation(QString , int& , int& , int& , int& ,int&, int&, int&);
-	void showPixels(void* pixelData, std::vector<Model::POINTF>);
+	//void showPixels(void* pixelData, std::vector<Model::POINTF>);
 	void load_image_data(const char*);
 	void polygonise(CELL, int, std::vector<float>&);
-	inline void interpolate(int, float3 point1, float3 point2, float, float, Model::POINTF&);
+	inline void interpolate(int, glm::vec3 point1, glm::vec3 point2, float, float, glm::vec3&);
 	int loadDICOMPixelData(const char*);
 	int loadDICOMPixelData(QStringList);
+
+	int adaptiveMarchingCubes();
 
 	
 	void marchingSquares();

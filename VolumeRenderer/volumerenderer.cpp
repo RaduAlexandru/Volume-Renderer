@@ -692,7 +692,7 @@ void VolumeRenderer::load_image_data(const char* file) {
 void VolumeRenderer::polygonise(CELL cell, int isoLevel, std::vector<float>& verts){
 
 	//vector<Model::POINTF> points;
-	Model::POINTF vertlist[12];
+	glm::vec3 vertlist[12];
 	
 	isoLevel = model->isoLevel;
 
@@ -712,7 +712,7 @@ void VolumeRenderer::polygonise(CELL cell, int isoLevel, std::vector<float>& ver
 		return;
 	}
 
-	Model::POINTF point;
+	glm::vec3 point;
 
 	/* Find the vertices where the surface intersects the cube */
 	if (model->edgeTable[cubeIndex] & 1) {
@@ -766,7 +766,7 @@ void VolumeRenderer::polygonise(CELL cell, int isoLevel, std::vector<float>& ver
 	}
 
 
-	float3 normal;
+	glm::vec3 normal;
 	unsigned char* dataPointer;
 	int pointerOffset = model->numberOfBytes;
 	int value1 = 0, value2 = 0;
@@ -1024,7 +1024,7 @@ void VolumeRenderer::polygonise(CELL cell, int isoLevel, std::vector<float>& ver
 }
 
 
-inline void VolumeRenderer::interpolate(int isoLevel, float3 point1, float3 point2, float val1, float val2, Model::POINTF& resultPoint){
+inline void VolumeRenderer::interpolate(int isoLevel, glm::vec3 point1, glm::vec3 point2, float val1, float val2, glm::vec3& resultPoint){
 	
 
 	//Model::POINTF point;
@@ -1094,78 +1094,57 @@ void VolumeRenderer::marchingSquares(){
 				else{
 
 					
-					/*dataPointer = &(model->pixelData[k][0]);
-					dataPointer = dataPointer + (j + i*model->pixelDataWidth)*pointerOffset;
-					memcpy(&value, dataPointer, pointerOffset);
-					cout << "value is " << value << endl;*/
+					/*
+					   7---------6
+					  /			 !
+					 /			 !
+					3---------2	 5
+				    !         !	 
+					!         !
+					0---------1
+					  */
 
 					cell.position[0].x = j;
 					cell.position[0].y = i;
 					cell.position[0].z = k;
-					dataPointer = &(model->pixelData[k][0]);
-					dataPointer = dataPointer + (j + i*model->pixelDataWidth)*pointerOffset;
-					memcpy(&value, dataPointer, pointerOffset);
-					cell.val[0] = value;
+					cell.val[0] = model->getPixelValue(j,i,k);
 
 					cell.position[1].x = j + cellSizeX;
 					cell.position[1].y =  i;
 					cell.position[1].z = k;
-					dataPointer = &(model->pixelData[k][0]);
-					dataPointer = dataPointer + (j + cellSizeX + i*model->pixelDataWidth)*pointerOffset;
-					memcpy(&value, dataPointer, pointerOffset);
-					cell.val[1] = value;
+					cell.val[1] = model->getPixelValue(j +cellSizeX, i, k);
 
 					cell.position[2].x = j + cellSizeX;
 					cell.position[2].y =  i + cellSizeY;
 					cell.position[2].z = k;
-					dataPointer = &(model->pixelData[k][0]);
-					dataPointer = dataPointer + (j + cellSizeX + (i + cellSizeY)*model->pixelDataWidth)*pointerOffset;
-					memcpy(&value, dataPointer, pointerOffset);
-					cell.val[2] = value;
+					cell.val[2] = model->getPixelValue(j + cellSizeX, i + cellSizeY, k);
 
 					cell.position[3].x = j;
 					cell.position[3].y = i + cellSizeY;
 					cell.position[3].z = k;
-					dataPointer = &(model->pixelData[k][0]);
-					dataPointer = dataPointer + (j + (i + cellSizeY)*model->pixelDataWidth)*pointerOffset;
-					memcpy(&value, dataPointer, pointerOffset);
-					cell.val[3] = value;
+					cell.val[3] = model->getPixelValue(j, i +cellSizeY, k);
 					//////
 					cell.position[4].x = j;
 					cell.position[4].y =  i;
 					cell.position[4].z = k+cellSizeZ;
-					dataPointer = &(model->pixelData[k + cellSizeZ][0]);
-					dataPointer = dataPointer + (j + i*model->pixelDataWidth)*pointerOffset;
-					memcpy(&value, dataPointer, pointerOffset);
-					cell.val[4] = value;
+					cell.val[4] = model->getPixelValue(j, i , k +cellSizeZ);
 
 					cell.position[5].x = j + cellSizeX;
 					cell.position[5].y =  i;
 					cell.position[5].z = k + cellSizeZ;
-					dataPointer = &(model->pixelData[k + cellSizeZ][0]);
-					dataPointer = dataPointer + (j + cellSizeX + i*model->pixelDataWidth)*pointerOffset;
-					memcpy(&value, dataPointer, pointerOffset);
-					cell.val[5] = value;
+					cell.val[5] = model->getPixelValue(j+ cellSizeX, i, k + cellSizeZ);
 
 					cell.position[6].x = j + cellSizeX;
 					cell.position[6].y =  i + cellSizeY;
 					cell.position[6].z = k + cellSizeZ;
-					dataPointer = &(model->pixelData[k + cellSizeZ][0]);
-					dataPointer = dataPointer + (j + cellSizeX + (i + cellSizeY)*model->pixelDataWidth)*pointerOffset;
-					memcpy(&value, dataPointer, pointerOffset);
-					cell.val[6] = value;
+					cell.val[6] = model->getPixelValue(j + cellSizeX, i + cellSizeY, k + cellSizeZ);
 
 					cell.position[7].x = j;
 					cell.position[7].y =  i + cellSizeY;
 					cell.position[7].z = k + cellSizeZ;
-					dataPointer = &(model->pixelData[k + cellSizeZ][0]);
-					dataPointer = dataPointer + (j + (i + cellSizeY)*model->pixelDataWidth)*pointerOffset;
-					memcpy(&value, dataPointer, pointerOffset);
-					cell.val[7] = value;
+					cell.val[7] = model->getPixelValue(j, i + cellSizeY, k + cellSizeZ);
 
-					/////
 					
-
 
 					//now we have that cell and we have to polygonise it
 					//polygonise(cell, model->isoLevel, model->totalPoints);
@@ -1199,6 +1178,27 @@ void VolumeRenderer::marchingSquares(){
 	//}
 	myfile.close(); */
 }
+
+
+
+
+
+
+
+
+int VolumeRenderer::adaptiveMarchingCubes(){
+
+	//Calculate the gradients
+	//Create the original cube
+	OctreeCube cube;
+	
+	return 0;
+}
+
+
+
+
+
 
 int VolumeRenderer::loadDICOMPixelData(const char* file){
 
