@@ -1,6 +1,7 @@
 #include "glwidget.h"
 #include <iostream>
 #include <QMouseEvent>
+#include <gl/GLU.h>
 /*#define GL_GLEXT_PROTOTYPES
 #include <GL/GL.h>
 #include <GL/glew.h>*/
@@ -114,10 +115,19 @@ void GLWidget::paintGL()
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	//glOrtho(-ratio, ratio, -1.f, 1.f, 1.f, -1.f);
-	glOrtho(0.0f, model->pixelDataWidth, model->pixelDataHeight, 0.0f, 1024.0f,0.0f);	//When you do the 3d one you will need to change the last parameter to be the depth of the image (number of frames)
+	//glOrtho(0.0f, model->pixelDataWidth, 0.0f,  model->pixelDataHeight, 0.0f, 1024.0f);	//When you do the 3d one you will need to change the last parameter to be the depth of the image (number of frames)
+	//glFrustum(0.0f, 1, 0.0f,1, 1.0f, 1024.0f);	//Also works but it would need some tweaking and also probably commenting the GlulookAt
+	gluPerspective(70.0, width() / height(), 1.0, 1024.0); // Set perspective
+	
+	
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+	//Now we position the camera in the middle of the screen (width/2 and heidth /2 ) and looking at the negative z axis
+	gluLookAt(model->pixelDataWidth/2, model->pixelDataHeight/2, 0.0,	
+		model->pixelDataWidth / 2, model->pixelDataHeight / 2, -1000,
+		0.0, 1.0, 0.0);
+
+
 
 	//if ((boost::get<unsigned short**>(model->pixelData)) != NULL)
 	/*if (model->pixelDataHeight != 0){
@@ -140,6 +150,22 @@ void GLWidget::paintGL()
 	glTranslatef(-(model->pixelDataWidth / 2), -(model->pixelDataHeight / 2), 0.0f - model->frames/2);
 	
 	//glPointSize(1.5f);
+
+	/*FLOAT LightAmbient[4] = { 0, 0, 0, 1 };
+	FLOAT LightDiffuse[4] = { 1, 1, 1, 1 };
+	FLOAT LightPosition[4] = { 0, 0, 1, 0 };
+
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT1);
+
+	glLightfv(GL_LIGHT1, GL_AMBIENT, LightAmbient);
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, LightDiffuse);
+	glLightfv(GL_LIGHT1, GL_POSITION, LightPosition);
+
+	glEnable(GL_LIGHTING);
+
+
+	glShadeModel(GL_SMOOTH);*/
 	glColor3f(1.f, 0.f, 0.f);
 	glDrawArrays(GL_TRIANGLES, 0, model->verts.size());
 

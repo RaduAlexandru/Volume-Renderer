@@ -41,7 +41,7 @@ void DicomViewer2DGL::paintGL()
 	glLoadIdentity();
 	//glOrtho(-ratio, ratio, -1.f, 1.f, 1.f, -1.f);
 	//glOrtho(0.0f, model->pixelDataWidth, model->pixelDataHeight, 0.0f, 1.0f, 0.0f);	//When you do the 3d one you will need to change the last parameter to be the depth of the image (number of frames)
-	glOrtho(0.0f, model->pixelDataWidth,0.0f, model->pixelDataHeight,  1.0f, 0.0f);
+	glOrtho(0.0f, model->pixelDataWidth, 0.0f, model->pixelDataHeight,  0.0f, 1.0f);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
@@ -134,7 +134,7 @@ void DicomViewer2DGL::setFrame(int frame)
 	int multiplier_magnitude = pow(2, 32 - model->numberOfBytes * 8);	//We need the multiplier to scale the magnitude of the gradient to the correct value to be represented on screen. The Dicom image will be of 8,16 or 24 bits. But then we store the magnitude value in a int value (32). So we have to scale it up by multypling by that multiplier. so we scale from 0-256 up to 0-162663236 (maximum value of an int)
 	long long multiplier_angle = pow(2, 32 - 8 ); //In the case of the angle the multiplier is static since it only scales from the 0-256 range up to 0-1623563 range. It does not depend on the number of bytes of the dicom image
 	
-	multiplier_angle = 11930464;
+	multiplier_angle = 11930464; // 2^32 /360
 	int angle=0; //maybe it should be float
 
 	gradient.clear();
@@ -186,8 +186,8 @@ void DicomViewer2DGL::setFrame(int frame)
 			//if (angle!=225)
 				//outputFile << "angle is " << angle << std::endl;
 
-			//if (magnitude<2500)
-			if (magnitude<30)
+			if (magnitude<2500)
+			//if (magnitude<30)
 				gradient.push_back(255*multiplier_angle);
 			else
 				gradient.push_back(angle* multiplier_angle  );

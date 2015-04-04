@@ -1100,7 +1100,7 @@ void VolumeRenderer::marchingSquares(){
 					cout << "value is " << value << endl;*/
 
 					cell.position[0].x = j;
-					cell.position[0].y = model->pixelDataHeight - i;
+					cell.position[0].y = i;
 					cell.position[0].z = k;
 					dataPointer = &(model->pixelData[k][0]);
 					dataPointer = dataPointer + (j + i*model->pixelDataWidth)*pointerOffset;
@@ -1108,7 +1108,7 @@ void VolumeRenderer::marchingSquares(){
 					cell.val[0] = value;
 
 					cell.position[1].x = j + cellSizeX;
-					cell.position[1].y = model->pixelDataHeight - i;
+					cell.position[1].y =  i;
 					cell.position[1].z = k;
 					dataPointer = &(model->pixelData[k][0]);
 					dataPointer = dataPointer + (j + cellSizeX + i*model->pixelDataWidth)*pointerOffset;
@@ -1116,7 +1116,7 @@ void VolumeRenderer::marchingSquares(){
 					cell.val[1] = value;
 
 					cell.position[2].x = j + cellSizeX;
-					cell.position[2].y = model->pixelDataHeight - i - cellSizeY;
+					cell.position[2].y =  i + cellSizeY;
 					cell.position[2].z = k;
 					dataPointer = &(model->pixelData[k][0]);
 					dataPointer = dataPointer + (j + cellSizeX + (i + cellSizeY)*model->pixelDataWidth)*pointerOffset;
@@ -1124,7 +1124,7 @@ void VolumeRenderer::marchingSquares(){
 					cell.val[2] = value;
 
 					cell.position[3].x = j;
-					cell.position[3].y = model->pixelDataHeight - i - cellSizeY;
+					cell.position[3].y = i + cellSizeY;
 					cell.position[3].z = k;
 					dataPointer = &(model->pixelData[k][0]);
 					dataPointer = dataPointer + (j + (i + cellSizeY)*model->pixelDataWidth)*pointerOffset;
@@ -1132,7 +1132,7 @@ void VolumeRenderer::marchingSquares(){
 					cell.val[3] = value;
 					//////
 					cell.position[4].x = j;
-					cell.position[4].y = model->pixelDataHeight - i;
+					cell.position[4].y =  i;
 					cell.position[4].z = k+cellSizeZ;
 					dataPointer = &(model->pixelData[k + cellSizeZ][0]);
 					dataPointer = dataPointer + (j + i*model->pixelDataWidth)*pointerOffset;
@@ -1140,7 +1140,7 @@ void VolumeRenderer::marchingSquares(){
 					cell.val[4] = value;
 
 					cell.position[5].x = j + cellSizeX;
-					cell.position[5].y = model->pixelDataHeight - i;
+					cell.position[5].y =  i;
 					cell.position[5].z = k + cellSizeZ;
 					dataPointer = &(model->pixelData[k + cellSizeZ][0]);
 					dataPointer = dataPointer + (j + cellSizeX + i*model->pixelDataWidth)*pointerOffset;
@@ -1148,7 +1148,7 @@ void VolumeRenderer::marchingSquares(){
 					cell.val[5] = value;
 
 					cell.position[6].x = j + cellSizeX;
-					cell.position[6].y = model->pixelDataHeight - i - cellSizeY;
+					cell.position[6].y =  i + cellSizeY;
 					cell.position[6].z = k + cellSizeZ;
 					dataPointer = &(model->pixelData[k + cellSizeZ][0]);
 					dataPointer = dataPointer + (j + cellSizeX + (i + cellSizeY)*model->pixelDataWidth)*pointerOffset;
@@ -1156,7 +1156,7 @@ void VolumeRenderer::marchingSquares(){
 					cell.val[6] = value;
 
 					cell.position[7].x = j;
-					cell.position[7].y = model->pixelDataHeight - i - cellSizeY;
+					cell.position[7].y =  i + cellSizeY;
 					cell.position[7].z = k + cellSizeZ;
 					dataPointer = &(model->pixelData[k + cellSizeZ][0]);
 					dataPointer = dataPointer + (j + (i + cellSizeY)*model->pixelDataWidth)*pointerOffset;
