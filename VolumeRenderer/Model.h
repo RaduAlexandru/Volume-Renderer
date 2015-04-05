@@ -2,6 +2,7 @@
 #include <vector>
 #include <list>
 #include <glm/glm.hpp>
+#include "OctreeCube.h"
 //#include <boost/variant.hpp>
 //#include <boost/any.hpp>
 
@@ -65,11 +66,10 @@ public:
 	unsigned char** pixelData;
 
 	std::vector<int>  edgeTable;
-	//int*   edgeTable;
 	std::vector< std::vector<int> > triTable;
 	
 
-
+	std::vector<OctreeCube> cubes;
 
 
 	//boost::variant< unsigned char, unsigned short, unsigned long > ** pixelData;

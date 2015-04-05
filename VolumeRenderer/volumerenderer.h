@@ -21,16 +21,12 @@ public:
 	typedef struct {
 		glm::vec3 position;
 		glm::vec3 normal;
-		double value;
 	} Vertex;
 
 	typedef struct {
 		glm::vec3 position[8];	//Position of the 8 vertices
-		glm::vec3 normal[8];	//normals of those vertices
+		glm::vec3 normal[8];	//normals of those vertices I dont know if I'm going to use it
 		double val[8];		//value at those vertices
-
-		Vertex vertices[8];
-
 	} CELL;
 
 	

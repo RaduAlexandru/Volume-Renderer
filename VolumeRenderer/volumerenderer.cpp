@@ -787,6 +787,72 @@ void VolumeRenderer::polygonise(CELL cell, int isoLevel, std::vector<float>& ver
 		verts.push_back((vertlist[model->triTable[cubeIndex][i + 2]]).y);
 		verts.push_back((vertlist[model->triTable[cubeIndex][i + 2]]).z);
 
+		//Now we calculate the normal
+		/*u = p2 - p1;
+		2
+			v = p3 - p1;
+		3
+			np.x = ((u.y * v.z) - (u.z * v.y));
+		4
+			np.y = ((u.z * v.x) - (u.x * v.z));
+		5
+			np.z = ((u.x * v.y) - (u.y * v.x));
+		6
+			DrawNormal(p1, p2, p3, np);
+		7
+			glNormal3f(np.x, np.y, np.z);
+
+
+		Begin Function CalculateSurfaceNormal(Input Triangle) Returns Vector
+
+			Set Vector U to(Triangle.p2 minus Triangle.p1)
+			Set Vector V to(Triangle.p3 minus Triangle.p1)
+
+			Set Normal.x to(multiply U.y by V.z) minus(multiply U.z by V.y)
+			Set Normal.y to(multiply U.z by V.x) minus(multiply U.x by V.z)
+			Set Normal.z to(multiply U.x by V.y) minus(multiply U.y by V.x)
+
+			Returning Normal
+
+			End Function*/
+
+		glm::vec3 u,v,n;
+		u.x = (vertlist[model->triTable[cubeIndex][i + 1]]).x - (vertlist[model->triTable[cubeIndex][i]]).x;
+		u.y = (vertlist[model->triTable[cubeIndex][i + 1]]).y - (vertlist[model->triTable[cubeIndex][i]]).y;
+		u.z = (vertlist[model->triTable[cubeIndex][i + 1]]).z - (vertlist[model->triTable[cubeIndex][i]]).z;
+
+		v.x = (vertlist[model->triTable[cubeIndex][i + 2]]).x - (vertlist[model->triTable[cubeIndex][i]]).x;
+		v.y = (vertlist[model->triTable[cubeIndex][i + 2]]).y - (vertlist[model->triTable[cubeIndex][i]]).y;
+		v.z = (vertlist[model->triTable[cubeIndex][i + 2]]).z - (vertlist[model->triTable[cubeIndex][i]]).z;
+
+		n.x = u.y*v.z - u.z*v.y;
+		n.y = u.z*v.x - u.x*v.z;
+		n.z = u.x*v.y - u.y*v.x;
+
+		//we now normalize it
+		
+
+		double length = sqrt(n.x*n.x + n.y*n.y + n.z*n.z);
+
+		n.x = n.x / length;
+		n.y = n.y / length;
+		n.z = n.z / length;
+		
+
+		//WE push it once. Because we have 1 normal per triangle
+		model->normals.push_back(n.x);
+		model->normals.push_back(n.y);
+		model->normals.push_back(n.z);
+
+		/*model->normals.push_back(n.x);
+		model->normals.push_back(n.y);
+		model->normals.push_back(n.z);
+
+		model->normals.push_back(n.x);
+		model->normals.push_back(n.y);
+		model->normals.push_back(n.z);*/
+
+
 
 
 		/*int x = ((vertlist[triTable[cubeIndex][i]]).x);
@@ -1190,7 +1256,57 @@ int VolumeRenderer::adaptiveMarchingCubes(){
 
 	//Calculate the gradients
 	//Create the original cube
+	/*
+		7---------6
+	   /		  !
+	  /			  !
+	3---------2	  5
+	!         !
+	!         !
+	origin---------1
+	*/
+
 	OctreeCube cube;
+	int cubesSize = 0, depth = 0, maxDepth = 2;
+
+	cube.origin.x = 0;
+	cube.origin.y = 0;
+	cube.origin.z = 0;
+
+	cube.sizeX = model->pixelDataWidth;
+	cube.sizeY = model->pixelDataHeight;
+	cube.sizeZ = model->frames;
+
+	cube.isLeaf = true;
+	model->cubes.push_back(cube);
+
+
+
+	while (1){
+		cubesSize = model->cubes.size();
+		for (int cube = 0; cube < cubesSize; cube++){
+			if (model->cubes[cube].isLeaf){
+
+				if (model->cubes[cube].needsSubdivision()){
+					model->cubes[cube].isLeaf = false;
+					model->cubes[cube].subdivide(model->cubes);
+				}
+
+			}
+
+		}
+		depth++;
+		if (depth == maxDepth){
+			depth = 0;
+			break;
+		}
+	}
+
+
+
+	//std::cout << "number of cubes is" << model->cubes.size() << std::endl;
+
+
 	
 	return 0;
 }
@@ -1375,6 +1491,7 @@ void VolumeRenderer::on_loadDICOMFromFile_clicked(){
 
 	loadDICOMPixelData(fileNames);
 	marchingSquares();
+	adaptiveMarchingCubes();
 	ui.glwidget->sendDataToGL();
 	//ui.glwidget->dataSended = 0;
 	ui.glwidget->update();
@@ -1453,4 +1570,5 @@ void VolumeRenderer::wipePoints(){
 	if (!model->totalPoints.empty())
 		model->totalPoints.clear();
 	model->verts.clear();
+	model->normals.clear();
 }

@@ -65,13 +65,10 @@ void DicomViewer2DGL::paintGL()
 	}
 	
 
-	if (cubes.empty()){
-		//std::cout << "cubes is empty" << std::endl;
-		return;
-	}
+	
 
 	//std::cout << "drawing cubes" << std::endl;
-	glColor3f(1.f, 0.f, 0.f);
+	/*glColor3f(1.f, 0.f, 0.f);
 	glBegin(GL_LINES);
 	for (int i = 0; i < cubes.size(); i = i +1){
 		glVertex2f(cubes[i].topLeft.x, cubes[i].topLeft.y);
@@ -101,7 +98,7 @@ void DicomViewer2DGL::paintGL()
 
 	glVertex2f(selectedCube.bottomLeft.x, selectedCube.bottomLeft.y);
 	glVertex2f(selectedCube.topLeft.x, selectedCube.topLeft.y);
-	glEnd();
+	glEnd();*/
 
 
 	/*glColor3f(0.f, 0.f, 1.f);
@@ -209,25 +206,17 @@ void DicomViewer2DGL::setFrame(int frame)
 
 
 
+
+	//ALL THE CODE BENETH HERE IS TO MAKE OCTREE IN 3D, BUT IT NEEDS TO BE CHANGED SO THAT IT WORKS WITH THE NEW OCTREECUBE CLASS WHICH USES 0,1,2,3 FOR VERTICES INSTED OF TOPRIGHT, TOPlEFT ETC
 	
-	
+	/*
 
 	cubes.clear();
 	//Create initial cube
 	//Look inside of it to see if the angle changes enough. If it does subdivide it and add the new cubes in 
 	OctreeCube octreeCube;
 
-	/*octreeCube.topLeft.x = 0;
-	octreeCube.topLeft.y = 0;
-
-	octreeCube.topRight.x = model->pixelDataWidth;
-	octreeCube.topRight.y = 0;
-
-	octreeCube.bottomLeft.x = 0;
-	octreeCube.bottomLeft.y = model->pixelDataHeight;
-
-	octreeCube.bottomRight.x = model->pixelDataWidth;
-	octreeCube.bottomRight.y = model->pixelDataHeight;*/
+	
 
 	octreeCube.topLeft.x = 0;
 	octreeCube.topLeft.y = model->pixelDataHeight;
@@ -257,20 +246,7 @@ void DicomViewer2DGL::setFrame(int frame)
 
 
 			//We check the cube in the middle right /For some reason it doesnt see it so maybe we can create it
-			/*if (cubes[cube].topLeft.x == model->pixelDataWidth / 2 && cubes[cube].topLeft.y == model->pixelDataHeight &&
-				cubes[cube].topRight.x == model->pixelDataWidth / 2 + model->pixelDataWidth / 8 && cubes[cube].topRight.y == model->pixelDataHeight &&
-				cubes[cube].bottomLeft.x == model->pixelDataWidth / 2 && cubes[cube].bottomLeft.y == model->pixelDataHeight - model->pixelDataHeight / 8 &&
-				cubes[cube].bottomRight.x == model->pixelDataWidth / 2 + model->pixelDataWidth / 8 && cubes[cube].bottomRight.y == model->pixelDataHeight - model->pixelDataHeight / 8){
-				std::cout << "we check that cube " << std::endl;
-			}*/
-			/*selectedCube.topLeft.x = model->pixelDataWidth / 2;
-			selectedCube.topLeft.y = model->pixelDataHeight;
-			selectedCube.topRight.x = model->pixelDataWidth / 2 + model->pixelDataWidth / 8;
-			selectedCube.topRight.y = model->pixelDataHeight;
-			selectedCube.bottomLeft.x = model->pixelDataWidth / 2;
-			selectedCube.bottomLeft.y = model->pixelDataHeight - model->pixelDataHeight / 8;
-			selectedCube.bottomRight.x = model->pixelDataWidth / 2 + model->pixelDataWidth / 8;
-			selectedCube.bottomRight.y = model->pixelDataHeight - model->pixelDataHeight / 8;*/
+			
 
 			if (cubes[cube].topLeft.x == 192 && cubes[cube].topLeft.y == 192 &&
 				cubes[cube].topRight.x == model->pixelDataWidth && cubes[cube].topRight.y == 192 &&
@@ -357,15 +333,15 @@ void DicomViewer2DGL::setFrame(int frame)
 				//Ill just doo them again since now the  0,0  is at the bottom left
 				//Cube 1
 
-				/*
-				-------------------
-				|   1    !    2   !
-				!        !        !
-				!-----------------
-				!   3    !    4   !
-				!        !        !
-				-------------------
-				*/
+				
+				//-------------------
+				//|   1    !    2   !
+				//!        !        !
+				//!-----------------
+				//!   3    !    4   !
+				//!        !        !
+				//-------------------
+				
 				octreeCube.topLeft.x = cubes[cube].topLeft.x;
 				octreeCube.topLeft.y = cubes[cube].topLeft.y;
 
@@ -442,19 +418,9 @@ void DicomViewer2DGL::setFrame(int frame)
 
 	
 
-	//Now we make the subdivision
-	/*cubes.push_back(1);
-	cubes.push_back(1);
+	*/
 
-	cubes.push_back(1);
-	cubes.push_back(model->pixelDataHeight/2);
-
-	cubes.push_back(model->pixelDataWidth/2);
-	cubes.push_back(model->pixelDataHeight/2);
-
-	cubes.push_back(model->pixelDataWidth/2);
-	cubes.push_back(1);*/
-
+	
 
 }
 

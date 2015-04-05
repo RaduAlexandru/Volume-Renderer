@@ -24,6 +24,8 @@ public:
 	void mouseMoveEvent(QMouseEvent * event);
 	void mousePressEvent(QMouseEvent *event);
 	void sendDataToGL();
+	void drawMesh();
+	void drawCubes();
 
 	int dataSended;
 

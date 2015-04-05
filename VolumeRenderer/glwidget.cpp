@@ -82,6 +82,33 @@ void GLWidget::initializeGL()
 	glEnable(GL_DEPTH_TEST);
 	dataSended = 0;
 	//sendDataToGL();
+
+
+
+	glEnable(GL_LIGHTING);
+
+	//WE ADD THE LIGHTS
+	glEnable(GL_LIGHT0);
+	glEnable(GL_LIGHT1);
+	
+	//Light 1 is a point light, an omni light
+	float lightColor[4] = { 1, 1, 1, 1 };
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, lightColor);
+
+	//Light 2 a blue keylight
+	float lightColor2[4] = { 0.5, 0.5, 0.6, 1 };
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, lightColor2);
+	
+
+	//ambient light
+	GLfloat ambientColor[] = { 0.2f, 0.2f, 0.2f, 1.0f }; //Color(0.2, 0.2, 0.2)
+	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientColor);
+
+
+	glEnable(GL_COLOR_MATERIAL);
+	glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);
+	glLightModelf(GL_LIGHT_MODEL_TWO_SIDE, 1);
+	glFrontFace(GL_CW);
 }
 
 void GLWidget::paintGL()
@@ -115,17 +142,17 @@ void GLWidget::paintGL()
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	//glOrtho(0.0f, model->pixelDataWidth, 0.0f,  model->pixelDataHeight, 0.0f, 1024.0f);	//When you do the 3d one you will need to change the last parameter to be the depth of the image (number of frames)
+	glOrtho(0.0f, model->pixelDataWidth, 0.0f,  model->pixelDataHeight, 0.0f, 1024.0f);	//When you do the 3d one you will need to change the last parameter to be the depth of the image (number of frames)
 	//glFrustum(0.0f, 1, 0.0f,1, 1.0f, 1024.0f);	//Also works but it would need some tweaking and also probably commenting the GlulookAt
-	gluPerspective(70.0, width() / height(), 1.0, 1024.0); // Set perspective
+	//gluPerspective(70.0, width() / height(), 1.0, -1024.0); // Set perspective
 	
 	
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	//Now we position the camera in the middle of the screen (width/2 and heidth /2 ) and looking at the negative z axis
-	gluLookAt(model->pixelDataWidth/2, model->pixelDataHeight/2, 0.0,	
-		model->pixelDataWidth / 2, model->pixelDataHeight / 2, -1000,
-		0.0, 1.0, 0.0);
+	/*gluLookAt(model->pixelDataWidth/2, model->pixelDataHeight/2, -1000.0,	
+		model->pixelDataWidth / 2, model->pixelDataHeight / 2, 1000.0,
+		0.0, 1.0, 0.0);*/
 
 
 
@@ -166,8 +193,19 @@ void GLWidget::paintGL()
 
 
 	glShadeModel(GL_SMOOTH);*/
-	glColor3f(1.f, 0.f, 0.f);
-	glDrawArrays(GL_TRIANGLES, 0, model->verts.size());
+
+
+	//Position of light 1
+	float lightPosition[4] = { 0, 0, 0, 1 };
+	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
+
+	//Position of light 2
+	float lightPosition1[4] = { model->pixelDataWidth, model->pixelDataHeight/8, model->frames, 1 };
+	glLightfv(GL_LIGHT1, GL_POSITION, lightPosition1);
+
+	
+	drawMesh();
+	//drawCubes();
 
 	/*glBegin(GL_TRIANGLES);
 	glColor3f(1.f, 0.f, 0.f);
@@ -192,6 +230,83 @@ void GLWidget::paintGL()
 	glEnd();*/
 	
 }
+
+
+void GLWidget::drawMesh(){
+	//glColor3f(1.f, 0.f, 0.f);
+	glColor3f(0.5f, 0.5f, 0.5f);
+	//glDrawArrays(GL_TRIANGLES, 0, model->verts.size());
+	if (model->verts.empty())
+		return;
+
+	int normalIndex = 0;
+	glBegin(GL_TRIANGLES);
+	for (int i = 0; i < model->verts.size()-9; i=i+9){
+		glNormal3f(model->normals[normalIndex], model->normals[normalIndex + 1], model->normals[normalIndex + 2]);
+		normalIndex = normalIndex + 3;
+		//glNormal3f(0, 0, 1);
+		glVertex3f(model->verts[i], model->verts[i +1], model->verts[i + 2]);
+		glVertex3f(model->verts[i + 3], model->verts[i + 4 ], model->verts[i + 5]);
+		glVertex3f(model->verts[i + 6], model->verts[i + 7], model->verts[i + 8]);
+	}
+	glEnd();
+}
+void GLWidget::drawCubes(){
+	//Draw the cubes now The cube configuracion can be found as a comment in the adaptiveMarchingCubes function
+	glColor3f(1.f, 0.f, 0.f);
+	glBegin(GL_LINES);
+	for (int i = 0; i < model->cubes.size(); i = i + 1){
+
+		if (!model->cubes[i].isLeaf){
+			continue;
+		}
+
+		glVertex3f(model->cubes[i].origin.x, model->cubes[i].origin.y, model->cubes[i].origin.z);
+		glVertex3f(model->cubes[i].origin.x + model->cubes[i].sizeX, model->cubes[i].origin.y, model->cubes[i].origin.z);
+
+		glVertex3f(model->cubes[i].origin.x, model->cubes[i].origin.y, model->cubes[i].origin.z);
+		glVertex3f(model->cubes[i].origin.x, model->cubes[i].origin.y + model->cubes[i].sizeY, model->cubes[i].origin.z);
+
+		glVertex3f(model->cubes[i].origin.x, model->cubes[i].origin.y, model->cubes[i].origin.z);
+		glVertex3f(model->cubes[i].origin.x, model->cubes[i].origin.y, model->cubes[i].origin.z + model->cubes[i].sizeZ);
+
+
+		glVertex3f(model->cubes[i].origin.x + model->cubes[i].sizeX, model->cubes[i].origin.y + model->cubes[i].sizeY, model->cubes[i].origin.z + model->cubes[i].sizeZ);
+		glVertex3f(model->cubes[i].origin.x, model->cubes[i].origin.y + model->cubes[i].sizeY, model->cubes[i].origin.z + model->cubes[i].sizeZ);
+
+		glVertex3f(model->cubes[i].origin.x + model->cubes[i].sizeX, model->cubes[i].origin.y + model->cubes[i].sizeY, model->cubes[i].origin.z + model->cubes[i].sizeZ);
+		glVertex3f(model->cubes[i].origin.x + model->cubes[i].sizeX, model->cubes[i].origin.y, model->cubes[i].origin.z + model->cubes[i].sizeZ);
+
+		glVertex3f(model->cubes[i].origin.x + model->cubes[i].sizeX, model->cubes[i].origin.y + model->cubes[i].sizeY, model->cubes[i].origin.z + model->cubes[i].sizeZ);
+		glVertex3f(model->cubes[i].origin.x + model->cubes[i].sizeX, model->cubes[i].origin.y + model->cubes[i].sizeY, model->cubes[i].origin.z);
+
+
+
+
+		glVertex3f(model->cubes[i].origin.x, model->cubes[i].origin.y + model->cubes[i].sizeY, model->cubes[i].origin.z);
+		glVertex3f(model->cubes[i].origin.x, model->cubes[i].origin.y + model->cubes[i].sizeY, model->cubes[i].origin.z + model->cubes[i].sizeZ);
+
+		glVertex3f(model->cubes[i].origin.x, model->cubes[i].origin.y + model->cubes[i].sizeY, model->cubes[i].origin.z + model->cubes[i].sizeZ);
+		glVertex3f(model->cubes[i].origin.x, model->cubes[i].origin.y, model->cubes[i].origin.z + model->cubes[i].sizeZ);
+
+		glVertex3f(model->cubes[i].origin.x + model->cubes[i].sizeX, model->cubes[i].origin.y, model->cubes[i].origin.z);
+		glVertex3f(model->cubes[i].origin.x + model->cubes[i].sizeX, model->cubes[i].origin.y, model->cubes[i].origin.z + model->cubes[i].sizeZ);
+
+		glVertex3f(model->cubes[i].origin.x + model->cubes[i].sizeX, model->cubes[i].origin.y, model->cubes[i].origin.z + model->cubes[i].sizeZ);
+		glVertex3f(model->cubes[i].origin.x, model->cubes[i].origin.y, model->cubes[i].origin.z + model->cubes[i].sizeZ);
+
+		glVertex3f(model->cubes[i].origin.x + model->cubes[i].sizeX, model->cubes[i].origin.y, model->cubes[i].origin.z);
+		glVertex3f(model->cubes[i].origin.x + model->cubes[i].sizeX, model->cubes[i].origin.y + model->cubes[i].sizeY, model->cubes[i].origin.z);
+
+		glVertex3f(model->cubes[i].origin.x, model->cubes[i].origin.y + model->cubes[i].sizeY, model->cubes[i].origin.z);
+		glVertex3f(model->cubes[i].origin.x + model->cubes[i].sizeX, model->cubes[i].origin.y + model->cubes[i].sizeY, model->cubes[i].origin.z);
+
+
+	}
+	glEnd();
+}
+
+
 
 void GLWidget::resizeGL(int w, int h)
 {
