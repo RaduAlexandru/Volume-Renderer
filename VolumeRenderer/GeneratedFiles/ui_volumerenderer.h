@@ -54,9 +54,10 @@ public:
     QCheckBox *pointFlagButton;
     QCheckBox *borderFlagButton;
     QPushButton *loadMFDICOMButton;
-    QPushButton *loadDICOMFromFile;
     DicomViewer2DGL *dicomviewer2dgl;
-    QSlider *horizontalSlider;
+    QSlider *toleranceSlider;
+    QPushButton *loadDICOMFromFile;
+    QCheckBox *showWireframeButton;
     QMenuBar *menuBar;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
@@ -74,7 +75,7 @@ public:
         glwidget = new GLWidget(centralWidget);
         glwidget->setObjectName(QStringLiteral("glwidget"));
         glwidget->setEnabled(true);
-        glwidget->setGeometry(QRect(130, 60, 591, 311));
+        glwidget->setGeometry(QRect(170, 10, 601, 491));
         frameSlider = new QSlider(centralWidget);
         frameSlider->setObjectName(QStringLiteral("frameSlider"));
         frameSlider->setGeometry(QRect(140, 610, 160, 22));
@@ -140,17 +141,20 @@ public:
         loadMFDICOMButton = new QPushButton(centralWidget);
         loadMFDICOMButton->setObjectName(QStringLiteral("loadMFDICOMButton"));
         loadMFDICOMButton->setGeometry(QRect(510, 20, 121, 23));
-        loadDICOMFromFile = new QPushButton(centralWidget);
-        loadDICOMFromFile->setObjectName(QStringLiteral("loadDICOMFromFile"));
-        loadDICOMFromFile->setGeometry(QRect(650, 20, 111, 23));
         dicomviewer2dgl = new DicomViewer2DGL(centralWidget);
         dicomviewer2dgl->setObjectName(QStringLiteral("dicomviewer2dgl"));
-        dicomviewer2dgl->setGeometry(QRect(620, 390, 256, 256));
-        horizontalSlider = new QSlider(centralWidget);
-        horizontalSlider->setObjectName(QStringLiteral("horizontalSlider"));
-        horizontalSlider->setGeometry(QRect(410, 470, 160, 22));
-        horizontalSlider->setMaximum(360);
-        horizontalSlider->setOrientation(Qt::Horizontal);
+        dicomviewer2dgl->setGeometry(QRect(650, 510, 151, 131));
+        toleranceSlider = new QSlider(centralWidget);
+        toleranceSlider->setObjectName(QStringLiteral("toleranceSlider"));
+        toleranceSlider->setGeometry(QRect(460, 510, 160, 22));
+        toleranceSlider->setMaximum(360);
+        toleranceSlider->setOrientation(Qt::Horizontal);
+        loadDICOMFromFile = new QPushButton(centralWidget);
+        loadDICOMFromFile->setObjectName(QStringLiteral("loadDICOMFromFile"));
+        loadDICOMFromFile->setGeometry(QRect(640, 20, 111, 23));
+        showWireframeButton = new QCheckBox(centralWidget);
+        showWireframeButton->setObjectName(QStringLiteral("showWireframeButton"));
+        showWireframeButton->setGeometry(QRect(30, 260, 91, 17));
         VolumeRendererClass->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(VolumeRendererClass);
         menuBar->setObjectName(QStringLiteral("menuBar"));
@@ -167,7 +171,7 @@ public:
         QObject::connect(resolutionSlider, SIGNAL(valueChanged(int)), label_4, SLOT(setNum(int)));
         QObject::connect(frameSlider, SIGNAL(valueChanged(int)), label_6, SLOT(setNum(int)));
         QObject::connect(isoLevelSlider, SIGNAL(valueChanged(int)), label_5, SLOT(setNum(int)));
-        QObject::connect(horizontalSlider, SIGNAL(valueChanged(int)), dicomviewer2dgl, SLOT(setTolerance(int)));
+        QObject::connect(toleranceSlider, SIGNAL(valueChanged(int)), dicomviewer2dgl, SLOT(setTolerance(int)));
 
         QMetaObject::connectSlotsByName(VolumeRendererClass);
     } // setupUi
@@ -192,6 +196,7 @@ public:
         borderFlagButton->setText(QApplication::translate("VolumeRendererClass", "showPointInBorder", 0));
         loadMFDICOMButton->setText(QApplication::translate("VolumeRendererClass", "loadMultiFrameDicom", 0));
         loadDICOMFromFile->setText(QApplication::translate("VolumeRendererClass", "loadDICOMFromFile", 0));
+        showWireframeButton->setText(QApplication::translate("VolumeRendererClass", "showWireframe", 0));
     } // retranslateUi
 
 };

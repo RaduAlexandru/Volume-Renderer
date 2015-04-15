@@ -49,6 +49,8 @@ private:
 	int loadDICOMPixelData(QStringList);
 
 	int adaptiveMarchingCubes();
+	void calculateGradient();
+	bool cubeNeedsSubdivision(OctreeCube&);
 
 	
 	void marchingSquares();
@@ -69,6 +71,8 @@ private slots:
 	void on_pointFlagButton_clicked();
 	void on_borderFlagButton_clicked();
 	void on_frameSlider_valueChanged();
+	void on_showWireframeButton_clicked();
+	void on_toleranceSlider_valueChanged();
 	
 };
 

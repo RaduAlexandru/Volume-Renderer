@@ -26,8 +26,13 @@ public:
 	void sendDataToGL();
 	void drawMesh();
 	void drawCubes();
+	void drawBackground();
+	void readBackgroundImage();
 
 	int dataSended;
+	unsigned char* background;
+	int backgroundWidth;
+	int backgroundHeight;
 
 	Model* model;
 

@@ -28,7 +28,10 @@
 #include "glwidget.h"
 #include "dicomviewer2dgl.h"
 #include "Model.h"
+#include <math.h> 
 //#include <boost/variant.hpp>
+#define PI 3.14159265
+
 
 
 
@@ -691,6 +694,7 @@ void VolumeRenderer::load_image_data(const char* file) {
 
 void VolumeRenderer::polygonise(CELL cell, int isoLevel, std::vector<float>& verts){
 
+	//std::cout << "we are poligonizisng" << std::endl;
 	//vector<Model::POINTF> points;
 	glm::vec3 vertlist[12];
 	
@@ -1116,6 +1120,7 @@ inline void VolumeRenderer::interpolate(int isoLevel, glm::vec3 point1, glm::vec
 
 void VolumeRenderer::marchingSquares(){
 
+	std::cout << "marching cubes algorithm" << std::endl;
 	const clock_t begin_time = clock();
 	
 	cout << "frame is " << model->frames << endl;
@@ -1130,6 +1135,10 @@ void VolumeRenderer::marchingSquares(){
 	unsigned char* dataPointer;
 	int value=0;
 	int pointerOffset=model->numberOfBytes;
+
+	std::ofstream outputFile;
+	outputFile.open("PixelsValues.txt");
+
 	//Now we make a square and march it
 	//i is the y axis and j is the x axis
 	//Since the bitmap is stored in reverse, we shall asign the y position to height-i insted of just i, thus mirroring the position
@@ -1139,7 +1148,8 @@ void VolumeRenderer::marchingSquares(){
 			for (int k = 0; k < model->frames - cellSizeZ; k = k + cellSizeZ){
 
 				//cout << "k is" << k << endl;
-				//cout << "value is" << (int)input_pixels[j + i*width_image]<<endl;
+				//if (model->getPixelValue(j, i, k)!=0)
+				//cout << model->getPixelValue(j, i, k) << endl;
 
 				if (model->pointFlag == true){
 
@@ -1220,6 +1230,8 @@ void VolumeRenderer::marchingSquares(){
 		}
 	}
 
+	outputFile.close();
+
 	//ui.glwidget->setFrame(5);
 	//ui.glwidget->setDataToDisplay(output_pixels, model->totalPoints, width_image, height_image);
 
@@ -1258,16 +1270,17 @@ int VolumeRenderer::adaptiveMarchingCubes(){
 	//Create the original cube
 	/*
 		7---------6
-	   /		  !
+	   size Z	
 	  /			  !
 	3---------2	  5
-	!         !
-	!         !
-	origin---------1
+	!
+	size Y
+	!
+	origin----size X
 	*/
 
 	OctreeCube cube;
-	int cubesSize = 0, depth = 0, maxDepth = 2;
+	int cubesSize = 0, depth = 0, maxDepth = 6;
 
 	cube.origin.x = 0;
 	cube.origin.y = 0;
@@ -1275,11 +1288,15 @@ int VolumeRenderer::adaptiveMarchingCubes(){
 
 	cube.sizeX = model->pixelDataWidth;
 	cube.sizeY = model->pixelDataHeight;
-	cube.sizeZ = model->frames;
+	cube.sizeZ = model->frames-1;
 
 	cube.isLeaf = true;
 	model->cubes.push_back(cube);
 
+
+	if (model->gradient.size()==0 || model->gradient.empty())
+		calculateGradient();
+	cout << "Finished calculating gradients" << endl;
 
 
 	while (1){
@@ -1287,7 +1304,7 @@ int VolumeRenderer::adaptiveMarchingCubes(){
 		for (int cube = 0; cube < cubesSize; cube++){
 			if (model->cubes[cube].isLeaf){
 
-				if (model->cubes[cube].needsSubdivision()){
+				if (cubeNeedsSubdivision(model->cubes[cube])){
 					model->cubes[cube].isLeaf = false;
 					model->cubes[cube].subdivide(model->cubes);
 				}
@@ -1304,14 +1321,251 @@ int VolumeRenderer::adaptiveMarchingCubes(){
 
 
 
-	//std::cout << "number of cubes is" << model->cubes.size() << std::endl;
+	std::cout << "number of cubes is" << model->cubes.size() << std::endl;
+	model->verts.clear();
+	model->normals.clear();
 
+	for (int i = 0; i < model->cubes.size(); i++){
+		if (model->cubes[i].isLeaf){
+			CELL cell;
+
+
+			/*
+			7---------6
+			/			 !
+			/			 !
+			3---------2	 5
+			!         !
+			!         !
+			0---------1
+			*/
+
+			for (int j = 0; j < 8; j++){
+				cell.position[j].x = 0;
+				cell.position[j].x = 0;
+				cell.position[j].x = 0;
+				cell.val[j] = 0;
+			}
+
+			cell.position[0].x = model->cubes[i].origin.x;
+			cell.position[0].y = model->cubes[i].origin.y;
+			cell.position[0].z = model->cubes[i].origin.z;
+			cell.val[0] = model->getPixelValue(model->cubes[i].origin.x, model->cubes[i].origin.y, model->cubes[i].origin.z);
+
+			cell.position[1].x = model->cubes[i].origin.x + model->cubes[i].sizeX;
+			cell.position[1].y = model->cubes[i].origin.y;
+			cell.position[1].z = model->cubes[i].origin.z;
+			cell.val[1] = model->getPixelValue(model->cubes[i].origin.x + model->cubes[i].sizeX, model->cubes[i].origin.y, model->cubes[i].origin.z);
+
+			cell.position[2].x = model->cubes[i].origin.x + model->cubes[i].sizeX;
+			cell.position[2].y = model->cubes[i].origin.y + model->cubes[i].sizeY;
+			cell.position[2].z = model->cubes[i].origin.z;
+			cell.val[2] = model->getPixelValue(model->cubes[i].origin.x + model->cubes[i].sizeX, model->cubes[i].origin.y + model->cubes[i].sizeY, model->cubes[i].origin.z);
+
+			cell.position[3].x = model->cubes[i].origin.x;
+			cell.position[3].y = model->cubes[i].origin.y + model->cubes[i].sizeY;
+			cell.position[3].z = model->cubes[i].origin.z;
+			cell.val[3] = model->getPixelValue(model->cubes[i].origin.x, model->cubes[i].origin.y + model->cubes[i].sizeY, model->cubes[i].origin.z);
+			//////
+			cell.position[4].x = model->cubes[i].origin.x;
+			cell.position[4].y = model->cubes[i].origin.y;
+			cell.position[4].z = model->cubes[i].origin.z + model->cubes[i].sizeZ;
+			cell.val[4] = model->getPixelValue(model->cubes[i].origin.x, model->cubes[i].origin.y, model->cubes[i].origin.z + model->cubes[i].sizeZ);
+
+			cell.position[5].x = model->cubes[i].origin.x + model->cubes[i].sizeX;
+			cell.position[5].y = model->cubes[i].origin.y;
+			cell.position[5].z = model->cubes[i].origin.z + model->cubes[i].sizeZ;
+			cell.val[5] = model->getPixelValue(model->cubes[i].origin.x + model->cubes[i].sizeX, model->cubes[i].origin.y, model->cubes[i].origin.z + model->cubes[i].sizeZ);
+
+			cell.position[6].x = model->cubes[i].origin.x + model->cubes[i].sizeX;
+			cell.position[6].y = model->cubes[i].origin.y + model->cubes[i].sizeY;
+			cell.position[6].z = model->cubes[i].origin.z + model->cubes[i].sizeZ;
+			cell.val[6] = model->getPixelValue(model->cubes[i].origin.x + model->cubes[i].sizeX, model->cubes[i].origin.y + model->cubes[i].sizeY, model->cubes[i].origin.z + model->cubes[i].sizeZ);
+
+			cell.position[7].x = model->cubes[i].origin.x;
+			cell.position[7].y = model->cubes[i].origin.y + model->cubes[i].sizeY;
+			cell.position[7].z = model->cubes[i].origin.z + model->cubes[i].sizeZ;
+			cell.val[7] = model->getPixelValue(model->cubes[i].origin.x, model->cubes[i].origin.y + model->cubes[i].sizeY, model->cubes[i].origin.z + model->cubes[i].sizeZ);
+
+			//std::cout << "cell has values" << cell.val[0] << " " << cell.val[1] << " " << cell.val[2] << " " << cell.val[3] << " " << cell.val[4] << " " << cell.val[5] << " " << cell.val[6] << " " << cell.val[7] << std::endl;
+
+			//now we have that cell and we have to polygonise it
+			//polygonise(cell, model->isoLevel, model->totalPoints);
+			polygonise(cell, 14000, model->verts);
+		}
+	}
+
+	/*std::cout << "Printing verts" <<  std::endl;
+	for (int i = 0; i < model->verts.size(); i++){
+		std::cout << "Verts is" << model->verts[i] << std::endl;
+	}*/
 
 	
 	return 0;
 }
 
 
+void VolumeRenderer::calculateGradient(){
+
+	unsigned char* dataPointer;
+	int value = 0;
+	int pointerOffset = model->numberOfBytes;
+	int dx = 0, dy = 0, dz=0, magnitude = 0, left = 0, right = 0, top = 0, bottom = 0, closev=0, farv = 0, center=0;
+	float angle = -1;
+	glm::vec3  gradientAtPoint;
+
+
+	//std::ofstream outputFile;
+	//outputFile.open("GradientAtFrame100.txt");
+
+	/*if (!model->gradient.empty())
+		return;*/
+
+
+	//Create as many gradients frames as the number of frames in the dicom file
+	model->gradient.resize(model->frames);
+	if (model->gradient.size()==0)
+		return;
+
+	//We use -1 as a no gradient
+
+	//Here i is y axis and j is the x axis
+	for (int i = 0; i < model->pixelDataHeight; i = i + 1){
+		for (int j = 0; j < model->pixelDataWidth; j = j + 1){
+			for (int k = 0; k < model->frames; k = k + 1){			//You need to check why it doesnt work without the -1 in the frames
+
+				if (i == 0 || i == model->pixelDataHeight-1 || j == 0 || j == model->pixelDataWidth-1 || k==0 || k==model->frames-1){		//If we are in a border we just put it at 0
+					model->gradient[k].push_back(glm::vec3(-1,-1,-1));
+					continue;
+				}
+
+				//std::cout << "values are" << i  << "  "<< j << "  " << k  << std::endl;
+
+				//Now we take the values
+				dataPointer = &(model->pixelData[k][0]);
+				dataPointer = dataPointer + (j - 1 + i*model->pixelDataWidth)*pointerOffset;
+				memcpy(&left, dataPointer, pointerOffset);
+
+				dataPointer = &(model->pixelData[k][0]);
+				dataPointer = dataPointer + (j + 1 + i*model->pixelDataWidth)*pointerOffset;
+				memcpy(&right, dataPointer, pointerOffset);
+
+				dataPointer = &(model->pixelData[k][0]);
+				dataPointer = dataPointer + (j + (i - 1)*model->pixelDataWidth)*pointerOffset;
+				memcpy(&top, dataPointer, pointerOffset);
+
+				dataPointer = &(model->pixelData[k][0]);
+				dataPointer = dataPointer + (j + (i + 1)*model->pixelDataWidth)*pointerOffset;
+				memcpy(&bottom, dataPointer, pointerOffset);
+
+				dataPointer = &(model->pixelData[k-1][0]);
+				dataPointer = dataPointer + (j + i*model->pixelDataWidth)*pointerOffset;
+				memcpy(&closev, dataPointer, pointerOffset);
+
+
+				//std::cout << "k is " << k  << " total frames is " << model->frames<< std::endl;
+
+				dataPointer = &(model->pixelData[k+1][0]);
+				dataPointer = dataPointer + (j + i*model->pixelDataWidth)*pointerOffset;
+				memcpy(&farv, dataPointer, pointerOffset);
+
+				dataPointer = &(model->pixelData[k][0]);
+				dataPointer = dataPointer + (j + i*model->pixelDataWidth)*pointerOffset;
+				memcpy(&center, dataPointer, pointerOffset);
+
+
+				dy = left - right;
+				dx = top - bottom;
+				dz = closev - farv;
+
+				if (dx == 0)
+					dx = 1;
+				if (dy == 0)
+					dy = 1;
+				if (dz == 0)
+					dz = 1;
+
+				/*THe 3 possible axis
+				dx-dy
+				dx-dz
+				dy-dz
+				*/
+
+
+				magnitude = sqrt( pow(dx, 2) + pow(dy, 2) + pow(dz, 2));
+				gradientAtPoint.x = atan2(dy, dx) * 180 / PI + 180;
+				gradientAtPoint.y = atan2(dz, dx) * 180 / PI + 180;
+				gradientAtPoint.z = atan2(dy, dz) * 180 / PI + 180;
+
+
+				if (magnitude < 2500 || center > model->isoLevel){
+					model->gradient[k].push_back(glm::vec3(-1,-1,-1));
+				}
+				else{
+					model->gradient[k].push_back(gradientAtPoint);
+				}
+
+
+				/*if (k == 100){
+					outputFile << " Values are "  << "Magnitude "  << magnitude << "Angles " << gradientAtPoint.x << " " << gradientAtPoint.y << " " << gradientAtPoint.z << endl;
+				}*/
+
+
+				
+			}
+
+		}
+	}
+}
+
+bool VolumeRenderer::cubeNeedsSubdivision(OctreeCube &cube){
+
+
+	glm::vec3 firstAngle(-1,-1,-1);
+	int tolerance = model->tolerance;
+
+	for (int i = cube.origin.y; i < cube.sizeY + cube.origin.y; i = i + 1){
+		for (int j = cube.origin.x; j < cube.sizeX + cube.origin.x; j = j + 1){
+			for (int k = cube.origin.z; k < cube.sizeZ + cube.origin.z; k = k + 1){
+
+
+
+				
+				glm::vec3 actualValue (-1,-1,-1);
+				actualValue = model->gradient[k][j + i*model->pixelDataWidth];
+
+
+				if (firstAngle == glm::vec3(-1, -1, -1) && actualValue != glm::vec3(-1, -1, -1)){
+					firstAngle = actualValue ;
+				}
+
+				//std::cout << "i= " << i << " j= " << j << " k= " << k << std::endl;
+				//std::cout << "first angle is " << firstAngle.x << " " << firstAngle.y << " " << firstAngle.z << " actualValue is " << actualValue.x << " " << actualValue.y << " " << actualValue.z << std::endl;
+
+				/*if (abs(firstAngle - (actualValue / multiplier_angle)) > tolerance && firstAngle != -1 && actualValue / multiplier_angle != 255){
+					needSubdivision = true;
+					//needSubdivision = (int)rand % 2;
+				}*/
+
+				//return true;
+				//return (int)rand % 2;
+
+				if (abs(firstAngle.x - actualValue.x) > tolerance && firstAngle != glm::vec3(-1, -1, -1)){
+					return true;
+				}
+				if (abs(firstAngle.y - actualValue.y) > tolerance && firstAngle != glm::vec3(-1, -1, -1)){
+					return true;
+				}
+				if (abs(firstAngle.y - actualValue.y) > tolerance && firstAngle != glm::vec3(-1, -1, -1)){
+					return true;
+				}
+				
+			}
+		}
+	}
+	cube.isLeaf=false;	//If it doesnt need subdivision we just mark it as a non-leaf (as a father of no cubes) just so we don't recheck it later 
+	return false;
+}
 
 
 
@@ -1554,6 +1808,24 @@ void VolumeRenderer::on_frameSlider_valueChanged(){
 	ui.dicomviewer2dgl->setFrame(model->frame_to_display);
 	ui.glwidget->update();
 	ui.dicomviewer2dgl->update();
+}
+
+
+void VolumeRenderer::on_showWireframeButton_clicked(){
+	if (ui.showWireframeButton->isChecked()){
+		model->showWireframe = true;
+	}
+	else{
+		model->showWireframe = false;
+	}
+	ui.glwidget->update();
+}
+
+void VolumeRenderer::on_toleranceSlider_valueChanged(){
+	model->tolerance = ui.toleranceSlider->value();
+	cout << "tolerance set to " << model->tolerance;
+	model->cubes.clear();
+	adaptiveMarchingCubes();
 }
 
 

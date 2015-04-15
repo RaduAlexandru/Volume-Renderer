@@ -90,14 +90,24 @@ void GLWidget::initializeGL()
 	//WE ADD THE LIGHTS
 	glEnable(GL_LIGHT0);
 	glEnable(GL_LIGHT1);
+	glEnable(GL_LIGHT2);
 	
 	//Light 1 is a point light, an omni light
-	float lightColor[4] = { 1, 1, 1, 1 };
+	float lightColor[4] = { 0.5, 0.5, 0.5, 1 };
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, lightColor);
 
 	//Light 2 a blue keylight
-	float lightColor2[4] = { 0.5, 0.5, 0.6, 1 };
+	float lightColor2[4] = { 0.5, 0.5, 0.5, 1 };
 	glLightfv(GL_LIGHT1, GL_DIFFUSE, lightColor2);
+
+	//Light 3 is just above the face
+	float lightColor3[4] = { 1.3, 1.3, 1.3, 1 };
+	glLightfv(GL_LIGHT2, GL_DIFFUSE, lightColor3);
+	
+
+
+
+
 	
 
 	//ambient light
@@ -106,9 +116,15 @@ void GLWidget::initializeGL()
 
 
 	glEnable(GL_COLOR_MATERIAL);
-	glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);
-	glLightModelf(GL_LIGHT_MODEL_TWO_SIDE, 1);
-	glFrontFace(GL_CW);
+	glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
+	//glLightModelf(GL_LIGHT_MODEL_TWO_SIDE, 1);
+	glFrontFace(GL_CCW);
+
+	/*glEnable(GL_CULL_FACE);
+	glCullFace(GL_FRONT);*/
+	
+
+	readBackgroundImage();
 }
 
 void GLWidget::paintGL()
@@ -122,6 +138,14 @@ void GLWidget::paintGL()
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 		dataSended = 1;
 	}
+
+	if (model->showWireframe){
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	}
+	else{
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	}
+
 
 	/*if (model->verts.empty()){
 		std::cout << "no verts" << std::endl;
@@ -142,17 +166,17 @@ void GLWidget::paintGL()
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0.0f, model->pixelDataWidth, 0.0f,  model->pixelDataHeight, 0.0f, 1024.0f);	//When you do the 3d one you will need to change the last parameter to be the depth of the image (number of frames)
+	//glOrtho(0.0f, model->pixelDataWidth, 0.0f,  model->pixelDataHeight, 0.0f, 1024.0f);	//When you do the 3d one you will need to change the last parameter to be the depth of the image (number of frames)
 	//glFrustum(0.0f, 1, 0.0f,1, 1.0f, 1024.0f);	//Also works but it would need some tweaking and also probably commenting the GlulookAt
-	//gluPerspective(70.0, width() / height(), 1.0, -1024.0); // Set perspective
+	gluPerspective(60.0, width() / height(), 1.0, -1024.0); // Set perspective
 	
 	
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	//Now we position the camera in the middle of the screen (width/2 and heidth /2 ) and looking at the negative z axis
-	/*gluLookAt(model->pixelDataWidth/2, model->pixelDataHeight/2, -1000.0,	
+	gluLookAt(model->pixelDataWidth/2, model->pixelDataHeight/2, -1000.0,	
 		model->pixelDataWidth / 2, model->pixelDataHeight / 2, 1000.0,
-		0.0, 1.0, 0.0);*/
+		0.0, 1.0, 0.0);
 
 
 
@@ -167,13 +191,14 @@ void GLWidget::paintGL()
 
 	}*/
 	
+	drawBackground();
 
 	glTranslatef((model->pixelDataWidth / 2), (model->pixelDataHeight / 2), -510.0f);
 	glRotatef(-xRot, 1, 0, 0);
 	glTranslatef(-(model->pixelDataWidth / 2), -(model->pixelDataHeight / 2), 0.0f);
 
 	glTranslatef((model->pixelDataWidth / 2), (model->pixelDataHeight / 2), 0.0f);
-	glRotatef(-yRot, 0, 0, 1);	//We put it to minus so that the rotation is reversed
+	glRotatef(yRot, 0, 0, 1);	//We put it to minus so that the rotation is reversed
 	glTranslatef(-(model->pixelDataWidth / 2), -(model->pixelDataHeight / 2), 0.0f - model->frames/2);
 	
 	//glPointSize(1.5f);
@@ -195,15 +220,22 @@ void GLWidget::paintGL()
 	glShadeModel(GL_SMOOTH);*/
 
 
+	
+	//If you copy all these position in the lines before the rotations (after draw background), the liths will rotate with the camera (like if you are holding a flashlight). not with the mesh
 	//Position of light 1
 	float lightPosition[4] = { 0, 0, 0, 1 };
 	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 
 	//Position of light 2
-	float lightPosition1[4] = { model->pixelDataWidth, model->pixelDataHeight/8, model->frames, 1 };
+	float lightPosition1[4] = { model->pixelDataWidth, model->pixelDataHeight/8, 0, 1 };
 	glLightfv(GL_LIGHT1, GL_POSITION, lightPosition1);
 
+	//Position of light 3
+	float lightPosition2[4] = { model->pixelDataWidth/2, model->pixelDataHeight/1.1, 0, 1 };
+	glLightfv(GL_LIGHT2, GL_POSITION, lightPosition2);
+
 	
+	//glDrawArrays(GL_TRIANGLES, 0, model->verts.size());
 	drawMesh();
 	//drawCubes();
 
@@ -234,12 +266,13 @@ void GLWidget::paintGL()
 
 void GLWidget::drawMesh(){
 	//glColor3f(1.f, 0.f, 0.f);
-	glColor3f(0.5f, 0.5f, 0.5f);
+	glColor3f(0.55f, 0.55f, 0.55f);
 	//glDrawArrays(GL_TRIANGLES, 0, model->verts.size());
 	if (model->verts.empty())
 		return;
 
 	int normalIndex = 0;
+
 	glBegin(GL_TRIANGLES);
 	for (int i = 0; i < model->verts.size()-9; i=i+9){
 		glNormal3f(model->normals[normalIndex], model->normals[normalIndex + 1], model->normals[normalIndex + 2]);
@@ -250,6 +283,8 @@ void GLWidget::drawMesh(){
 		glVertex3f(model->verts[i + 6], model->verts[i + 7], model->verts[i + 8]);
 	}
 	glEnd();
+	
+
 }
 void GLWidget::drawCubes(){
 	//Draw the cubes now The cube configuracion can be found as a comment in the adaptiveMarchingCubes function
@@ -305,6 +340,49 @@ void GLWidget::drawCubes(){
 	}
 	glEnd();
 }
+
+
+
+void GLWidget::readBackgroundImage(){
+	FILE *f = fopen("test9_background2.bmp", "rb");
+	if (!f) {
+		printf("failed to open file\n");
+		exit(0);
+	}
+
+	BITMAPFILEHEADER bfh;
+	BITMAPINFOHEADER bih;
+
+	//fread(signature, 1, 2, f);
+	fread(&bfh, sizeof(BITMAPFILEHEADER), 1, f);
+	fread(&bih, sizeof(BITMAPINFOHEADER), 1, f);
+	fseek(f, bfh.bfOffBits, SEEK_SET);	//The offbits is the byte where the pixels start so we move the file pointer there and we read from it
+
+	
+	backgroundWidth = bih.biWidth;
+	backgroundHeight = bih.biHeight;
+	int bitmapNumberOfPixels = bih.biWidth * bih.biHeight;
+	int bitmapImageSize = sizeof(char)* bitmapNumberOfPixels;
+	
+
+	
+	background = (unsigned char *)malloc(bitmapImageSize);
+
+	fread(background, 1, bitmapImageSize, f);
+}
+
+void GLWidget::drawBackground(){
+
+
+	glPixelZoom((float)this->width() / (float)backgroundWidth, (float)this->height() / (float)backgroundHeight);  //used to scale the image down if the image is to big to fit in the window. 
+	
+	glDrawPixels(backgroundWidth, backgroundHeight, GL_LUMINANCE, GL_UNSIGNED_BYTE, background);
+			
+				
+
+	glClear(GL_DEPTH_BUFFER_BIT);
+}
+
 
 
 

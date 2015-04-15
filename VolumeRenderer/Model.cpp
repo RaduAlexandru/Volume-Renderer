@@ -15,12 +15,18 @@ Model::Model()
 	cellSizeY=6;
 	cellSizeZ=6;
 	pixelData = NULL;
-	linearInterpolation = true;
-	pointFlag = false;
-	borderFlag = false;
+	frames = 0;
+	
 	frame_to_display = 0;
 	pixelDataHeight = 0;
 	pixelDataWidth = 0;
+
+	linearInterpolation = true;
+	pointFlag = false;
+	borderFlag = false;
+	showWireframe = false;
+	tolerance = 75;
+
 
 
 
@@ -55,7 +61,7 @@ Model::~Model()
 int Model::getPixelValue(int x, int y, int z){
 
 	unsigned char* dataPointer;
-	int value;
+	int value=0;
 
 	dataPointer = &(pixelData[z][0]);
 	dataPointer = dataPointer + (x + y*pixelDataWidth)*numberOfBytes;

@@ -70,6 +70,8 @@ public:
 	
 
 	std::vector<OctreeCube> cubes;
+	std::vector <std::vector<glm::vec3>> gradient;
+	int tolerance;
 
 
 	//boost::variant< unsigned char, unsigned short, unsigned long > ** pixelData;
@@ -83,6 +85,7 @@ public:
 	bool linearInterpolation;
 	bool pointFlag;
 	bool borderFlag;
+	bool showWireframe;
 
 	unsigned char *bitmapPixels;
 	int pixelDataWidth;

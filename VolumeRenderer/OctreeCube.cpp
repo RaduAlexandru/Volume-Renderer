@@ -18,7 +18,8 @@ OctreeCube::~OctreeCube()
 
 int OctreeCube::needsSubdivision(){
 	int needSubdivision;
-	needSubdivision = rand() % 2;
+	//needSubdivision = rand() % 2;
+	needSubdivision = 1;
 	return needSubdivision;
 }
 int OctreeCube::subdivide(std::vector <OctreeCube> & cubes){

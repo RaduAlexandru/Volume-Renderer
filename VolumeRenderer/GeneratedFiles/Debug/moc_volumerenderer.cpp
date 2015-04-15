@@ -19,8 +19,8 @@
 
 QT_BEGIN_MOC_NAMESPACE
 struct qt_meta_stringdata_VolumeRenderer_t {
-    QByteArrayData data[15];
-    char stringdata[389];
+    QByteArrayData data[17];
+    char stringdata[452];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -43,7 +43,9 @@ QT_MOC_LITERAL(10, 236, 32), // "on_resolutionSlider_valueChanged"
 QT_MOC_LITERAL(11, 269, 36), // "on_linearInterpolationButton_..."
 QT_MOC_LITERAL(12, 306, 26), // "on_pointFlagButton_clicked"
 QT_MOC_LITERAL(13, 333, 27), // "on_borderFlagButton_clicked"
-QT_MOC_LITERAL(14, 361, 27) // "on_frameSlider_valueChanged"
+QT_MOC_LITERAL(14, 361, 27), // "on_frameSlider_valueChanged"
+QT_MOC_LITERAL(15, 389, 30), // "on_showWireframeButton_clicked"
+QT_MOC_LITERAL(16, 420, 31) // "on_toleranceSlider_valueChanged"
 
     },
     "VolumeRenderer\0on_test_clicked\0\0"
@@ -58,7 +60,9 @@ QT_MOC_LITERAL(14, 361, 27) // "on_frameSlider_valueChanged"
     "on_linearInterpolationButton_clicked\0"
     "on_pointFlagButton_clicked\0"
     "on_borderFlagButton_clicked\0"
-    "on_frameSlider_valueChanged"
+    "on_frameSlider_valueChanged\0"
+    "on_showWireframeButton_clicked\0"
+    "on_toleranceSlider_valueChanged"
 };
 #undef QT_MOC_LITERAL
 
@@ -68,7 +72,7 @@ static const uint qt_meta_data_VolumeRenderer[] = {
        7,       // revision
        0,       // classname
        0,    0, // classinfo
-      13,   14, // methods
+      15,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -76,21 +80,25 @@ static const uint qt_meta_data_VolumeRenderer[] = {
        0,       // signalCount
 
  // slots: name, argc, parameters, tag, flags
-       1,    0,   79,    2, 0x08 /* Private */,
-       3,    0,   80,    2, 0x08 /* Private */,
-       4,    0,   81,    2, 0x08 /* Private */,
-       5,    0,   82,    2, 0x08 /* Private */,
-       6,    0,   83,    2, 0x08 /* Private */,
-       7,    0,   84,    2, 0x08 /* Private */,
-       8,    0,   85,    2, 0x08 /* Private */,
-       9,    0,   86,    2, 0x08 /* Private */,
-      10,    0,   87,    2, 0x08 /* Private */,
-      11,    0,   88,    2, 0x08 /* Private */,
-      12,    0,   89,    2, 0x08 /* Private */,
-      13,    0,   90,    2, 0x08 /* Private */,
-      14,    0,   91,    2, 0x08 /* Private */,
+       1,    0,   89,    2, 0x08 /* Private */,
+       3,    0,   90,    2, 0x08 /* Private */,
+       4,    0,   91,    2, 0x08 /* Private */,
+       5,    0,   92,    2, 0x08 /* Private */,
+       6,    0,   93,    2, 0x08 /* Private */,
+       7,    0,   94,    2, 0x08 /* Private */,
+       8,    0,   95,    2, 0x08 /* Private */,
+       9,    0,   96,    2, 0x08 /* Private */,
+      10,    0,   97,    2, 0x08 /* Private */,
+      11,    0,   98,    2, 0x08 /* Private */,
+      12,    0,   99,    2, 0x08 /* Private */,
+      13,    0,  100,    2, 0x08 /* Private */,
+      14,    0,  101,    2, 0x08 /* Private */,
+      15,    0,  102,    2, 0x08 /* Private */,
+      16,    0,  103,    2, 0x08 /* Private */,
 
  // slots: parameters
+    QMetaType::Void,
+    QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
@@ -126,6 +134,8 @@ void VolumeRenderer::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _
         case 10: _t->on_pointFlagButton_clicked(); break;
         case 11: _t->on_borderFlagButton_clicked(); break;
         case 12: _t->on_frameSlider_valueChanged(); break;
+        case 13: _t->on_showWireframeButton_clicked(); break;
+        case 14: _t->on_toleranceSlider_valueChanged(); break;
         default: ;
         }
     }
@@ -157,13 +167,13 @@ int VolumeRenderer::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 13)
+        if (_id < 15)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 13;
+        _id -= 15;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 13)
+        if (_id < 15)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 13;
+        _id -= 15;
     }
     return _id;
 }
