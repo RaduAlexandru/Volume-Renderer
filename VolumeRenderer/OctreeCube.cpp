@@ -9,6 +9,8 @@ OctreeCube::OctreeCube()
 	sizeX = 0;
 	sizeY = 0;
 	sizeZ = 0;
+	isLeaf = true;
+	needsChecking = true;
 }
 
 

@@ -7,6 +7,7 @@
 
 
 
+
 Model::Model()
 {
 	isoLevel = 14000;
@@ -25,7 +26,8 @@ Model::Model()
 	pointFlag = false;
 	borderFlag = false;
 	showWireframe = false;
-	tolerance = 75;
+	tolerance = 80;
+	octreeMaxDepth = 9;
 
 
 
@@ -60,6 +62,10 @@ Model::~Model()
 
 int Model::getPixelValue(int x, int y, int z){
 
+	if (x<0 || x>pixelDataWidth || y<0 || y>pixelDataHeight || z <0 || z>=frames)
+		return 1;
+
+
 	unsigned char* dataPointer;
 	int value=0;
 
@@ -67,4 +73,24 @@ int Model::getPixelValue(int x, int y, int z){
 	dataPointer = dataPointer + (x + y*pixelDataWidth)*numberOfBytes;
 	memcpy(&value, dataPointer, numberOfBytes);
 	return value;
+}
+
+int Model::getSmoothPixelValue(int x, int y, int z){
+
+	//kernel is this one http://mathforum.org/mathimages/imgUpload/math/8/f/4/8f4eb18c8c35a55c00629e7dde0480f9.png
+
+	int value = 0;
+
+	
+
+	value = 4 * getPixelValue(x, y, z) + 2 * getPixelValue(x + 1, y, z) + 2 * getPixelValue(x - 1, y, z) +
+		2 * getPixelValue(x, y + 1, z) + 2 * getPixelValue(x, y - 1, z)
+		+ 1 * getPixelValue(x - 1, y + 1, z) + 1 * getPixelValue(x + 1, y + 1, z) + 1 * getPixelValue(x - 1, y - 1, z) + 1 * getPixelValue(x + 1, y - 1, z)
+
+		+ 2 * getPixelValue(x, y, z - 1) + 1 * getPixelValue(x - 1, y, z - 1) + 1 * getPixelValue(x, y + 1, z - 1) + 1 * getPixelValue(x, y - 1, z - 1) + 1 * getPixelValue(x + 1, y, z - 1)
+		+ 2 * getPixelValue(x, y, z + 1) + 1 * getPixelValue(x - 1, y, z + 1) + 1 * getPixelValue(x, y + 1, z + 1) + 1 * getPixelValue(x, y - 1, z + 1) + 1 * getPixelValue(x + 1, y, z + 1);
+
+	value = value / 28;
+	return value;
+
 }

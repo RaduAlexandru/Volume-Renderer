@@ -43,14 +43,16 @@ private:
 	int getRepresentation(QString , int& , int& , int& , int& ,int&, int&, int&);
 	//void showPixels(void* pixelData, std::vector<Model::POINTF>);
 	void load_image_data(const char*);
-	void polygonise(CELL, int, std::vector<float>&);
-	inline void interpolate(int, glm::vec3 point1, glm::vec3 point2, float, float, glm::vec3&);
+	void polygonise(CELL&, std::vector<double>&);
+	inline void interpolate(int, glm::vec3 point1, glm::vec3 point2, float, float, glm::vec3&, int depth=0);
 	int loadDICOMPixelData(const char*);
 	int loadDICOMPixelData(QStringList);
 
 	int adaptiveMarchingCubes();
 	void calculateGradient();
-	bool cubeNeedsSubdivision(OctreeCube&);
+	inline bool cubeNeedsSubdivision(OctreeCube&);
+	int generateOctree(OctreeCube,int);
+	int adaptiveMarchingCubes2();
 
 	
 	void marchingSquares();

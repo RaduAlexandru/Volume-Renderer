@@ -139,12 +139,12 @@ void GLWidget::paintGL()
 		dataSended = 1;
 	}
 
-	if (model->showWireframe){
+	/*if (model->showWireframe){
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	}
 	else{
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	}
+	}*/
 
 
 	/*if (model->verts.empty()){
@@ -234,10 +234,38 @@ void GLWidget::paintGL()
 	float lightPosition2[4] = { model->pixelDataWidth/2, model->pixelDataHeight/1.1, 0, 1 };
 	glLightfv(GL_LIGHT2, GL_POSITION, lightPosition2);
 
+
+
+	/*glColor3f(1.f, 0.f, 0.f);
+	glPointSize(1.0);
+	glBegin(GL_POINTS);
+	if (!model->gradientPoints.empty())
+		for (int i = 0; i < model->gradientPoints.size() - 3; i = i + 3){
+		glVertex3f(model->gradientPoints[i], model->gradientPoints[i + 1], model->gradientPoints[i + 2]);
+		}
+	glEnd();*/
+
 	
 	//glDrawArrays(GL_TRIANGLES, 0, model->verts.size());
+	glColor3f(0.55f, 0.55f, 0.55f);
 	drawMesh();
+	glColor3f(1.f, 0.f, 0.f);
 	//drawCubes();
+
+	if (model->showWireframe){
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		glLineWidth(1.5f);
+		glColor3f(1.f, 0.f, 0.f);
+		drawMesh();
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	}
+	else{
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	}
+
+
+
+	
 
 	/*glBegin(GL_TRIANGLES);
 	glColor3f(1.f, 0.f, 0.f);
@@ -266,7 +294,7 @@ void GLWidget::paintGL()
 
 void GLWidget::drawMesh(){
 	//glColor3f(1.f, 0.f, 0.f);
-	glColor3f(0.55f, 0.55f, 0.55f);
+	
 	//glDrawArrays(GL_TRIANGLES, 0, model->verts.size());
 	if (model->verts.empty())
 		return;
@@ -283,12 +311,28 @@ void GLWidget::drawMesh(){
 		glVertex3f(model->verts[i + 6], model->verts[i + 7], model->verts[i + 8]);
 	}
 	glEnd();
+
+
+
+	//Representation with normal for each vertice
+	/*glBegin(GL_TRIANGLES);
+	for (int i = 0; i < model->verts.size() - 9; i = i + 9){
+		glNormal3f(model->normals[i], model->normals[i + 1], model->normals[i + 2]);
+		glVertex3f(model->verts[i], model->verts[i + 1], model->verts[i + 2]);
+
+		glNormal3f(model->normals[i+3], model->normals[i + 4], model->normals[i + 5]);
+		glVertex3f(model->verts[i + 3], model->verts[i + 4], model->verts[i + 5]);
+
+		glNormal3f(model->normals[i+6], model->normals[i + 7], model->normals[i + 8]);
+		glVertex3f(model->verts[i + 6], model->verts[i + 7], model->verts[i + 8]);
+	}
+	glEnd();*/
 	
 
 }
 void GLWidget::drawCubes(){
 	//Draw the cubes now The cube configuracion can be found as a comment in the adaptiveMarchingCubes function
-	glColor3f(1.f, 0.f, 0.f);
+	
 	glBegin(GL_LINES);
 	for (int i = 0; i < model->cubes.size(); i = i + 1){
 

@@ -12,6 +12,7 @@ public:
 	int sizeX, sizeY, sizeZ;
 
 	bool isLeaf;
+	bool needsChecking;
 
 	int needsSubdivision();
 	int subdivide(std::vector <OctreeCube> &);
