@@ -2132,7 +2132,7 @@ void VolumeRenderer::on_loadDICOMFromFile_clicked(){
 	QStringList fileNames;
 	if (dialog.exec())
 		fileNames = dialog.selectedFiles();
-
+	
 
 	loadDICOMPixelData(fileNames);
 	marchingSquares();

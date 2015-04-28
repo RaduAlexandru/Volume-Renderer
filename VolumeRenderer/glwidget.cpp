@@ -138,6 +138,7 @@ void GLWidget::initializeGL()
 	
 
 	readBackgroundImage();
+	glShadeModel(GL_SMOOTH);
 	
 }
 
@@ -225,12 +226,12 @@ void GLWidget::paintGL()
 	glTranslatef(-(model->pixelDataWidth / 2 + xMove), -(model->pixelDataHeight / 2 + yMove), 0.0f - (model->frames/2 + zMove));*/
 
 	
-	glTranslatef((model->pixelDataWidth / 2  ), (model->pixelDataHeight / 2 -yMove), -(510.0f ));
+	glTranslatef((model->pixelDataWidth / 2), (model->pixelDataHeight / 2 - yMove), -(510.0f) - zMove);
 	//glScalef(scale, scale, scale);
 	glRotatef(-xRot, 1, 0, 0);
 	glTranslatef(-(model->pixelDataWidth / 2  +xMove), -(model->pixelDataHeight / 2  ), 0.0f );
 
-	glTranslatef((model->pixelDataWidth / 2 ), (model->pixelDataHeight / 2 ), 0.0f  -zMove);
+	glTranslatef((model->pixelDataWidth / 2 ), (model->pixelDataHeight / 2 ), 0.0f  );
 	glRotatef(yRot, 0, 0, 1);	//We put it to minus so that the rotation is reversed
 	glTranslatef(-(model->pixelDataWidth / 2 ), -(model->pixelDataHeight / 2 ), 0.0f - (model->frames / 2 ));
 
@@ -338,7 +339,7 @@ void GLWidget::drawMesh(){
 
 	int normalIndex = 0;
 
-	glBegin(GL_TRIANGLES);
+	/*glBegin(GL_TRIANGLES);
 	for (int i = 0; i < model->verts.size()-9; i=i+9){
 		glNormal3f(model->normals[normalIndex], model->normals[normalIndex + 1], model->normals[normalIndex + 2]);
 		normalIndex = normalIndex + 3;
@@ -347,12 +348,12 @@ void GLWidget::drawMesh(){
 		glVertex3f(model->verts[i + 3], model->verts[i + 4 ], model->verts[i + 5]);
 		glVertex3f(model->verts[i + 6], model->verts[i + 7], model->verts[i + 8]);
 	}
-	glEnd();
+	glEnd();*/
 
 
 
 	//Representation with normal for each vertice
-	/*glBegin(GL_TRIANGLES);
+	glBegin(GL_TRIANGLES);
 	for (int i = 0; i < model->verts.size() - 9; i = i + 9){
 		glNormal3f(model->normals[i], model->normals[i + 1], model->normals[i + 2]);
 		glVertex3f(model->verts[i], model->verts[i + 1], model->verts[i + 2]);
@@ -363,7 +364,7 @@ void GLWidget::drawMesh(){
 		glNormal3f(model->normals[i+6], model->normals[i + 7], model->normals[i + 8]);
 		glVertex3f(model->verts[i + 6], model->verts[i + 7], model->verts[i + 8]);
 	}
-	glEnd();*/
+	glEnd();
 	
 
 }
@@ -514,11 +515,13 @@ void GLWidget::mouseMoveEvent(QMouseEvent * event){
 
 	if (ctrlPressed){
 		std::cout << "Moving mouse while ctrl is pressed" << std::endl;
-		incX += (xpos - mouseXPosEntered);
-		incY += (ypos - mouseYPosEntered);
-		scale = sqrt(incX*incX + incY*incY)*0.1;
-		scale = incX*0.1;
-		//zMove = (xpos - mouseXPosEntered);
+		//incX += (xpos - mouseXPosEntered);
+		//incY += (ypos - mouseYPosEntered);
+		//scale = sqrt(incX*incX + incY*incY)*0.1;
+		//scale = incX*0.1;
+		zMove += (xpos - mouseXPosEntered);
+		mouseXPosEntered = xpos;
+		mouseYPosEntered = ypos;
 		update();
 		return;
 	}
