@@ -2135,9 +2135,9 @@ void VolumeRenderer::on_loadDICOMFromFile_clicked(){
 
 
 	loadDICOMPixelData(fileNames);
-	//marchingSquares();
+	marchingSquares();
 	//adaptiveMarchingCubes();
-	adaptiveMarchingCubes2();
+	//adaptiveMarchingCubes2();
 	ui.glwidget->sendDataToGL();
 	//ui.glwidget->dataSended = 0;
 	ui.glwidget->update();

@@ -23,6 +23,8 @@ public:
 	void resizeGL(int w, int h);
 	void mouseMoveEvent(QMouseEvent * event);
 	void mousePressEvent(QMouseEvent *event);
+	void keyPressEvent(QKeyEvent *keyEvent);
+	void keyReleaseEvent(QKeyEvent *keyEvent);
 	void sendDataToGL();
 	void drawMesh();
 	void drawCubes();
@@ -50,6 +52,11 @@ private:
 	double xRot;
 	double yRot;
 	double mouseSpeed = 0.5;
+	double xMove,yMove,zMove , xMoveOld,yMoveOld, zMoveOld,scale;
+	double translationSpeed;
+
+	bool shiftPressed;
+	bool ctrlPressed;
 	
 /*private slots:
 	void rotate();*/

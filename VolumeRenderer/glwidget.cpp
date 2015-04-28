@@ -2,6 +2,8 @@
 #include <iostream>
 #include <QMouseEvent>
 #include <gl/GLU.h>
+#define SHIFT 16777248
+#define CTRL 16777249
 /*#define GL_GLEXT_PROTOTYPES
 #include <GL/GL.h>
 #include <GL/glew.h>*/
@@ -11,6 +13,7 @@
 GLWidget::GLWidget(QWidget *parent)
 	: QOpenGLWidget(parent)
 {
+	this->setFocusPolicy(Qt::StrongFocus);
 	frame_to_display = 0;
 	/*angle = 0.0f;
 	connect(&timer, SIGNAL(timeout()), this, SLOT(rotate()));
@@ -18,6 +21,16 @@ GLWidget::GLWidget(QWidget *parent)
 	xRot = 0;
 	yRot = 0;
 	mouseSpeed = 0.5;
+	translationSpeed = 4;
+	xMove = 0;
+	yMove = 0;
+	zMove = 0;
+	xMoveOld = 0;
+	yMoveOld = 0;
+	zMoveOld = 0;
+	scale = 1;
+	shiftPressed = false;
+	ctrlPressed = false;
 	
 }
 
@@ -125,6 +138,7 @@ void GLWidget::initializeGL()
 	
 
 	readBackgroundImage();
+	
 }
 
 void GLWidget::paintGL()
@@ -193,13 +207,36 @@ void GLWidget::paintGL()
 	
 	drawBackground();
 
-	glTranslatef((model->pixelDataWidth / 2), (model->pixelDataHeight / 2), -510.0f);
+	/*glTranslatef((model->pixelDataWidth / 2), (model->pixelDataHeight / 2), -(510.0f));
 	glRotatef(-xRot, 1, 0, 0);
 	glTranslatef(-(model->pixelDataWidth / 2), -(model->pixelDataHeight / 2), 0.0f);
 
 	glTranslatef((model->pixelDataWidth / 2), (model->pixelDataHeight / 2), 0.0f);
 	glRotatef(yRot, 0, 0, 1);	//We put it to minus so that the rotation is reversed
-	glTranslatef(-(model->pixelDataWidth / 2), -(model->pixelDataHeight / 2), 0.0f - model->frames/2);
+	glTranslatef(-(model->pixelDataWidth / 2), -(model->pixelDataHeight / 2), 0.0f - (model->frames / 2));*/
+	
+	//THe above one is the one that works for rotation, the below one sorta works but only in some directions, I don't know it'w weird
+	/*glTranslatef((model->pixelDataWidth / 2 +  xMoveOld), (model->pixelDataHeight / 2 + yMoveOld), -(510.0f+ zMoveOld));
+	glRotatef(-xRot, 1, 0, 0);
+	glTranslatef(-(model->pixelDataWidth / 2 + xMove + xMoveOld ), -(model->pixelDataHeight / 2 + yMove + yMoveOld), 0.0f +zMove);
+
+	glTranslatef((model->pixelDataWidth / 2 + xMove), (model->pixelDataHeight / 2 + yMove), 0.0f + zMove);
+	glRotatef(yRot, 0, 0, 1);	//We put it to minus so that the rotation is reversed
+	glTranslatef(-(model->pixelDataWidth / 2 + xMove), -(model->pixelDataHeight / 2 + yMove), 0.0f - (model->frames/2 + zMove));*/
+
+	
+	glTranslatef((model->pixelDataWidth / 2  ), (model->pixelDataHeight / 2 -yMove), -(510.0f ));
+	//glScalef(scale, scale, scale);
+	glRotatef(-xRot, 1, 0, 0);
+	glTranslatef(-(model->pixelDataWidth / 2  +xMove), -(model->pixelDataHeight / 2  ), 0.0f );
+
+	glTranslatef((model->pixelDataWidth / 2 ), (model->pixelDataHeight / 2 ), 0.0f  -zMove);
+	glRotatef(yRot, 0, 0, 1);	//We put it to minus so that the rotation is reversed
+	glTranslatef(-(model->pixelDataWidth / 2 ), -(model->pixelDataHeight / 2 ), 0.0f - (model->frames / 2 ));
+
+	xMoveOld = xMove;
+	yMoveOld = yMove;
+	zMoveOld = zMove;
 	
 	//glPointSize(1.5f);
 
@@ -462,7 +499,31 @@ void GLWidget::mouseMoveEvent(QMouseEvent * event){
 	
 	xpos = event->x();
 	ypos = event->y();
+	int incX=1, incY=1;
 	
+	std::cout << "Moving mouse and value of CTRL is "  << ctrlPressed << std::endl;
+	if (shiftPressed){
+		std::cout << "Moving mouse while shift is pressed" << std::endl;
+		xMove += (xpos - mouseXPosEntered);
+		yMove += (ypos - mouseYPosEntered);
+		mouseXPosEntered = xpos;
+		mouseYPosEntered = ypos;
+		update();
+		return;
+	}
+
+	if (ctrlPressed){
+		std::cout << "Moving mouse while ctrl is pressed" << std::endl;
+		incX += (xpos - mouseXPosEntered);
+		incY += (ypos - mouseYPosEntered);
+		scale = sqrt(incX*incX + incY*incY)*0.1;
+		scale = incX*0.1;
+		//zMove = (xpos - mouseXPosEntered);
+		update();
+		return;
+	}
+
+
 	yRot += (xpos - mouseXPosEntered)*mouseSpeed;
 	xRot += (ypos - mouseYPosEntered)*mouseSpeed;
 
@@ -481,4 +542,26 @@ void GLWidget::mouseMoveEvent(QMouseEvent * event){
 void GLWidget::mousePressEvent(QMouseEvent *event){
 	mouseXPosEntered = event->x();
 	mouseYPosEntered = event->y();
+}
+
+
+
+void GLWidget::keyPressEvent(QKeyEvent *keyEvent)
+{
+	std::cout << "Pressed key: " << keyEvent->key() << std::endl;
+	//keyEvent->ignore();
+	if (keyEvent->key() == SHIFT)
+		shiftPressed = true;
+	if (keyEvent->key() == CTRL)
+		ctrlPressed = true;
+		
+}
+
+void GLWidget::keyReleaseEvent(QKeyEvent *keyEvent)
+{
+	std::cout << "Released key: " << keyEvent->key() << std::endl;
+	if (keyEvent->key() == SHIFT)
+		shiftPressed = false;
+	if (keyEvent->key() == CTRL)
+		ctrlPressed = false;
 }
