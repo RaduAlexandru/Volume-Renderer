@@ -53,11 +53,13 @@ private:
 	inline bool cubeNeedsSubdivision(OctreeCube&);
 	int generateOctree(OctreeCube,int);
 	int adaptiveMarchingCubes2();
-
+	void generateMesh();
+	void generateNormals();
 	
 	void marchingSquares();
 	void wipeBitmap();
 	void wipePoints();
+	void wipePixelData();
 
 private slots:
 	void on_test_clicked();
@@ -75,6 +77,14 @@ private slots:
 	void on_frameSlider_valueChanged();
 	void on_showWireframeButton_clicked();
 	void on_toleranceSlider_valueChanged();
+	void on_marchingCubesButton_clicked();
+	void on_adaptiveMarchingCubesButton_clicked();
+	void on_adaptiveMarchingCubes2Button_clicked();
+	void on_perspectiveButton_clicked();
+	void on_normalsPerTriangleButton_clicked();
+	void on_normalsPerVerticeButton_clicked();
+	void on_interpolateDepthText_editingFinished();
+
 	
 };
 

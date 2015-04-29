@@ -830,7 +830,7 @@ void VolumeRenderer::polygonise(CELL & cell, std::vector<double>& verts){
 
 			End Function*/
 
-		glm::vec3 u,v,n;
+		/*glm::vec3 u,v,n;
 		u.x = (vertlist[model->triTable[cubeIndex][i + 1]]).x - (vertlist[model->triTable[cubeIndex][i]]).x;
 		u.y = (vertlist[model->triTable[cubeIndex][i + 1]]).y - (vertlist[model->triTable[cubeIndex][i]]).y;
 		u.z = (vertlist[model->triTable[cubeIndex][i + 1]]).z - (vertlist[model->triTable[cubeIndex][i]]).z;
@@ -856,7 +856,7 @@ void VolumeRenderer::polygonise(CELL & cell, std::vector<double>& verts){
 		//WE push it once. Because we have 1 normal per triangle
 		model->normals.push_back(n.x);
 		model->normals.push_back(n.y);
-		model->normals.push_back(n.z);
+		model->normals.push_back(n.z);*/
 
 		//I will now try to do the same normal but with the sobel operator///
 		///////////////////////////////////////////////////////////////////
@@ -1198,7 +1198,7 @@ void VolumeRenderer::polygonise(CELL & cell, std::vector<double>& verts){
 inline void VolumeRenderer::interpolate(int isoLevel, glm::vec3 point1, glm::vec3 point2, float val1, float val2, glm::vec3& resultPoint, int depth){
 	
 
-	if (depth == 10){
+	if (depth == model->interpolateDepth){
 		return;
 	}
 
@@ -2069,7 +2069,7 @@ void VolumeRenderer::on_isoLevelSlider_valueChanged(){
 	model->isoLevel=ui.isoLevelSlider->value();
 	//Now we should march all the cubes again, and refresh the openglwidget
 	wipePoints();
-	marchingSquares();
+	generateMesh();
 	ui.glwidget->dataSended = 0;
 	ui.glwidget->update();
 	//on_marchingSquares_clicked();
@@ -2113,7 +2113,7 @@ void VolumeRenderer::on_loadMFDICOMButton_clicked(){
 	wipeBitmap();
 	wipePoints();
 	loadDICOMPixelData("E:\\Universidad\\Hecho por mi\\Volume Renderer\\Examples\\MR-MONO2-8-16x-heart\\MR-MONO2-8-16x-heart");
-	marchingSquares();
+	generateMesh();
 	ui.glwidget->sendDataToGL();
 	ui.glwidget->update();
 }
@@ -2121,8 +2121,7 @@ void VolumeRenderer::on_loadMFDICOMButton_clicked(){
 
 
 void VolumeRenderer::on_loadDICOMFromFile_clicked(){
-	wipeBitmap();
-	wipePoints();
+	
 	QFileDialog dialog(this);
 	//dialog.setOption(QFileDialog::DontUseNativeDialog, true);
 	//dialog.setDirectory(QDir::currentPath());
@@ -2133,11 +2132,16 @@ void VolumeRenderer::on_loadDICOMFromFile_clicked(){
 	if (dialog.exec())
 		fileNames = dialog.selectedFiles();
 	
+	if (fileNames.empty())
+		return;
+	wipeBitmap();
+	wipePoints();
+	wipePixelData();
+
 
 	loadDICOMPixelData(fileNames);
-	marchingSquares();
-	//adaptiveMarchingCubes();
-	//adaptiveMarchingCubes2();
+
+	generateMesh();
 	ui.glwidget->sendDataToGL();
 	//ui.glwidget->dataSended = 0;
 	ui.glwidget->update();
@@ -2151,7 +2155,7 @@ void VolumeRenderer::on_resolutionSlider_valueChanged(){
 	model->cellSizeZ = ui.resolutionSlider->value();
 
 	wipePoints();
-	marchingSquares();
+	generateMesh();
 	ui.glwidget->dataSended = 0;
 	ui.glwidget->update();
 }
@@ -2165,7 +2169,7 @@ void VolumeRenderer::on_linearInterpolationButton_clicked(){
 		model->linearInterpolation = false;
 	}
 	wipePoints();
-	marchingSquares();
+	generateMesh();
 	ui.glwidget->update();
 }
 
@@ -2179,7 +2183,7 @@ void VolumeRenderer::on_pointFlagButton_clicked(){
 		ui.borderFlagButton->setEnabled(true);
 	}
 	wipePoints();
-	marchingSquares();
+	generateMesh();
 }
 void VolumeRenderer::on_borderFlagButton_clicked(){
 	if (ui.borderFlagButton->isChecked()){
@@ -2191,7 +2195,7 @@ void VolumeRenderer::on_borderFlagButton_clicked(){
 		ui.pointFlagButton->setEnabled(true);
 	}
 	wipePoints();
-	marchingSquares();
+	generateMesh();
 }
 
 void VolumeRenderer::on_frameSlider_valueChanged(){
@@ -2220,6 +2224,175 @@ void VolumeRenderer::on_toleranceSlider_valueChanged(){
 	//adaptiveMarchingCubes();
 }
 
+void VolumeRenderer::on_marchingCubesButton_clicked(){
+	if (ui.marchingCubesButton->isChecked()){
+		model->algorithmChosen = 1;
+		wipePoints();
+		generateMesh();
+	}
+}
+
+void VolumeRenderer::on_adaptiveMarchingCubesButton_clicked(){
+	if (ui.adaptiveMarchingCubesButton->isChecked()){
+		model->algorithmChosen = 2;
+		wipePoints();
+		generateMesh();
+	}
+}
+void VolumeRenderer::on_adaptiveMarchingCubes2Button_clicked(){
+	if (ui.adaptiveMarchingCubes2Button->isChecked()){
+		model->algorithmChosen = 3;
+		wipePoints();
+		generateMesh();
+	}
+}
+void VolumeRenderer::on_perspectiveButton_clicked(){
+	if (ui.perspectiveButton->isChecked()){
+		model->perspectiveActivated = true;
+	}
+	else{
+		model->perspectiveActivated = false;
+	}
+}
+
+void VolumeRenderer::on_normalsPerTriangleButton_clicked(){
+	if (ui.normalsPerTriangleButton->isChecked()){
+		model->normalsAlgChosen = 1;
+	}
+	model->normals.clear();
+	generateNormals();
+	
+}
+void VolumeRenderer::on_normalsPerVerticeButton_clicked(){
+	if (ui.normalsPerVerticeButton->isChecked()){
+		model->normalsAlgChosen = 2;
+	}
+	model->normals.clear();
+	generateNormals();
+	
+}
+
+void VolumeRenderer::on_interpolateDepthText_editingFinished(){
+	//std::cout << "the text is" << ui.interpolateDepthText->text().toUtf8().constData() << std::endl;
+	if (ui.interpolateDepthText->text().toInt() < 1 || model->interpolateDepth == ui.interpolateDepthText->text().toInt())
+		return;
+	model->interpolateDepth=ui.interpolateDepthText->text().toInt();
+	wipePoints();
+	generateMesh();
+}
+
+
+void VolumeRenderer::generateMesh(){
+	if (model->algorithmChosen == 1)
+		marchingSquares();
+	if (model->algorithmChosen == 2)
+		adaptiveMarchingCubes();
+	if (model->algorithmChosen == 3)
+		adaptiveMarchingCubes2();
+	generateNormals();
+}
+
+//************************************
+//After the triangles are created we generate the normals for them, either one per triangle or one per vertice
+//************************************
+void VolumeRenderer::generateNormals(){
+	model->normals.clear();
+	glm::vec3 u, v, n;
+
+	if (model->normalsAlgChosen == 1){
+
+		for (int i = 0; i < model->verts.size() - 9; i = i + 9){
+
+
+
+			u.x = model->verts[i + 3] - model->verts[i];
+			u.y = model->verts[i + 4] - model->verts[i + 1];
+			u.z = model->verts[i + 5] - model->verts[i + 2];
+
+			v.x = model->verts[i + 6] - model->verts[i];
+			v.y = model->verts[i + 7] - model->verts[i + 1];
+			v.z = model->verts[i + 8] - model->verts[i + 2];
+
+			n.x = u.y*v.z - u.z*v.y;
+			n.y = u.z*v.x - u.x*v.z;
+			n.z = u.x*v.y - u.y*v.x;
+
+			//we now normalize it
+			double length = sqrt(n.x*n.x + n.y*n.y + n.z*n.z);
+
+			n.x = n.x / length;
+			n.y = n.y / length;
+			n.z = n.z / length;
+
+			//WE push it once. Because we have 1 normal per triangle
+			model->normals.push_back(n.x);
+			model->normals.push_back(n.y);
+			model->normals.push_back(n.z);
+		}
+	}
+
+	if (model->normalsAlgChosen == 2){
+
+		//I will now try to do the same normal but with the sobel operator///
+		///////////////////////////////////////////////////////////////////
+
+		double dx = 0.0, dy = 0.0, dz = 0.0;
+		int j, y, k;
+		double length;
+
+		for (int i = 0; i < model->verts.size() - 3; i = i + 3){
+
+			j = boost::math::iround(model->verts[i]);
+			y = boost::math::iround(model->verts[i+1]);
+			k = boost::math::iround(model->verts[i+2]);
+
+			dx = -1 * (model->getPixelValue(j - 1, y + 1, k - 1)) + 1 * (model->getPixelValue(j + 1, y + 1, k - 1)) -
+				2 * (model->getPixelValue(j - 1, y, k - 1)) + 2 * (model->getPixelValue(j + 1, y, k - 1)) -
+				1 * (model->getPixelValue(j - 1, y - 1, k - 1)) + 1 * (model->getPixelValue(j + 1, y - 1, k - 1)) -
+
+				2 * (model->getPixelValue(j - 1, y + 1, k)) + 2 * (model->getPixelValue(j + 1, y + 1, k)) -
+				4 * (model->getPixelValue(j - 1, y, k)) + 2 * (model->getPixelValue(j + 1, y, k)) -
+				2 * (model->getPixelValue(j - 1, y - 1, k)) + 2 * (model->getPixelValue(j + 1, y - 1, k)) -
+
+				1 * (model->getPixelValue(j - 1, y + 1, k + 1)) + 1 * (model->getPixelValue(j + 1, y + 1, k + 1)) -
+				2 * (model->getPixelValue(j - 1, y, k + 1)) + 2 * (model->getPixelValue(j + 1, y, k + 1)) -
+				1 * (model->getPixelValue(j - 1, y - 1, k + 1)) + 1 * (model->getPixelValue(j + 1, y - 1, k + 1));
+
+			dy = 1 * (model->getPixelValue(j - 1, y + 1, k - 1)) + 2 * (model->getPixelValue(j, y + 1, k - 1)) + 1 * (model->getPixelValue(j + 1, y + 1, k - 1)) -
+				1 * (model->getPixelValue(j - 1, y - 1, k - 1)) - 2 * (model->getPixelValue(j, y - 1, k - 1)) - 1 * (model->getPixelValue(j + 1, y - 1, k - 1)) +
+
+				2 * (model->getPixelValue(j - 1, y + 1, k)) + 4 * (model->getPixelValue(j, y + 1, k)) + 2 * (model->getPixelValue(j + 1, y + 1, k)) -
+				2 * (model->getPixelValue(j - 1, y - 1, k)) - 4 * (model->getPixelValue(j, y - 1, k)) - 2 * (model->getPixelValue(j + 1, y - 1, k)) +
+
+				1 * (model->getPixelValue(j - 1, y + 1, k + 1)) + 2 * (model->getPixelValue(j, y + 1, k + 1)) + 1 * (model->getPixelValue(j + 1, y + 1, k + 1)) -
+				1 * (model->getPixelValue(j - 1, y - 1, k + 1)) - 2 * (model->getPixelValue(j, y - 1, k + 1)) - 1 * (model->getPixelValue(j + 1, y - 1, k + 1));
+
+			dz = -1 * (model->getPixelValue(j - 1, y + 1, k - 1)) - 2 * (model->getPixelValue(j, y + 1, k - 1)) - 1 * (model->getPixelValue(j + 1, y + 1, k - 1)) -
+				2 * (model->getPixelValue(j - 1, y, k - 1)) - 4 * (model->getPixelValue(j, y, k - 1)) - 2 * (model->getPixelValue(j + 1, y, k - 1)) -
+				1 * (model->getPixelValue(j - 1, y - 1, k - 1)) - 2 * (model->getPixelValue(j, y - 1, k - 1)) - 1 * (model->getPixelValue(j + 1, y - 1, k - 1)) +
+
+				1 * (model->getPixelValue(j - 1, y + 1, k + 1)) + 2 * (model->getPixelValue(j, y + 1, k + 1)) + 1 * (model->getPixelValue(j + 1, y + 1, k + 1)) -
+				2 * (model->getPixelValue(j - 1, y, k + 1)) + 4 * (model->getPixelValue(j, y, k + 1)) + 2 * (model->getPixelValue(j + 1, y, k + 1)) -
+				1 * (model->getPixelValue(j - 1, y - 1, k + 1)) + 2 * (model->getPixelValue(j, y - 1, k + 1)) + 1 * (model->getPixelValue(j + 1, y - 1, k + 1));
+
+
+
+			//we now normalize it
+
+
+			length = sqrt(dx*dx + dy*dy + dz*dz);
+
+			dx = dx / length;
+			dy = dy / length;
+			dz = dz / length;
+
+			model->normals.push_back(dx);
+			model->normals.push_back(dy);
+			model->normals.push_back(dz);
+		}
+	}
+
+}
 
 void VolumeRenderer::wipeBitmap(){
 	//WE first wipe the data that migth already be in the model.
@@ -2230,9 +2403,30 @@ void VolumeRenderer::wipeBitmap(){
 	
 }
 
+
+//************************************
+//Wipes all the verts and normals. It is used before calculating a new mesh
+//************************************
 void VolumeRenderer::wipePoints(){
-	if (!model->totalPoints.empty())
-		model->totalPoints.clear();
+	
 	model->verts.clear();
 	model->normals.clear();
+}
+//************************************
+// Wipes and frees all the PixelData. It is used before loading a new Dicom file
+//************************************
+void VolumeRenderer::wipePixelData(){
+	int numberOfFrees=0;
+	for (int i = 0; i < model->frames; i++){
+		free(model->pixelData[i]);
+		numberOfFrees++;
+	}
+	free(model->pixelData);
+	
+	ui.glwidget->xMove = 0; //Now we reset the position so that the new model will be centered
+	ui.glwidget->yMove = 0;
+	ui.glwidget->zMove = 0;
+	ui.glwidget->xRot = 0;
+	ui.glwidget->yRot = 0;
+
 }

@@ -21,14 +21,9 @@ GLWidget::GLWidget(QWidget *parent)
 	xRot = 0;
 	yRot = 0;
 	mouseSpeed = 0.5;
-	translationSpeed = 4;
 	xMove = 0;
 	yMove = 0;
 	zMove = 0;
-	xMoveOld = 0;
-	yMoveOld = 0;
-	zMoveOld = 0;
-	scale = 1;
 	shiftPressed = false;
 	ctrlPressed = false;
 	
@@ -154,44 +149,13 @@ void GLWidget::paintGL()
 		dataSended = 1;
 	}
 
-	/*if (model->showWireframe){
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	}
-	else{
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	}*/
-
-
-	/*if (model->verts.empty()){
-		std::cout << "no verts" << std::endl;
-		return;
-	}
-	std::cout << "PaintGL" << frame_to_display << std::endl;*/
-	//std::cout << "dysplaying frame number" << frame_to_display;
-	//glClear(GL_COLOR_BUFFER_BIT);
-
-	//std::cout << "the size of the vector is" << model->verts.size() << std::endl;
-	/*for (int i = 0; i < model->verts.size(); i++){
-		std::cout << "value is" << model->verts[i] << std::endl;
-	}*/
-
-
+	
 	glViewport(0.0, 0.0, width(), height());
 	glClear(GL_COLOR_BUFFER_BIT);
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	//glOrtho(0.0f, model->pixelDataWidth, 0.0f,  model->pixelDataHeight, 0.0f, 1024.0f);	//When you do the 3d one you will need to change the last parameter to be the depth of the image (number of frames)
-	//glFrustum(0.0f, 1, 0.0f,1, 1.0f, 1024.0f);	//Also works but it would need some tweaking and also probably commenting the GlulookAt
-	gluPerspective(60.0, width() / height(), 1.0, -1024.0); // Set perspective
-	
-	
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	//Now we position the camera in the middle of the screen (width/2 and heidth /2 ) and looking at the negative z axis
-	gluLookAt(model->pixelDataWidth/2, model->pixelDataHeight/2, -1000.0,	
-		model->pixelDataWidth / 2, model->pixelDataHeight / 2, 1000.0,
-		0.0, 1.0, 0.0);
+	setMatrices();
 
 
 
@@ -226,18 +190,16 @@ void GLWidget::paintGL()
 	glTranslatef(-(model->pixelDataWidth / 2 + xMove), -(model->pixelDataHeight / 2 + yMove), 0.0f - (model->frames/2 + zMove));*/
 
 	
-	glTranslatef((model->pixelDataWidth / 2), (model->pixelDataHeight / 2 - yMove), -(510.0f) - zMove);
+	glTranslatef((model->pixelDataWidth / 2), (model->pixelDataHeight / 2 - yMove), -(510.0f) + zMove);
 	//glScalef(scale, scale, scale);
-	glRotatef(-xRot, 1, 0, 0);
-	glTranslatef(-(model->pixelDataWidth / 2  +xMove), -(model->pixelDataHeight / 2  ), 0.0f );
+	glRotatef(xRot, 1, 0, 0);
+	glTranslatef(-(model->pixelDataWidth / 2  -xMove), -(model->pixelDataHeight / 2  ), 0.0f );
 
 	glTranslatef((model->pixelDataWidth / 2 ), (model->pixelDataHeight / 2 ), 0.0f  );
 	glRotatef(yRot, 0, 0, 1);	//We put it to minus so that the rotation is reversed
 	glTranslatef(-(model->pixelDataWidth / 2 ), -(model->pixelDataHeight / 2 ), 0.0f - (model->frames / 2 ));
 
-	xMoveOld = xMove;
-	yMoveOld = yMove;
-	zMoveOld = zMove;
+	
 	
 	//glPointSize(1.5f);
 
@@ -339,32 +301,35 @@ void GLWidget::drawMesh(){
 
 	int normalIndex = 0;
 
-	/*glBegin(GL_TRIANGLES);
-	for (int i = 0; i < model->verts.size()-9; i=i+9){
-		glNormal3f(model->normals[normalIndex], model->normals[normalIndex + 1], model->normals[normalIndex + 2]);
-		normalIndex = normalIndex + 3;
-		//glNormal3f(0, 0, 1);
-		glVertex3f(model->verts[i], model->verts[i +1], model->verts[i + 2]);
-		glVertex3f(model->verts[i + 3], model->verts[i + 4 ], model->verts[i + 5]);
-		glVertex3f(model->verts[i + 6], model->verts[i + 7], model->verts[i + 8]);
+	if (model->normalsAlgChosen == 1){
+		glBegin(GL_TRIANGLES);
+		for (int i = 0; i < model->verts.size() - 9; i = i + 9){
+			glNormal3f(model->normals[normalIndex], model->normals[normalIndex + 1], model->normals[normalIndex + 2]);
+			normalIndex = normalIndex + 3;
+			//glNormal3f(0, 0, 1);
+			glVertex3f(model->verts[i], model->verts[i + 1], model->verts[i + 2]);
+			glVertex3f(model->verts[i + 3], model->verts[i + 4], model->verts[i + 5]);
+			glVertex3f(model->verts[i + 6], model->verts[i + 7], model->verts[i + 8]);
+		}
+		glEnd();
 	}
-	glEnd();*/
-
-
 
 	//Representation with normal for each vertice
-	glBegin(GL_TRIANGLES);
-	for (int i = 0; i < model->verts.size() - 9; i = i + 9){
-		glNormal3f(model->normals[i], model->normals[i + 1], model->normals[i + 2]);
-		glVertex3f(model->verts[i], model->verts[i + 1], model->verts[i + 2]);
+	if (model->normalsAlgChosen == 2){
+		glBegin(GL_TRIANGLES);
+		for (int i = 0; i < model->verts.size() - 9; i = i + 9){
+			glNormal3f(model->normals[i], model->normals[i + 1], model->normals[i + 2]);
+			glVertex3f(model->verts[i], model->verts[i + 1], model->verts[i + 2]);
 
-		glNormal3f(model->normals[i+3], model->normals[i + 4], model->normals[i + 5]);
-		glVertex3f(model->verts[i + 3], model->verts[i + 4], model->verts[i + 5]);
+			glNormal3f(model->normals[i + 3], model->normals[i + 4], model->normals[i + 5]);
+			glVertex3f(model->verts[i + 3], model->verts[i + 4], model->verts[i + 5]);
 
-		glNormal3f(model->normals[i+6], model->normals[i + 7], model->normals[i + 8]);
-		glVertex3f(model->verts[i + 6], model->verts[i + 7], model->verts[i + 8]);
+			glNormal3f(model->normals[i + 6], model->normals[i + 7], model->normals[i + 8]);
+			glVertex3f(model->verts[i + 6], model->verts[i + 7], model->verts[i + 8]);
+		}
+		glEnd();
 	}
-	glEnd();
+
 	
 
 }
@@ -492,6 +457,25 @@ void GLWidget::setFrame(int frame)
 }*/
 
 
+void GLWidget::setMatrices(){
+
+	if (model->perspectiveActivated){
+		//glFrustum(0.0f, 1, 0.0f,1, 1.0f, 1024.0f);	//Also works but it would need some tweaking and also probably commenting the GlulookAt
+		gluPerspective(60.0, width() / height(), 1.0, -1024.0); // Set perspective
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+		//Now we position the camera in the middle of the screen (width/2 and heidth /2 ) and looking at the negative z axis
+		gluLookAt(model->pixelDataWidth / 2, model->pixelDataHeight / 2, model->frames,
+			model->pixelDataWidth / 2, model->pixelDataHeight / 2, -model->frames,
+			0.0, 1.0, 0.0);
+	}
+	else{
+		glOrtho(0.0f, model->pixelDataWidth, 0.0f,  model->pixelDataHeight, -1024.0f, 1024.0f);	//When you do the 3d one you will need to change the last parameter to be the depth of the image (number of frames)
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+	}
+}
+
 //Whenever the mouse is dragged over the glwidget, we calculate the position in that widget and we 
 //make the difference between where you dragged to and where originally clicked. Multiply it by the 
 //mouseSpeed that controls the speed of rotations and then we update the point where we originally clicked (mouseEntered)
@@ -502,9 +486,9 @@ void GLWidget::mouseMoveEvent(QMouseEvent * event){
 	ypos = event->y();
 	int incX=1, incY=1;
 	
-	std::cout << "Moving mouse and value of CTRL is "  << ctrlPressed << std::endl;
+	//std::cout << "Moving mouse and value of CTRL is "  << ctrlPressed << std::endl;
 	if (shiftPressed){
-		std::cout << "Moving mouse while shift is pressed" << std::endl;
+		//std::cout << "Moving mouse while shift is pressed" << std::endl;
 		xMove += (xpos - mouseXPosEntered);
 		yMove += (ypos - mouseYPosEntered);
 		mouseXPosEntered = xpos;
@@ -514,7 +498,7 @@ void GLWidget::mouseMoveEvent(QMouseEvent * event){
 	}
 
 	if (ctrlPressed){
-		std::cout << "Moving mouse while ctrl is pressed" << std::endl;
+		//std::cout << "Moving mouse while ctrl is pressed" << std::endl;
 		//incX += (xpos - mouseXPosEntered);
 		//incY += (ypos - mouseYPosEntered);
 		//scale = sqrt(incX*incX + incY*incY)*0.1;

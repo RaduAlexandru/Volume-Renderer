@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>890</width>
+    <width>1211</width>
     <height>713</height>
    </rect>
   </property>
@@ -17,8 +17,8 @@
    <widget class="QPushButton" name="test">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>50</y>
+      <x>1070</x>
+      <y>40</y>
       <width>75</width>
       <height>23</height>
      </rect>
@@ -33,19 +33,19 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>170</x>
+      <x>250</x>
       <y>10</y>
-      <width>601</width>
-      <height>491</height>
+      <width>701</width>
+      <height>591</height>
      </rect>
     </property>
    </widget>
    <widget class="QSlider" name="frameSlider">
     <property name="geometry">
      <rect>
-      <x>140</x>
-      <y>610</y>
-      <width>160</width>
+      <x>1030</x>
+      <y>540</y>
+      <width>121</width>
       <height>22</height>
      </rect>
     </property>
@@ -56,8 +56,8 @@
    <widget class="QPushButton" name="addDICOMFiles">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>100</y>
+      <x>1070</x>
+      <y>90</y>
       <width>91</width>
       <height>23</height>
      </rect>
@@ -69,9 +69,9 @@
    <widget class="QSlider" name="isoLevelSlider">
     <property name="geometry">
      <rect>
-      <x>140</x>
-      <y>520</y>
-      <width>160</width>
+      <x>70</x>
+      <y>330</y>
+      <width>121</width>
       <height>22</height>
      </rect>
     </property>
@@ -88,7 +88,7 @@
    <widget class="QPushButton" name="loadTestImageButton">
     <property name="geometry">
      <rect>
-      <x>180</x>
+      <x>260</x>
       <y>20</y>
       <width>81</width>
       <height>23</height>
@@ -101,7 +101,7 @@
    <widget class="QPushButton" name="loadDICOMButton">
     <property name="geometry">
      <rect>
-      <x>410</x>
+      <x>490</x>
       <y>20</y>
       <width>75</width>
       <height>23</height>
@@ -114,7 +114,7 @@
    <widget class="QPushButton" name="loadTestImage2Button">
     <property name="geometry">
      <rect>
-      <x>290</x>
+      <x>370</x>
       <y>20</y>
       <width>91</width>
       <height>23</height>
@@ -127,8 +127,8 @@
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>70</x>
-      <y>520</y>
+      <x>20</x>
+      <y>330</y>
       <width>47</width>
       <height>13</height>
      </rect>
@@ -140,8 +140,8 @@
    <widget class="QLabel" name="label_2">
     <property name="geometry">
      <rect>
-      <x>70</x>
-      <y>620</y>
+      <x>980</x>
+      <y>540</y>
       <width>47</width>
       <height>13</height>
      </rect>
@@ -153,9 +153,9 @@
    <widget class="QSlider" name="resolutionSlider">
     <property name="geometry">
      <rect>
-      <x>140</x>
-      <y>570</y>
-      <width>160</width>
+      <x>70</x>
+      <y>360</y>
+      <width>121</width>
       <height>22</height>
      </rect>
     </property>
@@ -166,7 +166,7 @@
      <number>20</number>
     </property>
     <property name="value">
-     <number>4</number>
+     <number>6</number>
     </property>
     <property name="orientation">
      <enum>Qt::Horizontal</enum>
@@ -181,8 +181,8 @@
    <widget class="QLabel" name="label_3">
     <property name="geometry">
      <rect>
-      <x>60</x>
-      <y>570</y>
+      <x>10</x>
+      <y>360</y>
       <width>51</width>
       <height>16</height>
      </rect>
@@ -194,21 +194,21 @@
    <widget class="QLabel" name="label_4">
     <property name="geometry">
      <rect>
-      <x>330</x>
-      <y>570</y>
+      <x>210</x>
+      <y>360</y>
       <width>47</width>
       <height>13</height>
      </rect>
     </property>
     <property name="text">
-     <string>4</string>
+     <string>6</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_5">
     <property name="geometry">
      <rect>
-      <x>330</x>
-      <y>520</y>
+      <x>210</x>
+      <y>330</y>
       <width>47</width>
       <height>13</height>
      </rect>
@@ -220,8 +220,8 @@
    <widget class="QLabel" name="label_6">
     <property name="geometry">
      <rect>
-      <x>330</x>
-      <y>610</y>
+      <x>1160</x>
+      <y>550</y>
       <width>47</width>
       <height>13</height>
      </rect>
@@ -233,8 +233,8 @@
    <widget class="QRadioButton" name="linearInterpolationButton">
     <property name="geometry">
      <rect>
-      <x>410</x>
-      <y>550</y>
+      <x>10</x>
+      <y>420</y>
       <width>111</width>
       <height>17</height>
      </rect>
@@ -249,8 +249,8 @@
    <widget class="QGroupBox" name="groupBox">
     <property name="geometry">
      <rect>
-      <x>400</x>
-      <y>570</y>
+      <x>1060</x>
+      <y>130</y>
       <width>141</width>
       <height>80</height>
      </rect>
@@ -288,7 +288,7 @@
    <widget class="QPushButton" name="loadMFDICOMButton">
     <property name="geometry">
      <rect>
-      <x>510</x>
+      <x>590</x>
       <y>20</y>
       <width>121</width>
       <height>23</height>
@@ -301,8 +301,8 @@
    <widget class="DicomViewer2DGL" name="dicomviewer2dgl" native="true">
     <property name="geometry">
      <rect>
-      <x>650</x>
-      <y>510</y>
+      <x>1020</x>
+      <y>400</y>
       <width>151</width>
       <height>131</height>
      </rect>
@@ -311,9 +311,9 @@
    <widget class="QSlider" name="toleranceSlider">
     <property name="geometry">
      <rect>
-      <x>460</x>
-      <y>510</y>
-      <width>160</width>
+      <x>70</x>
+      <y>380</y>
+      <width>121</width>
       <height>22</height>
      </rect>
     </property>
@@ -327,7 +327,7 @@
    <widget class="QPushButton" name="loadDICOMFromFile">
     <property name="geometry">
      <rect>
-      <x>640</x>
+      <x>30</x>
       <y>20</y>
       <width>111</width>
       <height>23</height>
@@ -340,14 +340,231 @@
    <widget class="QCheckBox" name="showWireframeButton">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>260</y>
-      <width>91</width>
+      <x>120</x>
+      <y>490</y>
+      <width>101</width>
       <height>17</height>
      </rect>
     </property>
     <property name="text">
      <string>showWireframe</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="perspectiveButton">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>490</y>
+      <width>81</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Perspective</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="interpolateDepthText">
+    <property name="geometry">
+     <rect>
+      <x>190</x>
+      <y>420</y>
+      <width>51</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>1</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_7">
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>420</y>
+      <width>61</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>InterpDepth</string>
+    </property>
+   </widget>
+   <widget class="QGroupBox" name="groupBox_2">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>130</y>
+      <width>171</width>
+      <height>101</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Algorithm</string>
+    </property>
+    <widget class="QRadioButton" name="marchingCubesButton">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>20</y>
+       <width>111</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Marching Cubes</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="adaptiveMarchingCubesButton">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>40</y>
+       <width>161</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Adaptive Marching Cubes</string>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="adaptiveMarchingCubes2Button">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>60</y>
+       <width>161</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Adaptive Marching Cubes 2</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QGroupBox" name="groupBox_3">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>240</y>
+      <width>141</width>
+      <height>80</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Normals</string>
+    </property>
+    <widget class="QRadioButton" name="normalsPerTriangleButton">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>20</y>
+       <width>131</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Normals Per Triangle</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="normalsPerVerticeButton">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>40</y>
+       <width>131</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Normals Per Vertice </string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QLabel" name="label_8">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>380</y>
+      <width>47</width>
+      <height>13</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Tolerance</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkBox_2">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>520</y>
+      <width>81</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>showCubes</string>
+    </property>
+   </widget>
+   <widget class="QSlider" name="horizontalSlider">
+    <property name="geometry">
+     <rect>
+      <x>100</x>
+      <y>460</y>
+      <width>101</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_9">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>460</y>
+      <width>71</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>OctreeDepth</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>60</y>
+      <width>75</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>writeToObj</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_2">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>90</y>
+      <width>75</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>readObj</string>
     </property>
    </widget>
   </widget>
@@ -356,7 +573,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>890</width>
+     <width>1211</width>
      <height>21</height>
     </rect>
    </property>

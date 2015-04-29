@@ -30,6 +30,7 @@ public:
 	void drawCubes();
 	void drawBackground();
 	void readBackgroundImage();
+	void setMatrices();
 
 	int dataSended;
 	unsigned char* background;
@@ -38,7 +39,10 @@ public:
 
 	Model* model;
 
-	
+	double xRot;
+	double yRot;
+	double mouseSpeed = 0.5;
+	double xMove, yMove, zMove;
 
 
 private:
@@ -48,12 +52,6 @@ private:
 
 	double mouseXPosEntered;
 	double mouseYPosEntered;
-
-	double xRot;
-	double yRot;
-	double mouseSpeed = 0.5;
-	double xMove,yMove,zMove , xMoveOld,yMoveOld, zMoveOld,scale;
-	double translationSpeed;
 
 	bool shiftPressed;
 	bool ctrlPressed;

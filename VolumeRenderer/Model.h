@@ -67,7 +67,7 @@ public:
 
 
 	int isoLevel;
-	std::vector<glm::vec3> totalPoints;
+	//std::vector<glm::vec3> totalPoints;
 	std::vector<double> verts;
 	std::vector<double> normals;
 	int cellSizeX;
@@ -77,6 +77,10 @@ public:
 
 	std::vector<int>  edgeTable;
 	std::vector< std::vector<int> > triTable;
+
+	int algorithmChosen;
+	int normalsAlgChosen;
+	
 	
 
 	std::vector<OctreeCube> cubes;
@@ -89,6 +93,7 @@ public:
 
 	int tolerance;
 	int octreeMaxDepth;
+	int interpolateDepth;
 
 
 	//boost::variant< unsigned char, unsigned short, unsigned long > ** pixelData;
@@ -103,6 +108,7 @@ public:
 	bool pointFlag;
 	bool borderFlag;
 	bool showWireframe;
+	bool perspectiveActivated;
 
 	unsigned char *bitmapPixels;
 	int pixelDataWidth;

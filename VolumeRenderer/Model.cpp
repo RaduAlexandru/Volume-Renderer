@@ -26,9 +26,13 @@ Model::Model()
 	pointFlag = false;
 	borderFlag = false;
 	showWireframe = false;
+	perspectiveActivated = true;
 	tolerance = 80;
 	octreeMaxDepth = 9;
+	interpolateDepth = 1;
 
+	algorithmChosen=1;
+	normalsAlgChosen = 1;
 
 
 
