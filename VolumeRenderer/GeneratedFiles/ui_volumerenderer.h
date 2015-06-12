@@ -20,6 +20,7 @@
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMenuBar>
+#include <QtWidgets/QProgressBar>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QRadioButton>
 #include <QtWidgets/QSlider>
@@ -68,6 +69,7 @@ public:
     QRadioButton *adaptiveMarchingCubesButton;
     QRadioButton *adaptiveMarchingCubes2Button;
     QRadioButton *ballPivotButton;
+    QRadioButton *adaptiveMarchingCubes3Button;
     QGroupBox *groupBox_3;
     QRadioButton *normalsPerTriangleButton;
     QRadioButton *normalsPerVerticeButton;
@@ -84,6 +86,7 @@ public:
     QRadioButton *orientationZButton;
     QRadioButton *orientationXButton;
     QRadioButton *orientationYButton;
+    QProgressBar *progressBar;
     QMenuBar *menuBar;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
@@ -116,7 +119,7 @@ public:
         addDICOMFiles->setGeometry(QRect(1070, 90, 91, 23));
         isoLevelSlider = new QSlider(centralWidget);
         isoLevelSlider->setObjectName(QStringLiteral("isoLevelSlider"));
-        isoLevelSlider->setGeometry(QRect(70, 330, 121, 22));
+        isoLevelSlider->setGeometry(QRect(70, 360, 121, 22));
         isoLevelSlider->setMaximum(255);
         isoLevelSlider->setValue(100);
         isoLevelSlider->setOrientation(Qt::Horizontal);
@@ -131,13 +134,13 @@ public:
         loadTestImage2Button->setGeometry(QRect(1210, 40, 91, 23));
         label = new QLabel(centralWidget);
         label->setObjectName(QStringLiteral("label"));
-        label->setGeometry(QRect(20, 330, 47, 13));
+        label->setGeometry(QRect(20, 360, 47, 13));
         label_2 = new QLabel(centralWidget);
         label_2->setObjectName(QStringLiteral("label_2"));
         label_2->setGeometry(QRect(970, 600, 47, 13));
         resolutionSlider = new QSlider(centralWidget);
         resolutionSlider->setObjectName(QStringLiteral("resolutionSlider"));
-        resolutionSlider->setGeometry(QRect(70, 360, 121, 22));
+        resolutionSlider->setGeometry(QRect(70, 390, 121, 22));
         resolutionSlider->setMinimum(1);
         resolutionSlider->setMaximum(20);
         resolutionSlider->setValue(6);
@@ -146,19 +149,19 @@ public:
         resolutionSlider->setTickPosition(QSlider::TicksBelow);
         label_3 = new QLabel(centralWidget);
         label_3->setObjectName(QStringLiteral("label_3"));
-        label_3->setGeometry(QRect(10, 360, 51, 16));
+        label_3->setGeometry(QRect(10, 390, 51, 16));
         label_4 = new QLabel(centralWidget);
         label_4->setObjectName(QStringLiteral("label_4"));
-        label_4->setGeometry(QRect(210, 360, 47, 13));
+        label_4->setGeometry(QRect(210, 390, 47, 13));
         label_5 = new QLabel(centralWidget);
         label_5->setObjectName(QStringLiteral("label_5"));
-        label_5->setGeometry(QRect(210, 330, 47, 13));
+        label_5->setGeometry(QRect(210, 360, 47, 13));
         label_6 = new QLabel(centralWidget);
         label_6->setObjectName(QStringLiteral("label_6"));
         label_6->setGeometry(QRect(1150, 610, 47, 13));
         linearInterpolationButton = new QRadioButton(centralWidget);
         linearInterpolationButton->setObjectName(QStringLiteral("linearInterpolationButton"));
-        linearInterpolationButton->setGeometry(QRect(10, 420, 111, 17));
+        linearInterpolationButton->setGeometry(QRect(10, 450, 111, 17));
         linearInterpolationButton->setChecked(true);
         groupBox = new QGroupBox(centralWidget);
         groupBox->setObjectName(QStringLiteral("groupBox"));
@@ -177,7 +180,7 @@ public:
         dicomviewer2dgl->setGeometry(QRect(960, 250, 371, 341));
         toleranceSlider = new QSlider(centralWidget);
         toleranceSlider->setObjectName(QStringLiteral("toleranceSlider"));
-        toleranceSlider->setGeometry(QRect(70, 380, 121, 22));
+        toleranceSlider->setGeometry(QRect(70, 410, 121, 22));
         toleranceSlider->setMaximum(360);
         toleranceSlider->setOrientation(Qt::Horizontal);
         loadDICOMFromFile = new QPushButton(centralWidget);
@@ -185,20 +188,20 @@ public:
         loadDICOMFromFile->setGeometry(QRect(30, 20, 111, 23));
         showWireframeButton = new QCheckBox(centralWidget);
         showWireframeButton->setObjectName(QStringLiteral("showWireframeButton"));
-        showWireframeButton->setGeometry(QRect(120, 490, 101, 17));
+        showWireframeButton->setGeometry(QRect(120, 520, 101, 17));
         perspectiveButton = new QCheckBox(centralWidget);
         perspectiveButton->setObjectName(QStringLiteral("perspectiveButton"));
-        perspectiveButton->setGeometry(QRect(20, 490, 81, 17));
+        perspectiveButton->setGeometry(QRect(20, 520, 81, 17));
         perspectiveButton->setChecked(true);
         interpolateDepthText = new QLineEdit(centralWidget);
         interpolateDepthText->setObjectName(QStringLiteral("interpolateDepthText"));
-        interpolateDepthText->setGeometry(QRect(190, 420, 51, 20));
+        interpolateDepthText->setGeometry(QRect(190, 450, 51, 20));
         label_7 = new QLabel(centralWidget);
         label_7->setObjectName(QStringLiteral("label_7"));
-        label_7->setGeometry(QRect(130, 420, 61, 16));
+        label_7->setGeometry(QRect(130, 450, 61, 16));
         groupBox_2 = new QGroupBox(centralWidget);
         groupBox_2->setObjectName(QStringLiteral("groupBox_2"));
-        groupBox_2->setGeometry(QRect(20, 120, 171, 111));
+        groupBox_2->setGeometry(QRect(20, 120, 171, 141));
         marchingCubesButton = new QRadioButton(groupBox_2);
         marchingCubesButton->setObjectName(QStringLiteral("marchingCubesButton"));
         marchingCubesButton->setGeometry(QRect(10, 20, 111, 17));
@@ -211,10 +214,13 @@ public:
         adaptiveMarchingCubes2Button->setGeometry(QRect(10, 60, 161, 17));
         ballPivotButton = new QRadioButton(groupBox_2);
         ballPivotButton->setObjectName(QStringLiteral("ballPivotButton"));
-        ballPivotButton->setGeometry(QRect(10, 80, 82, 17));
+        ballPivotButton->setGeometry(QRect(10, 110, 82, 17));
+        adaptiveMarchingCubes3Button = new QRadioButton(groupBox_2);
+        adaptiveMarchingCubes3Button->setObjectName(QStringLiteral("adaptiveMarchingCubes3Button"));
+        adaptiveMarchingCubes3Button->setGeometry(QRect(10, 80, 161, 17));
         groupBox_3 = new QGroupBox(centralWidget);
         groupBox_3->setObjectName(QStringLiteral("groupBox_3"));
-        groupBox_3->setGeometry(QRect(20, 240, 141, 80));
+        groupBox_3->setGeometry(QRect(20, 270, 141, 80));
         normalsPerTriangleButton = new QRadioButton(groupBox_3);
         normalsPerTriangleButton->setObjectName(QStringLiteral("normalsPerTriangleButton"));
         normalsPerTriangleButton->setGeometry(QRect(10, 20, 131, 17));
@@ -224,17 +230,17 @@ public:
         normalsPerVerticeButton->setGeometry(QRect(10, 40, 131, 17));
         label_8 = new QLabel(centralWidget);
         label_8->setObjectName(QStringLiteral("label_8"));
-        label_8->setGeometry(QRect(10, 380, 47, 13));
+        label_8->setGeometry(QRect(10, 410, 47, 13));
         showCubesButton = new QCheckBox(centralWidget);
         showCubesButton->setObjectName(QStringLiteral("showCubesButton"));
-        showCubesButton->setGeometry(QRect(20, 520, 81, 17));
+        showCubesButton->setGeometry(QRect(20, 550, 81, 17));
         horizontalSlider = new QSlider(centralWidget);
         horizontalSlider->setObjectName(QStringLiteral("horizontalSlider"));
-        horizontalSlider->setGeometry(QRect(100, 460, 101, 22));
+        horizontalSlider->setGeometry(QRect(100, 490, 101, 22));
         horizontalSlider->setOrientation(Qt::Horizontal);
         label_9 = new QLabel(centralWidget);
         label_9->setObjectName(QStringLiteral("label_9"));
-        label_9->setGeometry(QRect(20, 460, 71, 16));
+        label_9->setGeometry(QRect(20, 490, 71, 16));
         pushButton = new QPushButton(centralWidget);
         pushButton->setObjectName(QStringLiteral("pushButton"));
         pushButton->setGeometry(QRect(30, 60, 75, 23));
@@ -246,11 +252,11 @@ public:
         pushButton_3->setGeometry(QRect(130, 60, 111, 23));
         showMeshButton = new QCheckBox(centralWidget);
         showMeshButton->setObjectName(QStringLiteral("showMeshButton"));
-        showMeshButton->setGeometry(QRect(120, 520, 70, 17));
+        showMeshButton->setGeometry(QRect(120, 550, 70, 17));
         showMeshButton->setChecked(true);
         showGradientButton = new QCheckBox(centralWidget);
         showGradientButton->setObjectName(QStringLiteral("showGradientButton"));
-        showGradientButton->setGeometry(QRect(120, 550, 91, 17));
+        showGradientButton->setGeometry(QRect(120, 580, 91, 17));
         groupBox_4 = new QGroupBox(centralWidget);
         groupBox_4->setObjectName(QStringLiteral("groupBox_4"));
         groupBox_4->setGeometry(QRect(1160, 130, 120, 101));
@@ -264,6 +270,10 @@ public:
         orientationYButton = new QRadioButton(groupBox_4);
         orientationYButton->setObjectName(QStringLiteral("orientationYButton"));
         orientationYButton->setGeometry(QRect(20, 60, 82, 17));
+        progressBar = new QProgressBar(centralWidget);
+        progressBar->setObjectName(QStringLiteral("progressBar"));
+        progressBar->setGeometry(QRect(280, 610, 301, 23));
+        progressBar->setValue(0);
         VolumeRendererClass->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(VolumeRendererClass);
         menuBar->setObjectName(QStringLiteral("menuBar"));
@@ -315,6 +325,7 @@ public:
         adaptiveMarchingCubesButton->setText(QApplication::translate("VolumeRendererClass", "Adaptive Marching Cubes", 0));
         adaptiveMarchingCubes2Button->setText(QApplication::translate("VolumeRendererClass", "Adaptive Marching Cubes 2", 0));
         ballPivotButton->setText(QApplication::translate("VolumeRendererClass", "Ball Pivot", 0));
+        adaptiveMarchingCubes3Button->setText(QApplication::translate("VolumeRendererClass", "Adaptive Marching Cubes 3", 0));
         groupBox_3->setTitle(QApplication::translate("VolumeRendererClass", "Normals", 0));
         normalsPerTriangleButton->setText(QApplication::translate("VolumeRendererClass", "Normals Per Triangle", 0));
         normalsPerVerticeButton->setText(QApplication::translate("VolumeRendererClass", "Normals Per Vertice ", 0));

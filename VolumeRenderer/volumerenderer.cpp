@@ -351,6 +351,8 @@ VolumeRenderer::VolumeRenderer(QWidget *parent)
 	model = new Model();
 	ui.glwidget->model = model;
 	ui.dicomviewer2dgl->model = model;
+	connect(this, SIGNAL(progressValueChangedSignal(int)), this, SLOT(progressValueChangedSlot(int)));
+	connect(this, SIGNAL(generatingFinishedSignal()), this, SLOT(generatingFinishedSlot()));
 	
 
 }
@@ -1277,6 +1279,9 @@ inline void VolumeRenderer::interpolate(int isoLevel, glm::vec3 point1, glm::vec
 	return;
 }
 
+/*void VolumeRenderer::marchingSquares(unsigned char** & pixelData, int numberOfByte, int celllSizeX, int celllSizeY, int celllSizeZ,
+	int pixelDataHeight, int pixelDataWidth, int frames, int isoLevel, std::vector<glm::vec3>& verts, std::vector<glm::vec3>& normals)*/
+
 void VolumeRenderer::marchingSquares(){
 	model->verts.clear();
 	model->normals.clear();
@@ -1304,6 +1309,9 @@ void VolumeRenderer::marchingSquares(){
 	//Since the bitmap is stored in reverse, we shall asign the y position to height-i insted of just i, thus mirroring the position
 	//WE also put - CellsizeY insted of + because we consider the coordinated in the y acis as going from bottom to top insted of top to bottom like usual. Maybe in the dicom files you will change the y position to be only equals to i
 	for (int i = 0; i < model->pixelDataHeight - cellSizeY; i = i + cellSizeY){	//WE make it to be till height -cellsizez because otherwise the last cube will be out of bound
+		
+		if (i%10==0)
+			emit progressValueChangedSignal(i * 100 / model->pixelDataHeight);
 		for (int j = 0; j < model->pixelDataWidth - cellSizeX; j = j + cellSizeX){
 			for (int k = 0; k < model->frames - cellSizeZ; k = k + cellSizeZ){
 
@@ -1373,6 +1381,8 @@ void VolumeRenderer::marchingSquares(){
 		}
 	}
 
+	boost::thread workerThread(boost::bind(&VolumeRenderer::generateNormals, this));
+	//model->generatingMesh = false;
 	outputFile.close();
 
 	//ui.glwidget->setFrame(5);
@@ -1401,7 +1411,7 @@ void VolumeRenderer::marchingSquares(){
 }
 
 
-void VolumeRenderer::createInitialCube(){
+OctreeCube VolumeRenderer::createInitialCube(){
 	OctreeCube cube;
 	cube.origin.x = 0;
 	cube.origin.y = 0;
@@ -1416,14 +1426,95 @@ void VolumeRenderer::createInitialCube(){
 	cube.sizeZ = cubeSize;
 
 	model->cubes.push_back(cube);
+	return cube;
 }
 
 
+void VolumeRenderer::crackPatch(){
+	
+
+	//It g
+
+
+
+	for (int cube = 0; cube < model->cubes.size(); cube++){
+		if (model->cubes[cube].isLeaf && model->cubes[cube].needsChecking){
+			// check the adyacent cubes, if there are not leaf that means that they are subdivided and thus the face that divides the two cubes is a transition face
+			
+			//we search for the cube that is on the right
+			for (int ady = 0; ady < model->cubes.size(); ady++){
+				if (model->cubes[ady].origin.x == (model->cubes[cube].origin.x + model->cubes[cube].sizeX) &&
+					model->cubes[ady].origin.y == model->cubes[cube].origin.y &&
+					model->cubes[ady].origin.z == model->cubes[cube].origin.z && 
+					!model->cubes[ady].isLeaf){
+					cout << "found a cube on the right that is not leaf" << endl;
+				}
+			}
+
+			//we search for the cube that is on the left
+			for (int ady = 0; ady < model->cubes.size(); ady++){
+				if (model->cubes[ady].origin.x == (model->cubes[cube].origin.x - model->cubes[cube].sizeX) &&
+					model->cubes[ady].origin.y == model->cubes[cube].origin.y &&
+					model->cubes[ady].origin.z == model->cubes[cube].origin.z && 
+					!model->cubes[ady].isLeaf){
+					cout << "found a cube on the left that is not leaf" << endl;
+				}
+			}
+
+			//we search for the cube that is toward the screen
+			for (int ady = 0; ady < model->cubes.size(); ady++){
+				if (model->cubes[ady].origin.x == model->cubes[cube].origin.x &&
+					model->cubes[ady].origin.y == model->cubes[cube].origin.y &&
+					model->cubes[ady].origin.z == (model->cubes[cube].origin.z + model->cubes[cube].sizeZ) &&
+					!model->cubes[ady].isLeaf){
+					cout << "found a cube on the z+ that is not leaf" << endl;
+				}
+			}
+
+			//we search for the cube that is toward me
+			for (int ady = 0; ady < model->cubes.size(); ady++){
+				if (model->cubes[ady].origin.x == model->cubes[cube].origin.x &&
+					model->cubes[ady].origin.y == model->cubes[cube].origin.y &&
+					model->cubes[ady].origin.z == (model->cubes[cube].origin.z - model->cubes[cube].sizeZ) &&
+					!model->cubes[ady].isLeaf){
+					cout << "found a cube on the z- that is not leaf" << endl;
+				}
+			}
+
+			//we search for the cube that is on top
+			for (int ady = 0; ady < model->cubes.size(); ady++){
+				if (model->cubes[ady].origin.x == model->cubes[cube].origin.x &&
+					model->cubes[ady].origin.y == (model->cubes[cube].origin.y + model->cubes[cube].sizeY) &&
+					model->cubes[ady].origin.z == model->cubes[cube].origin.z &&
+					!model->cubes[ady].isLeaf){
+					cout << "found a cube on the top that is not leaf" << endl;
+				}
+			}
+
+			//we search for the cube that is on bottom
+			for (int ady = 0; ady < model->cubes.size(); ady++){
+				if (model->cubes[ady].origin.x == model->cubes[cube].origin.x &&
+					model->cubes[ady].origin.y == (model->cubes[cube].origin.y - model->cubes[cube].sizeY) &&
+					model->cubes[ady].origin.z == model->cubes[cube].origin.z &&
+					!model->cubes[ady].isLeaf){
+					cout << "found a cube on the bottom that is not leaf" << endl;
+				}
+			}
+
+
+			cout << "Finished with that cube" << cube << " of " << model->cubes.size() << endl << endl;
+
+		}
+
+	}
+}
 
 
 
 int VolumeRenderer::adaptiveMarchingCubes(){
 
+	model->verts.clear();
+	model->normals.clear();
 	std::cout << "Starting adaptive marching cubes" << std::endl;
 	//Calculate the gradients
 	//Create the original cube
@@ -1556,10 +1647,10 @@ int VolumeRenderer::adaptiveMarchingCubes(){
 
 	/*I will now at attempt at making a recurrsive octree generator. When the maximum depth leves or reached or the cube no longer needs subdivision, we polygonise it*/
 
-
+	//crackPatch();
 	
 	
-
+	boost::thread workerThread(boost::bind(&VolumeRenderer::generateNormals, this));
 
 	
 	return 0;
@@ -1715,6 +1806,7 @@ int VolumeRenderer::adaptiveMarchingCubes2(){
 	createInitialCube();
 
 	generateOctree(model->cubes[0]);
+	boost::thread workerThread(boost::bind(&VolumeRenderer::generateNormals, this));
 	return 0;
 }
 
@@ -1744,11 +1836,13 @@ void VolumeRenderer::calculateGradient(){
 		return;
 
 	
-
+	
 	
 
 	//Here i is y axis and j is the x axis
 	for (int i = 0; i < model->pixelDataHeight; i = i + 1){
+		if (i % 10 == 0)
+			emit progressValueChangedSignal(i * 100 / model->pixelDataHeight);
 		for (int j = 0; j < model->pixelDataWidth; j = j + 1){
 			for (int k = 0; k < model->frames; k = k + 1){			//You need to check why it doesnt work without the -1 in the frames
 
@@ -1930,7 +2024,7 @@ inline bool VolumeRenderer::cubeNeedsSubdivision(OctreeCube &cube){
 	//We first check if the cube is totally out of the volume
 	if (cube.origin.x > model->pixelDataWidth || cube.origin.y > model->pixelDataHeight || cube.origin.z > model->frames - 1){
 		cube.needsChecking = false;
-		cube.isLeaf = false;
+		cube.isLeaf = true;
 		return false;
 	}
 		
@@ -2030,6 +2124,210 @@ inline bool VolumeRenderer::cubeNeedsSubdivision(OctreeCube &cube){
 }
 
 
+//This version creates an actual tree
+int VolumeRenderer::adaptiveMarchingCubes3(){
+	model->verts.clear();
+	model->normals.clear();
+	std::cout << "Starting adaptive marching cubes 3" << std::endl;
+	//Calculate the gradients
+	//Create the original cube
+	/*
+		7---------6
+	  size Z
+	  /			  !
+	3---------2	  5
+	!
+	size Y
+	!
+	origin----size X
+	*/
+
+
+	int cubesSize = 0, depth = 0, maxDepth = model->octreeMaxDepth;
+
+	if (model->gradient.size() == 0 || model->gradient.empty())
+		calculateGradient();
+	cout << "Finished calculating gradients" << endl;
+
+
+	OctreeCube* initial = new OctreeCube;
+	OctreeCube returnedFromCreateInitial;
+	returnedFromCreateInitial = createInitialCube();
+	initial->origin.x = returnedFromCreateInitial.origin.x;
+	initial->origin.y = returnedFromCreateInitial.origin.y;
+	initial->origin.z = returnedFromCreateInitial.origin.z;
+
+	initial->sizeX = returnedFromCreateInitial.sizeX;
+	initial->sizeY = returnedFromCreateInitial.sizeY;
+	initial->sizeZ = returnedFromCreateInitial.sizeZ;
+
+
+	std::cout << "starting to generate octree" << std::endl;
+	generateOctree_tree_version(*initial);
+	std::cout << "finished generateing octree" << std::endl;
+
+	//Grab each octreebube in our octree and polygonise it
+	polygoniseOctree(initial);
+
+	//////////////////////////////////////////////////
+
+
+
+	boost::thread workerThread(boost::bind(&VolumeRenderer::generateNormals, this));
+	//model->generatingMesh = false;
+
+
+	return 0;
+
+}
+
+
+int VolumeRenderer::generateOctree_tree_version(OctreeCube& currentCube,int currentDepth){
+
+
+
+
+	//Grab the initial one and see if it needs subdivision and if we are also below the maximum octree depth, if it needs subdiviosn, sundivid it, and also recursivelly call the same function for the children
+
+	if (currentDepth < model->octreeMaxDepth && cubeNeedsSubdivision(currentCube) && currentCube.needsChecking){
+		//std::cout << "The cube doesnt have children now" << std::endl;
+		currentCube.subdivide_tree_version();
+		//std::cout << "The cube should have children now" << std::endl;
+
+		generateOctree_tree_version(*(currentCube.children[0]), currentDepth + 1);
+		generateOctree_tree_version(*(currentCube.children[1]), currentDepth + 1);
+		generateOctree_tree_version(*(currentCube.children[2]), currentDepth + 1);
+		generateOctree_tree_version(*(currentCube.children[3]), currentDepth + 1);
+		generateOctree_tree_version(*(currentCube.children[4]), currentDepth + 1);
+		generateOctree_tree_version(*(currentCube.children[5]), currentDepth + 1);
+		generateOctree_tree_version(*(currentCube.children[6]), currentDepth + 1);
+		generateOctree_tree_version(*(currentCube.children[7]), currentDepth + 1);
+	}
+	else{
+		currentCube.isLeaf=true;	// we need to check if this value is set correctly
+		currentCube.needsChecking = false;
+		return 0;
+	}
+	return 0;
+}
+
+int VolumeRenderer::polygoniseOctree(OctreeCube* currentCube,int currentDepth){
+
+	//Recursive alrogithm, we go to all the children of current cube and if the children is null, we go back in the recursive stack and polygonise the current cube
+
+	if (currentCube != NULL){
+		polygoniseOctree((currentCube->children[0]));
+		if (currentCube->children[0] == NULL  && !currentCube->polygonised == true)  //We check if the current cube is a left (children is null) and has not been polygonised yet
+			octree2CellPolygonise(*currentCube);
+		currentCube->polygonised = true;
+		polygoniseOctree((currentCube->children[1]));
+		if (currentCube->children[0] == NULL  && !currentCube->polygonised == true)
+			octree2CellPolygonise(*currentCube);
+		currentCube->polygonised = true;
+		polygoniseOctree((currentCube->children[2]));
+		if (currentCube->children[0] == NULL  && !currentCube->polygonised == true)
+			octree2CellPolygonise(*currentCube);
+		currentCube->polygonised = true;
+		polygoniseOctree((currentCube->children[3]));
+		if (currentCube->children[0] == NULL  && !currentCube->polygonised == true)
+			octree2CellPolygonise(*currentCube);
+		currentCube->polygonised = true;
+		polygoniseOctree((currentCube->children[4]));
+		if (currentCube->children[0] == NULL  && !currentCube->polygonised == true)
+			octree2CellPolygonise(*currentCube);
+		currentCube->polygonised = true;
+		polygoniseOctree((currentCube->children[5]));
+		if (currentCube->children[0] == NULL  && !currentCube->polygonised == true)
+			octree2CellPolygonise(*currentCube);
+		currentCube->polygonised = true;
+		polygoniseOctree((currentCube->children[6]));
+		if (currentCube->children[0] == NULL  && !currentCube->polygonised == true)
+			octree2CellPolygonise(*currentCube);
+		currentCube->polygonised = true;
+		polygoniseOctree((currentCube->children[7]));
+		if (currentCube->children[0] == NULL  && !currentCube->polygonised == true)
+			octree2CellPolygonise(*currentCube);
+		currentCube->polygonised = true;
+	}
+	else{
+		return 0;
+	}
+
+
+}
+
+
+void VolumeRenderer::octree2CellPolygonise(OctreeCube currentCube){
+	CELL cell;
+
+
+	/*
+	7---------6
+	/			 !
+	/			 !
+	3---------2	 5
+	!         !
+	!         !
+	0---------1
+	*/
+
+	for (int j = 0; j < 8; j++){
+		cell.position[j].x = 0;
+		cell.position[j].x = 0;
+		cell.position[j].x = 0;
+		cell.val[j] = 0;
+	}
+
+	cell.position[0].x = currentCube.origin.x;
+	cell.position[0].y = currentCube.origin.y;
+	cell.position[0].z = currentCube.origin.z;
+	cell.val[0] = model->getPixelValue(currentCube.origin.x, currentCube.origin.y, currentCube.origin.z);
+
+	cell.position[1].x = currentCube.origin.x + currentCube.sizeX;
+	cell.position[1].y = currentCube.origin.y;
+	cell.position[1].z = currentCube.origin.z;
+	cell.val[1] = model->getPixelValue(currentCube.origin.x + currentCube.sizeX, currentCube.origin.y, currentCube.origin.z);
+
+	cell.position[2].x = currentCube.origin.x + currentCube.sizeX;
+	cell.position[2].y = currentCube.origin.y + currentCube.sizeY;
+	cell.position[2].z = currentCube.origin.z;
+	cell.val[2] = model->getPixelValue(currentCube.origin.x + currentCube.sizeX, currentCube.origin.y + currentCube.sizeY, currentCube.origin.z);
+
+	cell.position[3].x = currentCube.origin.x;
+	cell.position[3].y = currentCube.origin.y + currentCube.sizeY;
+	cell.position[3].z = currentCube.origin.z;
+	cell.val[3] = model->getPixelValue(currentCube.origin.x, currentCube.origin.y + currentCube.sizeY, currentCube.origin.z);
+	//////
+	cell.position[4].x = currentCube.origin.x;
+	cell.position[4].y = currentCube.origin.y;
+	cell.position[4].z = currentCube.origin.z + currentCube.sizeZ;
+	cell.val[4] = model->getPixelValue(currentCube.origin.x, currentCube.origin.y, currentCube.origin.z + currentCube.sizeZ);
+
+	cell.position[5].x = currentCube.origin.x + currentCube.sizeX;
+	cell.position[5].y = currentCube.origin.y;
+	cell.position[5].z = currentCube.origin.z + currentCube.sizeZ;
+	cell.val[5] = model->getPixelValue(currentCube.origin.x + currentCube.sizeX, currentCube.origin.y, currentCube.origin.z + currentCube.sizeZ);
+
+	cell.position[6].x = currentCube.origin.x + currentCube.sizeX;
+	cell.position[6].y = currentCube.origin.y + currentCube.sizeY;
+	cell.position[6].z = currentCube.origin.z + currentCube.sizeZ;
+	cell.val[6] = model->getPixelValue(currentCube.origin.x + currentCube.sizeX, currentCube.origin.y + currentCube.sizeY, currentCube.origin.z + currentCube.sizeZ);
+
+	cell.position[7].x = currentCube.origin.x;
+	cell.position[7].y = currentCube.origin.y + currentCube.sizeY;
+	cell.position[7].z = currentCube.origin.z + currentCube.sizeZ;
+	cell.val[7] = model->getPixelValue(currentCube.origin.x, currentCube.origin.y + currentCube.sizeY, currentCube.origin.z + currentCube.sizeZ);
+
+	//std::cout << "cell has values" << cell.val[0] << " " << cell.val[1] << " " << cell.val[2] << " " << cell.val[3] << " " << cell.val[4] << " " << cell.val[5] << " " << cell.val[6] << " " << cell.val[7] << std::endl;
+
+	//now we have that cell and we have to polygonise it
+	//polygonise(cell, model->isoLevel, model->totalPoints);
+	polygonise(cell, model->verts);
+
+
+
+}
+ 
 void VolumeRenderer::ballPivot(){
 	std::cout << "creating mesh with ball pivot algorithm" << std::endl;
 	calculateGradient();	//I should actually make it so tht it calculates gradients only when it gradients are empty. And also make it so that when we load a new dicom file we clear the previous gradients
@@ -2395,6 +2693,13 @@ void VolumeRenderer::on_adaptiveMarchingCubes2Button_clicked(){
 		generateMesh();
 	}
 }
+void VolumeRenderer::on_adaptiveMarchingCubes3Button_clicked(){
+	if (ui.adaptiveMarchingCubes3Button->isChecked()){
+		model->algorithmChosen = 4;
+		wipePoints();
+		generateMesh();
+	}
+}
 void VolumeRenderer::on_ballPivotButton_clicked(){
 	if (ui.ballPivotButton->isChecked()){
 		model->algorithmChosen = 4;
@@ -2416,7 +2721,9 @@ void VolumeRenderer::on_normalsPerTriangleButton_clicked(){
 		model->normalsAlgChosen = 1;
 	}
 	model->normals.clear();
-	generateNormals();
+	model->generatingMesh = true;
+	boost::thread workerThread(boost::bind(&VolumeRenderer::generateNormals, this));
+	//generateNormals();
 	
 }
 void VolumeRenderer::on_normalsPerVerticeButton_clicked(){
@@ -2424,7 +2731,9 @@ void VolumeRenderer::on_normalsPerVerticeButton_clicked(){
 		model->normalsAlgChosen = 2;
 	}
 	model->normals.clear();
-	generateNormals();
+	model->generatingMesh = true;
+	boost::thread workerThread(boost::bind(&VolumeRenderer::generateNormals, this));
+	//generateNormals();
 	
 }
 
@@ -2490,10 +2799,14 @@ void VolumeRenderer::on_showCubesButton_clicked(){
 // Qualifier:
 //************************************
 void VolumeRenderer::generateMesh(){
+
+	std::cout << "generating mesh with" << model->algorithmChosen << std::endl;
+
+	model->generatingMesh = true;
 	if (model->algorithmChosen == 1){
-		//boost::thread workerThread(boost::bind(&VolumeRenderer::marchingSquares, this));
+		boost::thread workerThread(boost::bind(&VolumeRenderer::marchingSquares, this));
 		//workerThread.join();
-		marchingSquares();
+		//marchingSquares();
 	}
 		
 	if (model->algorithmChosen == 2)
@@ -2501,10 +2814,11 @@ void VolumeRenderer::generateMesh(){
 	if (model->algorithmChosen == 3)
 		adaptiveMarchingCubes2();
 	if (model->algorithmChosen == 4)
-			ballPivot();
+		adaptiveMarchingCubes3();
 
+	//model->generatingMesh = true;
 	//boost::thread workerThread(boost::bind(&VolumeRenderer::generateNormals, this));
-	generateNormals();
+	//generateNormals();
 
 
 	//qWarning() << QString("%L1").arg(i);
@@ -2556,7 +2870,7 @@ void VolumeRenderer::generateNormals(){
 
 		for (int i = 0; i < model->verts.size() - 3; i = i + 3){
 
-
+			//emit progressValueChangedSignal(i * 100 / model->verts.size());
 			u.x = model->verts[i + 1].x - model->verts[i].x;
 			u.y = model->verts[i + 1].y - model->verts[i].y;
 			u.z = model->verts[i + 1].z - model->verts[i].z;
@@ -2600,8 +2914,12 @@ void VolumeRenderer::generateNormals(){
 		int j, y, k;
 		double length;
 
+		int steps = model->verts.size() / 10 - 1;
+
 		for (int i = 0; i < model->verts.size() ; i = i + 1){
 
+			if (i% steps==0)
+				emit progressValueChangedSignal(i * 100 / model->verts.size());
 			j = boost::math::iround(model->verts[i].x);
 			y = boost::math::iround(model->verts[i].y);
 			k = boost::math::iround(model->verts[i].z);
@@ -2688,6 +3006,9 @@ void VolumeRenderer::generateNormals(){
 		}
 	}
 
+	//model->generatingMesh = false;
+	emit generatingFinishedSignal();
+
 }
 
 void VolumeRenderer::wipeBitmap(){
@@ -2725,4 +3046,14 @@ void VolumeRenderer::wipePixelData(){
 	ui.glwidget->xRot = 0;
 	ui.glwidget->yRot = 0;
 
+}
+
+void VolumeRenderer::progressValueChangedSlot(int newValue){
+	cout << "new value of progress" << newValue << endl;
+	ui.progressBar->setValue(newValue);
+}
+
+void VolumeRenderer::generatingFinishedSlot(){
+	model->generatingMesh = false;
+	ui.progressBar->setValue(0);
 }

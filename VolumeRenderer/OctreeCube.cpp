@@ -11,6 +11,12 @@ OctreeCube::OctreeCube()
 	sizeZ = 0;
 	isLeaf = true;
 	needsChecking = true;
+	polygonised = false;
+
+	parent = NULL;
+	for (int i = 0; i < 8; i++){
+		children[i] = NULL;
+	}
 }
 
 
@@ -255,6 +261,111 @@ int OctreeCube::subdivide(std::vector <OctreeCube> & cubes){
 
 	
 	cubes.insert(cubes.end(), subdivs.begin(), subdivs.end());
+
+
+	//////////////
+
+
+
+	return 0;
+}
+
+int OctreeCube::subdivide_tree_version(){
+
+
+
+
+	//Create the cubes
+	//add them t the cubes vector
+
+
+	/*
+	/        /
+	/  5     /    6
+	/        /
+	//-------------------
+	//|   1    !    2   !
+	//!        !        !
+	//!-----------------
+	//!   4    !    3   !
+	//!        !        !
+	//-------------------
+
+	*/
+
+
+
+
+
+	//OctreeCube subdivs[8];
+	
+	for (int i = 0; i < 8; i++){
+		children[i] = new OctreeCube();
+	}
+
+
+
+	for (int i = 0; i < 8; i++){
+
+		children[i]->isLeaf = true;
+		children[i]->sizeX = sizeX / 2;
+		children[i]->sizeY = sizeY / 2;
+		children[i]->sizeZ = sizeZ / 2;
+	}
+
+
+	//Cube 1
+	children[0]->origin.x = origin.x;
+	children[0]->origin.y = origin.y + sizeY / 2;
+	children[0]->origin.z = origin.z;
+	children[0]->parent = this;
+	//cubes.push_back(subdivs[0]);
+	//Cube 2
+	children[1]->origin.x = origin.x + sizeX / 2;
+	children[1]->origin.y = origin.y + sizeY / 2;
+	children[1]->origin.z = origin.z;
+	children[1]->parent = this;
+	//cubes.push_back(subdivs[1]);
+	//Cube 3
+	children[2]->origin.x = origin.x + sizeX / 2;
+	children[2]->origin.y = origin.y;
+	children[2]->origin.z = origin.z;
+	children[2]->parent = this;
+	//cubes.push_back(subdivs[2]);
+	//Cube 4
+	children[3]->origin.x = origin.x;
+	children[3]->origin.y = origin.y;
+	children[3]->origin.z = origin.z;
+	children[3]->parent = this;
+	//cubes.push_back(subdivs[3]);
+
+	//Cube 5
+	children[4]->origin.x = origin.x;
+	children[4]->origin.y = origin.y + sizeY / 2;
+	children[4]->origin.z = origin.z + sizeZ / 2;
+	children[4]->parent = this;
+	//cubes.push_back(subdivs[4]);
+	//Cube 6
+	children[5]->origin.x = origin.x + sizeX / 2;
+	children[5]->origin.y = origin.y + sizeY / 2;
+	children[5]->origin.z = origin.z + sizeZ / 2;
+	children[5]->parent = this;
+	//cubes.push_back(subdivs[5]);
+	//Cube 7
+	children[6]->origin.x = origin.x + sizeX / 2;
+	children[6]->origin.y = origin.y;
+	children[6]->origin.z = origin.z + sizeZ / 2;
+	children[6]->parent = this;
+	//cubes.push_back(subdivs[6]);
+	//Cube 8
+	children[7]->origin.x = origin.x;
+	children[7]->origin.y = origin.y;
+	children[7]->origin.z = origin.z + sizeZ / 2;
+	children[7]->parent = this;
+	//cubes.push_back(subdivs[7]);
+
+
+	//cubes.insert(cubes.end(), subdivs.begin(), subdivs.end());
 
 
 	//////////////

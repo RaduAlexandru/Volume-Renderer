@@ -52,16 +52,26 @@ private:
 	void calculateGradient();
 	inline bool cubeNeedsSubdivision(OctreeCube&);
 	int generateOctree(OctreeCube,int=0);	//The int=0 is the default value of the depth. We obviously start at 0
+	int generateOctree_tree_version(OctreeCube&, int = 0);
 	int adaptiveMarchingCubes2();
+	int adaptiveMarchingCubes3();
+	int polygoniseOctree(OctreeCube*,int=0);
+	void VolumeRenderer::octree2CellPolygonise(OctreeCube);
 	void generateMesh();
 	void generateNormals();
-	void createInitialCube();
+	OctreeCube createInitialCube();
 	void ballPivot();
+	void crackPatch();
 	
 	void marchingSquares();
 	void wipeBitmap();
 	void wipePoints();
 	void wipePixelData();
+
+
+signals:
+	void progressValueChangedSignal(int newValue);
+	void generatingFinishedSignal();
 
 private slots:
 	void on_test_clicked();
@@ -82,6 +92,7 @@ private slots:
 	void on_marchingCubesButton_clicked();
 	void on_adaptiveMarchingCubesButton_clicked();
 	void on_adaptiveMarchingCubes2Button_clicked();
+	void on_adaptiveMarchingCubes3Button_clicked();
 	void on_ballPivotButton_clicked();
 	void on_perspectiveButton_clicked();
 	void on_normalsPerTriangleButton_clicked();
@@ -93,6 +104,9 @@ private slots:
 	void on_orientationXButton_clicked();
 	void on_orientationYButton_clicked();
 	void on_showCubesButton_clicked();
+
+	void progressValueChangedSlot(int newValue);
+	void generatingFinishedSlot();
 
 	
 };

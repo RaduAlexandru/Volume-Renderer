@@ -37,6 +37,7 @@ Model::Model()
 	algorithmChosen=1;
 	normalsAlgChosen = 1;
 	orientation = 1;
+	generatingMesh = false;
 
 
 	int v;

@@ -80,6 +80,7 @@ public:
 
 	int algorithmChosen;
 	int normalsAlgChosen;
+	bool generatingMesh;
 	
 	
 

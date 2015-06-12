@@ -307,6 +307,11 @@ void GLWidget::drawMesh(){
 	if (model->verts.empty() || model->normals.empty())
 		return;
 
+
+	//std::cout << "gneralting mesh is " << model->generatingMesh << std::endl;
+	if (model->generatingMesh == true)
+		return;
+
 	int normalIndex = 0;
 
 	glBegin(GL_TRIANGLES);
