@@ -309,7 +309,23 @@ void GLWidget::drawMesh(){
 
 	int normalIndex = 0;
 
-	if (model->normalsAlgChosen == 1){
+	glBegin(GL_TRIANGLES);
+	for (int i = 0; i < model->verts.size() - 3; i = i + 3){
+
+		glNormal3f(model->normals[i].x, model->normals[i].y, model->normals[i].z);
+		glVertex3f(model->verts[i].x, model->verts[i].y, model->verts[i].z);
+
+		glNormal3f(model->normals[i + 1].x, model->normals[i + 1].y, model->normals[i + 1].z);
+		glVertex3f(model->verts[i + 1].x, model->verts[i + 1].y, model->verts[i + 1].z);
+
+		glNormal3f(model->normals[i + 2].x, model->normals[i + 2].y, model->normals[i + 2].z);
+		glVertex3f(model->verts[i + 2].x, model->verts[i + 2].y, model->verts[i + 2].z);
+	}
+	glEnd();
+
+
+
+	/*if (model->normalsAlgChosen == 1){
 		glBegin(GL_TRIANGLES);
 		for (int i = 0; i < model->verts.size() - 9; i = i + 9){
 
@@ -341,7 +357,7 @@ void GLWidget::drawMesh(){
 			glVertex3f(model->verts[i + 6], model->verts[i + 7], model->verts[i + 8]);
 		}
 		glEnd();
-	}
+	}*/
 
 	
 

@@ -43,7 +43,7 @@ private:
 	int getRepresentation(QString , int& , int& , int& , int& ,int&, int&, int&);
 	//void showPixels(void* pixelData, std::vector<Model::POINTF>);
 	void load_image_data(const char*);
-	void polygonise(CELL&, std::vector<double>&);
+	void polygonise(CELL&, std::vector<glm::vec3>&);
 	inline void interpolate(int, glm::vec3 point1, glm::vec3 point2, float, float, glm::vec3&, int depth=0);
 	int loadDICOMPixelData(const char*);
 	int loadDICOMPixelData(QStringList);

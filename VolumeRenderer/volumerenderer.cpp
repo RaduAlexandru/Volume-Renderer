@@ -795,7 +795,20 @@ void VolumeRenderer::polygonise(CELL & cell, std::vector<glm::vec3>& verts){
 		point1.y = (vertlist[model->triTable[cubeIndex][i]]).y;
 		point1.z = (vertlist[model->triTable[cubeIndex][i]]).z;
 
-		verts.push_back((vertlist[model->triTable[cubeIndex][i]]).x);
+		point2.x = (vertlist[model->triTable[cubeIndex][i + 1]]).x;
+		point2.y = (vertlist[model->triTable[cubeIndex][i + 1]]).y;
+		point2.z = (vertlist[model->triTable[cubeIndex][i + 1]]).z;
+
+		point3.x = (vertlist[model->triTable[cubeIndex][i + 2]]).x;
+		point3.y = (vertlist[model->triTable[cubeIndex][i + 2]]).y;
+		point3.z = (vertlist[model->triTable[cubeIndex][i + 2]]).z;
+
+		
+		verts.push_back(point1);
+		verts.push_back(point2);
+		verts.push_back(point3);
+
+		/*verts.push_back((vertlist[model->triTable[cubeIndex][i]]).x);
 		verts.push_back((vertlist[model->triTable[cubeIndex][i]]).y);
 		verts.push_back((vertlist[model->triTable[cubeIndex][i]]).z);
 
@@ -805,7 +818,7 @@ void VolumeRenderer::polygonise(CELL & cell, std::vector<glm::vec3>& verts){
 		
 		verts.push_back((vertlist[model->triTable[cubeIndex][i + 2]]).x);
 		verts.push_back((vertlist[model->triTable[cubeIndex][i + 2]]).y);
-		verts.push_back((vertlist[model->triTable[cubeIndex][i + 2]]).z);
+		verts.push_back((vertlist[model->triTable[cubeIndex][i + 2]]).z);*/
 
 		//Now we calculate the normal
 		/*u = p2 - p1;
@@ -1298,23 +1311,6 @@ void VolumeRenderer::marchingSquares(){
 				//if (model->getPixelValue(j, i, k)!=0)
 				//cout << model->getPixelValue(j, i, k) << endl;
 
-				if (model->pointFlag == true){
-
-					//Model::POINTF point;
-					dataPointer = &(model->pixelData[k][0]);
-					dataPointer = dataPointer + (j + i*model->pixelDataWidth)*pointerOffset;
-					memcpy(&value, dataPointer, pointerOffset);
-
-					if (value > 29000){
-						/*point.x = j;
-						point.y = model->pixelDataHeight - i;
-						model->totalPoints.push_back(point);*/
-						model->verts.push_back(j);
-						model->verts.push_back(model->pixelDataHeight - i);
-						model->verts.push_back(k);
-					}
-				}
-				else{
 
 					
 					/*
@@ -1372,7 +1368,7 @@ void VolumeRenderer::marchingSquares(){
 					//now we have that cell and we have to polygonise it
 					//polygonise(cell, model->isoLevel, model->totalPoints);
 					polygonise(cell, model->verts);
-				}
+				
 			}
 		}
 	}
@@ -2277,7 +2273,7 @@ void VolumeRenderer::on_loadDICOMFromFile_clicked(){
 	QFileDialog dialog(this);
 	//dialog.setOption(QFileDialog::DontUseNativeDialog, true);
 	//dialog.setDirectory(QDir::currentPath());
-	//dialog.setDirectory("E:\\Universidad\\Hecho por mi\\Volume Renderer\\Examples\\");
+	dialog.setDirectory("E:\\Universidad\\Hecho por mi\\Volume Renderer\\Examples\\");
 	dialog.setFileMode(QFileDialog::ExistingFiles);
 	dialog.setNameFilter(tr("Files (*.*)"));
 	QStringList fileNames;
@@ -2495,9 +2491,9 @@ void VolumeRenderer::on_showCubesButton_clicked(){
 //************************************
 void VolumeRenderer::generateMesh(){
 	if (model->algorithmChosen == 1){
-		boost::thread workerThread(boost::bind(&VolumeRenderer::marchingSquares, this));
-		workerThread.join();
-		//marchingSquares();
+		//boost::thread workerThread(boost::bind(&VolumeRenderer::marchingSquares, this));
+		//workerThread.join();
+		marchingSquares();
 	}
 		
 	if (model->algorithmChosen == 2)
@@ -2507,8 +2503,8 @@ void VolumeRenderer::generateMesh(){
 	if (model->algorithmChosen == 4)
 			ballPivot();
 
-	boost::thread workerThread(boost::bind(&VolumeRenderer::generateNormals, this));
-	//generateNormals();
+	//boost::thread workerThread(boost::bind(&VolumeRenderer::generateNormals, this));
+	generateNormals();
 
 
 	//qWarning() << QString("%L1").arg(i);
@@ -2558,17 +2554,24 @@ void VolumeRenderer::generateNormals(){
 
 	if (model->normalsAlgChosen == 1){
 
-		for (int i = 0; i < model->verts.size() - 9; i = i + 9){
+		for (int i = 0; i < model->verts.size() - 3; i = i + 3){
 
 
+			u.x = model->verts[i + 1].x - model->verts[i].x;
+			u.y = model->verts[i + 1].y - model->verts[i].y;
+			u.z = model->verts[i + 1].z - model->verts[i].z;
 
-			u.x = model->verts[i + 3] - model->verts[i];
+			v.x = model->verts[i + 2].x - model->verts[i].x;
+			v.y = model->verts[i + 2].y - model->verts[i].y;
+			v.z = model->verts[i + 2].z - model->verts[i].z;
+
+			/*u.x = model->verts[i + 3] - model->verts[i];
 			u.y = model->verts[i + 4] - model->verts[i + 1];
 			u.z = model->verts[i + 5] - model->verts[i + 2];
 
 			v.x = model->verts[i + 6] - model->verts[i];
 			v.y = model->verts[i + 7] - model->verts[i + 1];
-			v.z = model->verts[i + 8] - model->verts[i + 2];
+			v.z = model->verts[i + 8] - model->verts[i + 2];*/
 
 			n.x = u.y*v.z - u.z*v.y;
 			n.y = u.z*v.x - u.x*v.z;
@@ -2581,10 +2584,10 @@ void VolumeRenderer::generateNormals(){
 			n.y = n.y / length;
 			n.z = n.z / length;
 
-			//WE push it once. Because we have 1 normal per triangle
-			model->normals.push_back(n.x);
-			model->normals.push_back(n.y);
-			model->normals.push_back(n.z);
+			//WE push three time once. Because we have 3 normal per triangle, one for each vetice
+			model->normals.push_back(n);
+			model->normals.push_back(n);
+			model->normals.push_back(n);
 		}
 	}
 
@@ -2597,11 +2600,11 @@ void VolumeRenderer::generateNormals(){
 		int j, y, k;
 		double length;
 
-		for (int i = 0; i < model->verts.size() - 3; i = i + 3){
+		for (int i = 0; i < model->verts.size() ; i = i + 1){
 
-			j = boost::math::iround(model->verts[i]);
-			y = boost::math::iround(model->verts[i+1]);
-			k = boost::math::iround(model->verts[i+2]);
+			j = boost::math::iround(model->verts[i].x);
+			y = boost::math::iround(model->verts[i].y);
+			k = boost::math::iround(model->verts[i].z);
 
 			//getSmoothPixelValue
 
@@ -2675,9 +2678,13 @@ void VolumeRenderer::generateNormals(){
 			dy = dy / length;
 			dz = dz / length;
 
-			model->normals.push_back(dx);
-			model->normals.push_back(dy);
-			model->normals.push_back(dz);
+			n.x = dx;
+			n.y = dy;
+			n.z = dz;
+
+			model->normals.push_back(n);
+			//model->normals.push_back(dy);
+			//model->normals.push_back(dz);
 		}
 	}
 
