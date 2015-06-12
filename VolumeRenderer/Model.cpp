@@ -27,13 +27,16 @@ Model::Model()
 	borderFlag = false;
 	showWireframe = false;
 	perspectiveActivated = true;
-	tolerance = 80;
-	octreeMaxDepth = 9;
-	interpolateDepth = 1;
+	showMesh = true;
+	showGradient = false;
+	showCubes = false;
+	tolerance = 60;
+	octreeMaxDepth = 8;
+	interpolateDepth = 10;
 
 	algorithmChosen=1;
 	normalsAlgChosen = 1;
-
+	orientation = 1;
 
 
 	int v;

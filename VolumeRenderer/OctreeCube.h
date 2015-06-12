@@ -1,5 +1,6 @@
 #include <glm\glm.hpp>
 #include <vector>
+#include <boost\unordered_map.hpp>
 #pragma once
 class OctreeCube
 {
@@ -14,7 +15,7 @@ public:
 	bool isLeaf;
 	bool needsChecking;
 
-	int needsSubdivision();
+	int needsSubdivision( int, std::vector< boost::unordered_map< std::pair<int, int>, glm::vec3> > &  );
 	int subdivide(std::vector <OctreeCube> &);
 };
 

@@ -4,6 +4,7 @@
 #include <gl/GLU.h>
 #define SHIFT 16777248
 #define CTRL 16777249
+#define PI 3.14159265
 /*#define GL_GLEXT_PROTOTYPES
 #include <GL/GL.h>
 #include <GL/glew.h>*/
@@ -248,9 +249,16 @@ void GLWidget::paintGL()
 	
 	//glDrawArrays(GL_TRIANGLES, 0, model->verts.size());
 	glColor3f(0.55f, 0.55f, 0.55f);
-	drawMesh();
+	if (model->showMesh)
+		drawMesh();
+
 	glColor3f(1.f, 0.f, 0.f);
-	//drawCubes();
+	if (model->showGradient)
+		displayGradient();
+
+	if (model->showCubes)
+		drawCubes();
+
 
 	if (model->showWireframe){
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -296,7 +304,7 @@ void GLWidget::drawMesh(){
 	//glColor3f(1.f, 0.f, 0.f);
 	
 	//glDrawArrays(GL_TRIANGLES, 0, model->verts.size());
-	if (model->verts.empty())
+	if (model->verts.empty() || model->normals.empty())
 		return;
 
 	int normalIndex = 0;
@@ -304,6 +312,11 @@ void GLWidget::drawMesh(){
 	if (model->normalsAlgChosen == 1){
 		glBegin(GL_TRIANGLES);
 		for (int i = 0; i < model->verts.size() - 9; i = i + 9){
+
+			if (normalIndex >= model->normals.size()){
+				break;
+			}
+
 			glNormal3f(model->normals[normalIndex], model->normals[normalIndex + 1], model->normals[normalIndex + 2]);
 			normalIndex = normalIndex + 3;
 			//glNormal3f(0, 0, 1);
@@ -391,7 +404,7 @@ void GLWidget::drawCubes(){
 
 
 void GLWidget::readBackgroundImage(){
-	FILE *f = fopen("test9_background2.bmp", "rb");
+	FILE *f = fopen("test9_background3.bmp", "rb");
 	if (!f) {
 		printf("failed to open file\n");
 		exit(0);
@@ -456,6 +469,70 @@ void GLWidget::setFrame(int frame)
 	update();
 }*/
 
+
+void GLWidget::displayGradient(){
+
+
+	if (model->gradient.empty())
+		return;
+
+	
+	std::vector<glm::vec3> keys;	//The position
+	std::vector<glm::vec3> vals;	//the gradient
+
+
+	//We read values only if keys is emty
+	if (keys.empty())
+	for (int k = 0; k < model->frames; k++){
+		for (auto kv : model->gradient[k]) {
+			glm::vec3 positionKey;
+			positionKey.x = kv.first.first;
+			positionKey.y = kv.first.second;
+			positionKey.z = k;
+			keys.push_back(positionKey);
+			vals.push_back(kv.second);
+		}
+	}
+
+	
+	/*glDisable(GL_LIGHTING);
+	int valsIndex = 0;
+	for (int i = 0; i < keys.size(); i=i+3){
+		glColor3f((sin(vals[valsIndex].x *PI / 180) + 1) / 2, (sin(vals[valsIndex].y *PI / 180) + 1) / 2, (sin(vals[valsIndex].z *PI / 180) + 1) / 2);	//The input for sin is in radians so we do *PI / 180. The output os sin is from -1 to 1. So we add 1 and then divide by 2 so we get a value from 0 to 1
+		glPointSize(3.0f);
+		glBegin(GL_POINTS);
+		glVertex3f(keys[i], keys[i+1], keys[i+2]);
+		glEnd();
+		valsIndex++;
+	}
+	glEnable(GL_LIGHTING);
+	return;*/
+
+	int skip=0;
+
+	glDisable(GL_LIGHTING);
+	glPointSize(2.0f);
+	glBegin(GL_POINTS);
+	for (int i = 0; i < keys.size(); i++){
+		/*if (skip != 5){
+			skip++;
+			continue;
+		}*/
+		glColor3f((sin(vals[i].x  *PI / 180) + 1) / 2, (sin(vals[i].y *PI / 180) + 1) / 2, (sin(vals[i].z *PI / 180) + 1) / 2);
+		
+		glVertex3f(keys[i].x, keys[i].y, keys[i].z);
+		
+		//skip = 0;
+	}
+	glEnd();
+	glEnable(GL_LIGHTING);
+
+	///////////////
+
+	
+	
+
+}
 
 void GLWidget::setMatrices(){
 

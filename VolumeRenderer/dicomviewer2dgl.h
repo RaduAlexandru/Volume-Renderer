@@ -23,13 +23,15 @@ public:
 	OctreeCube selectedCube;
 	int tolerance;
 	//unsigned char * gradient;
+	void displayFrame();
+	void displayGradient();
+	std::vector<unsigned int> localFrame;
 
 private:
 	int frame_to_display;
 public slots:
 	void setFrame(int frame);
 	void setTolerance(int toleranceReceived);
-	
 	
 };
 

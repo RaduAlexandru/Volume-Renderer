@@ -31,6 +31,7 @@
 #include <math.h> 
 #include <tuple>
 #include <boost/math/special_functions/round.hpp>
+#include <boost/thread.hpp>
 
 //#include <boost/variant.hpp>
 #define PI 3.14159265
@@ -702,7 +703,7 @@ void VolumeRenderer::load_image_data(const char* file) {
 
 
 
-void VolumeRenderer::polygonise(CELL & cell, std::vector<double>& verts){
+void VolumeRenderer::polygonise(CELL & cell, std::vector<glm::vec3>& verts){
 
 	//std::cout << "we are poligonizisng" << std::endl;
 	//vector<Model::POINTF> points;
@@ -787,8 +788,13 @@ void VolumeRenderer::polygonise(CELL & cell, std::vector<double>& verts){
 
 	/* Create the triangles */
 
-
+	glm::vec3 point1, point2, point3;
 	for (int i = 0; model->triTable[cubeIndex][i] != -1; i += 3) {
+		
+		point1.x = (vertlist[model->triTable[cubeIndex][i]]).x;
+		point1.y = (vertlist[model->triTable[cubeIndex][i]]).y;
+		point1.z = (vertlist[model->triTable[cubeIndex][i]]).z;
+
 		verts.push_back((vertlist[model->triTable[cubeIndex][i]]).x);
 		verts.push_back((vertlist[model->triTable[cubeIndex][i]]).y);
 		verts.push_back((vertlist[model->triTable[cubeIndex][i]]).z);
@@ -1399,7 +1405,22 @@ void VolumeRenderer::marchingSquares(){
 }
 
 
+void VolumeRenderer::createInitialCube(){
+	OctreeCube cube;
+	cube.origin.x = 0;
+	cube.origin.y = 0;
+	cube.origin.z = 0;
 
+
+	int cubeSize=std::max(std::max(model->pixelDataWidth, model->pixelDataHeight), model->frames - 1);	//WE get the maximum value
+	cubeSize = pow(2, ceil(log(cubeSize) / log(2)));	// we round it up to the neerest power of 2
+
+	cube.sizeX = cubeSize;
+	cube.sizeY = cubeSize;
+	cube.sizeZ = cubeSize;
+
+	model->cubes.push_back(cube);
+}
 
 
 
@@ -1421,18 +1442,12 @@ int VolumeRenderer::adaptiveMarchingCubes(){
 	origin----size X
 	*/
 
-	OctreeCube cube;
+	
 	int cubesSize = 0, depth = 0, maxDepth = model->octreeMaxDepth;
 
-	cube.origin.x = 0;
-	cube.origin.y = 0;
-	cube.origin.z = 0;
+	
 
-	cube.sizeX = model->pixelDataWidth;
-	cube.sizeY = model->pixelDataHeight;
-	cube.sizeZ = model->frames-1;
-
-	model->cubes.push_back(cube);
+	createInitialCube();
 
 
 	if (model->gradient.size()==0 || model->gradient.empty())
@@ -1700,24 +1715,17 @@ int VolumeRenderer::adaptiveMarchingCubes2(){
 	cout << "Finished calculating gradients" << endl;
 	cout << "Gradient points has "  << model->gradientPoints.size() << "elements"<< endl;
 
-	OctreeCube cube;
-	
 
-	cube.origin.x = 0;
-	cube.origin.y = 0;
-	cube.origin.z = 0;
+	createInitialCube();
 
-	cube.sizeX = model->pixelDataWidth;
-	cube.sizeY = model->pixelDataHeight;
-	cube.sizeZ = model->frames - 1;
-
-	model->cubes.push_back(cube);
-
-	generateOctree(cube,0);
+	generateOctree(model->cubes[0]);
 	return 0;
 }
 
 void VolumeRenderer::calculateGradient(){
+
+
+	//Sobel kernel on page 15 of http://www.diva-portal.se/smash/get/diva2:515510/FULLTEXT01.pdf
 
 	unsigned char* dataPointer;
 	int value = 0;
@@ -1764,8 +1772,9 @@ void VolumeRenderer::calculateGradient(){
 				dataPointer = dataPointer + (j + i*model->pixelDataWidth)*pointerOffset;
 				memcpy(&center, dataPointer, pointerOffset);
 
-				if (center > model->isoLevel)
-					continue;
+				/*if (abs(center - model->isoLevel)>500)
+					continue;*/
+
 
 				dataPointer = &(model->pixelData[k][0]);
 				dataPointer = dataPointer + (j - 1 + i*model->pixelDataWidth)*pointerOffset;
@@ -1792,8 +1801,10 @@ void VolumeRenderer::calculateGradient(){
 				memcpy(&farv, dataPointer, pointerOffset);
 
 				
-
-
+				if (center < model->isoLevel && left < model->isoLevel && right < model->isoLevel &&top < model->isoLevel && bottom < model->isoLevel&& farv < model->isoLevel&&closev < model->isoLevel)
+					continue;
+				if (center > model->isoLevel && left > model->isoLevel && right > model->isoLevel &&top > model->isoLevel && bottom > model->isoLevel&& farv > model->isoLevel&&closev > model->isoLevel)
+					continue;
 				/*dy = left - right;
 				dx = top - bottom;
 				dz = closev - farv;*/
@@ -1826,6 +1837,39 @@ void VolumeRenderer::calculateGradient(){
 					1 * (model->getPixelValue(j - 1, i + 1, k + 1)) + 2 * (model->getPixelValue(j, i + 1, k + 1)) + 1 * (model->getPixelValue(j + 1, i + 1, k + 1)) -
 					2 * (model->getPixelValue(j - 1, i, k + 1)) + 4 * (model->getPixelValue(j, i, k + 1)) + 2 * (model->getPixelValue(j + 1, i, k + 1)) -
 					1 * (model->getPixelValue(j - 1, i - 1, k + 1)) + 2 * (model->getPixelValue(j, i - 1, k + 1)) + 1 * (model->getPixelValue(j + 1, i - 1, k + 1));
+					
+				
+
+				
+				/*dx = -1 * (model->getSmoothPixelValue(j - 1, i + 1, k - 1)) + 1 * (model->getSmoothPixelValue(j + 1, i + 1, k - 1)) -
+					2 * (model->getSmoothPixelValue(j - 1, i, k - 1)) + 2 * (model->getSmoothPixelValue(j + 1, i, k - 1)) -
+					1 * (model->getSmoothPixelValue(j - 1, i - 1, k - 1)) + 1 * (model->getSmoothPixelValue(j + 1, i - 1, k - 1)) -
+
+					2 * (model->getSmoothPixelValue(j - 1, i + 1, k)) + 2 * (model->getSmoothPixelValue(j + 1, i + 1, k)) -
+					4 * (model->getSmoothPixelValue(j - 1, i, k)) + 2 * (model->getSmoothPixelValue(j + 1, i, k)) -
+					2 * (model->getSmoothPixelValue(j - 1, i - 1, k)) + 2 * (model->getSmoothPixelValue(j + 1, i - 1, k)) -
+
+					1 * (model->getSmoothPixelValue(j - 1, i + 1, k + 1)) + 1 * (model->getSmoothPixelValue(j + 1, i + 1, k + 1)) -
+					2 * (model->getSmoothPixelValue(j - 1, i, k + 1)) + 2 * (model->getSmoothPixelValue(j + 1, i, k + 1)) -
+					1 * (model->getSmoothPixelValue(j - 1, i - 1, k + 1)) + 1 * (model->getSmoothPixelValue(j + 1, i - 1, k + 1));
+
+				dy = 1 * (model->getSmoothPixelValue(j - 1, i + 1, k - 1)) + 2 * (model->getSmoothPixelValue(j, i + 1, k - 1)) + 1 * (model->getSmoothPixelValue(j + 1, i + 1, k - 1)) -
+					1 * (model->getSmoothPixelValue(j - 1, i - 1, k - 1)) - 2 * (model->getSmoothPixelValue(j, i - 1, k - 1)) - 1 * (model->getSmoothPixelValue(j + 1, i - 1, k - 1)) +
+
+					2 * (model->getSmoothPixelValue(j - 1, i + 1, k)) + 4 * (model->getSmoothPixelValue(j, i + 1, k)) + 2 * (model->getSmoothPixelValue(j + 1, i + 1, k)) -
+					2 * (model->getSmoothPixelValue(j - 1, i - 1, k)) - 4 * (model->getSmoothPixelValue(j, i - 1, k)) - 2 * (model->getSmoothPixelValue(j + 1, i - 1, k)) +
+
+					1 * (model->getSmoothPixelValue(j - 1, i + 1, k + 1)) + 2 * (model->getSmoothPixelValue(j, i + 1, k + 1)) + 1 * (model->getSmoothPixelValue(j + 1, i + 1, k + 1)) -
+					1 * (model->getSmoothPixelValue(j - 1, i - 1, k + 1)) - 2 * (model->getSmoothPixelValue(j, i - 1, k + 1)) - 1 * (model->getSmoothPixelValue(j + 1, i - 1, k + 1));
+
+				dz = -1 * (model->getSmoothPixelValue(j - 1, i + 1, k - 1)) - 2 * (model->getSmoothPixelValue(j, i + 1, k - 1)) - 1 * (model->getSmoothPixelValue(j + 1, i + 1, k - 1)) -
+					2 * (model->getSmoothPixelValue(j - 1, i, k - 1)) - 4 * (model->getSmoothPixelValue(j, i, k - 1)) - 2 * (model->getSmoothPixelValue(j + 1, i, k - 1)) -
+					1 * (model->getSmoothPixelValue(j - 1, i - 1, k - 1)) - 2 * (model->getSmoothPixelValue(j, i - 1, k - 1)) - 1 * (model->getSmoothPixelValue(j + 1, i - 1, k - 1)) +
+
+					1 * (model->getSmoothPixelValue(j - 1, i + 1, k + 1)) + 2 * (model->getSmoothPixelValue(j, i + 1, k + 1)) + 1 * (model->getSmoothPixelValue(j + 1, i + 1, k + 1)) -
+					2 * (model->getSmoothPixelValue(j - 1, i, k + 1)) + 4 * (model->getSmoothPixelValue(j, i, k + 1)) + 2 * (model->getSmoothPixelValue(j + 1, i, k + 1)) -
+					1 * (model->getSmoothPixelValue(j - 1, i - 1, k + 1)) + 2 * (model->getSmoothPixelValue(j, i - 1, k + 1)) + 1 * (model->getSmoothPixelValue(j + 1, i - 1, k + 1));
+				*/
 
 				if (dx == 0)
 					dx = 1;
@@ -1844,9 +1888,13 @@ void VolumeRenderer::calculateGradient(){
 				magnitude = sqrt( pow(dx, 2) + pow(dy, 2) + pow(dz, 2));
 				if (magnitude < 2500)
 					continue;
-				gradientAtPoint.x = atan2(dy, dx) * 180 / PI + 180;
-				gradientAtPoint.y = atan2(dz, dx) * 180 / PI + 180;
-				gradientAtPoint.z = atan2(dy, dz) * 180 / PI + 180;
+				gradientAtPoint.x = atan2(dy, dx) * 180 / PI +180;
+				gradientAtPoint.y = atan2(dx, dz) * 180 / PI +180;
+				gradientAtPoint.z = atan2(dz, dy) * 180 / PI +180;
+
+				/*gradientAtPoint.x = (gradientAtPoint.x > 0.0 ? gradientAtPoint.x : (360.0 + gradientAtPoint.x)); 
+				gradientAtPoint.y = (gradientAtPoint.y > 0.0 ? gradientAtPoint.y : (360.0 + gradientAtPoint.y));
+				gradientAtPoint.z = (gradientAtPoint.z > 0.0 ? gradientAtPoint.z : (360.0 + gradientAtPoint.z));*/
 
 				model->gradient[k][std::make_pair(j, i)] = gradientAtPoint;
 				/*model->gradientPoints.push_back(j);
@@ -1880,6 +1928,24 @@ inline bool VolumeRenderer::cubeNeedsSubdivision(OctreeCube &cube){
 	glm::vec3 firstAngle(-1,-1,-1);
 	int tolerance = model->tolerance;
 	boost::unordered_map< std::pair<int, int>, glm::vec3>::iterator it;
+
+
+
+	//We first check if the cube is totally out of the volume
+	if (cube.origin.x > model->pixelDataWidth || cube.origin.y > model->pixelDataHeight || cube.origin.z > model->frames - 1){
+		cube.needsChecking = false;
+		cube.isLeaf = false;
+		return false;
+	}
+		
+	//Then we check if it is in the border between the actual volume and the initial cube in which case we need to subdivide
+	if (cube.origin.x + cube.sizeX > model->pixelDataWidth || cube.origin.y + cube.sizeY > model->pixelDataHeight || cube.origin.z + cube.sizeZ > model->frames - 1){
+		cube.needsChecking = true;
+		return true;
+	}
+
+	//From now on all the cubes will be totally within the volume
+
 
 	for (int k = cube.origin.z; k < cube.sizeZ + cube.origin.z; k = k + 1){
 		for (int i = cube.origin.y; i < cube.sizeY + cube.origin.y; i = i + 1){
@@ -1915,16 +1981,25 @@ inline bool VolumeRenderer::cubeNeedsSubdivision(OctreeCube &cube){
 				//if (cubesSubdivided < 2 && firstAngleGiven==1)
 				//outputFile << " " << firstAngle.x << " " << firstAngle.y << " " << firstAngle.z << " -- " << actualValue.x << " " << actualValue.y << " " << actualValue.z << std::endl;
 
+
 				
-				int angleDif;
+				//Now I will try to make a different way of seeing diference between angles. This time by looking at all the angles at the same time, and seeing the total magnitude of change in angles
+				int angleDifX = 180 - abs(abs(firstAngle.x - actualValue.x) - 180);
+				int angleDifY = 180 - abs(abs(firstAngle.y - actualValue.y) - 180);
+				int angleDifZ = 180 - abs(abs(firstAngle.z - actualValue.z) - 180);
+
+				int angleMagnitude = sqrt(angleDifX*angleDifX + angleDifY*angleDifY + angleDifZ*angleDifZ);
+				if (angleMagnitude > tolerance && firstAngle != glm::vec3(-1, -1, -1) && actualValue != glm::vec3(-1, -1, -1))
+					return true;
+				
+
+
+
+				/*int angleDif;
 				angleDif = 180 - abs(abs(firstAngle.x - actualValue.x) - 180);
+				
 
 				if (angleDif > tolerance && firstAngle != glm::vec3(-1, -1, -1) && actualValue != glm::vec3(-1, -1, -1)){
-					//cout << "Subdivide because X" << endl;
-					//return (int)rand % 2;
-					/*if (cubesSubdivided < 2 && firstAngleGiven == 1)
-					outputFile << "cube finished with YES subdivision" << endl;
-					cubesSubdivided++;*/
 					return true;
 				}
 				angleDif = 180 - abs(abs(firstAngle.y - actualValue.y) - 180);
@@ -1936,7 +2011,7 @@ inline bool VolumeRenderer::cubeNeedsSubdivision(OctreeCube &cube){
 				if (angleDif > tolerance && firstAngle != glm::vec3(-1, -1, -1) && actualValue != glm::vec3(-1, -1, -1)){
 					//cout << "Subdivide because Z" << endl;
 					return true;
-				}
+				}*/
 
 
 				/*if (abs(firstAngle.x - actualValue.x) > tolerance && firstAngle.x != -1 && firstAngle.y != -1 && firstAngle.z != -1){
@@ -1959,7 +2034,84 @@ inline bool VolumeRenderer::cubeNeedsSubdivision(OctreeCube &cube){
 }
 
 
+void VolumeRenderer::ballPivot(){
+	std::cout << "creating mesh with ball pivot algorithm" << std::endl;
+	calculateGradient();	//I should actually make it so tht it calculates gradients only when it gradients are empty. And also make it so that when we load a new dicom file we clear the previous gradients
 
+	//grab a point from the gradients. Since gradients is still a map we convert it to two vector of positons and normals
+	//Create another vector of sortedPoints which are sorted by the distance from the onw we picked
+	//Pick two points from the sortedPoints (whithin a certain distance range) and see if those 3 points are compatible with the R-sphere
+
+	pair <glm::vec3,glm::vec3> referencePoint;
+	std::vector<glm::vec3> positions;
+	std::vector<glm::vec3> normals;
+
+	if (positions.empty()){
+		for (int k = 0; k < model->frames; k++){
+			for (auto kv : model->gradient[k]) {
+				glm::vec3 positionKey;
+				positionKey.x = kv.first.first;
+				positionKey.y = kv.first.second;
+				positionKey.z = k;
+				positions.push_back(positionKey);
+				normals.push_back(kv.second);
+			}
+		}
+	}
+	std::vector<glm::vec3> sortedPositions;
+	std::vector<glm::vec3> sortedNormals;
+
+
+	for (int i = 0; i < positions.size(); i++){
+		referencePoint.first = positions[i];
+		referencePoint.second = normals[i];
+
+		//Now that we have the point, we create a sortedPoints list and we sort the rest of them based on the distance from our reference point
+		sortedPositions.clear();
+		sortedNormals.clear();
+
+		sortedPositions = positions;
+		sortedNormals = normals;
+
+		sortedPositions.erase(sortedPositions.begin() + i);
+		sortedNormals.erase(sortedNormals.begin() + i);
+
+		//Now we sort the points that remain, which are all the points minus the one grabbed by reference
+		bool needsSwapping = true;
+		while (needsSwapping){
+			needsSwapping = false;
+			for (int j = 0; j < sortedPositions.size() - 1; j++){
+
+				double distance1 = sqrt(pow(2, sortedPositions[j].x - referencePoint.first.x) + pow(2, sortedPositions[j].y - referencePoint.first.y) + pow(2, sortedPositions[j].z - referencePoint.first.z));
+				double distance2 = sqrt(pow(2, sortedPositions[j + 1].x - referencePoint.first.x) + pow(2, sortedPositions[j + 1].y - referencePoint.first.y) + pow(2, sortedPositions[j + 1].z - referencePoint.first.z));
+
+				if (distance1 > distance2){
+					//swap positions and normals
+					glm::vec3 temp;
+					temp = sortedPositions[j];
+					sortedPositions[j] = sortedPositions[j + 1];
+					sortedPositions[j + 1] = temp;
+
+					temp = sortedNormals[j];
+					sortedNormals[j] = sortedNormals[j + 1];
+					sortedNormals[j + 1] = temp;
+
+					needsSwapping = true;
+				}
+			}
+		}
+		//Now we have the sorted points and normals so now we have to search in it.
+
+		std::cout << "distance between the reference and the first points is" << sqrt(pow(2, sortedPositions[0].x - referencePoint.first.x) + pow(2, sortedPositions[0].y - referencePoint.first.y) + pow(2, sortedPositions[0].z - referencePoint.first.z)) << std::endl;
+		std::cout << "distance between the reference and the first points is" << sqrt(pow(2, sortedPositions[1].x - referencePoint.first.x) + pow(2, sortedPositions[1].y - referencePoint.first.y) + pow(2, sortedPositions[1].z - referencePoint.first.z)) << std::endl;
+		std::cout << "distance between the reference and the first points is" << sqrt(pow(2, sortedPositions[2].x - referencePoint.first.x) + pow(2, sortedPositions[2].y - referencePoint.first.y) + pow(2, sortedPositions[2].z - referencePoint.first.z)) << std::endl;
+		std::cout << "distance between the reference and the first points is" << sqrt(pow(2, sortedPositions[3].x - referencePoint.first.x) + pow(2, sortedPositions[3].y - referencePoint.first.y) + pow(2, sortedPositions[3].z - referencePoint.first.z)) << std::endl;
+		break;	//I just use the break for debuggin so that i stop at the first reference point
+		
+
+	}
+
+}
 
 int VolumeRenderer::loadDICOMPixelData(const char* file){
 
@@ -2221,6 +2373,7 @@ void VolumeRenderer::on_toleranceSlider_valueChanged(){
 	model->tolerance = ui.toleranceSlider->value();
 	cout << "tolerance set to " << model->tolerance;
 	model->cubes.clear();
+	wipePoints();
 	//adaptiveMarchingCubes();
 }
 
@@ -2242,6 +2395,13 @@ void VolumeRenderer::on_adaptiveMarchingCubesButton_clicked(){
 void VolumeRenderer::on_adaptiveMarchingCubes2Button_clicked(){
 	if (ui.adaptiveMarchingCubes2Button->isChecked()){
 		model->algorithmChosen = 3;
+		wipePoints();
+		generateMesh();
+	}
+}
+void VolumeRenderer::on_ballPivotButton_clicked(){
+	if (ui.ballPivotButton->isChecked()){
+		model->algorithmChosen = 4;
 		wipePoints();
 		generateMesh();
 	}
@@ -2281,15 +2441,108 @@ void VolumeRenderer::on_interpolateDepthText_editingFinished(){
 	generateMesh();
 }
 
+void VolumeRenderer::on_showMeshButton_clicked(){
+	if (ui.showMeshButton ->isChecked()){
+		model->showMesh = true;
+	}
+	else{
+		model->showMesh = false;
+	}
+}
+void VolumeRenderer::on_showGradientButton_clicked(){
+	if (ui.showGradientButton->isChecked()){
+		model->showGradient = true;
+	}
+	else{
+		model->showGradient = false;
+	}
+}
+void VolumeRenderer::on_orientationZButton_clicked(){
+	if (ui.orientationZButton->isChecked()){
+		model->orientation = 1;
+		model->frame_to_display = 0;
+		ui.frameSlider->setValue(0);
+	}
+	
+}
+void VolumeRenderer::on_orientationXButton_clicked(){
+	if (ui.orientationXButton->isChecked()){
+		model->orientation = 2;
+		model->frame_to_display = 0;
+		ui.frameSlider->setValue(0);
+	}
+}
+void VolumeRenderer::on_orientationYButton_clicked(){
+	if (ui.orientationYButton->isChecked()){
+		model->orientation = 3;
+		model->frame_to_display = 0;
+		ui.frameSlider->setValue(0);
+	}
+}
+void VolumeRenderer::on_showCubesButton_clicked(){
+	if (ui.showCubesButton->isChecked()){
+		model->showCubes = true;;
+	}
+}
 
+
+//************************************
+// Method:    generateMesh
+// FullName:  VolumeRenderer::generateMesh
+// Access:    private 
+// Returns:   void
+// Qualifier:
+//************************************
 void VolumeRenderer::generateMesh(){
-	if (model->algorithmChosen == 1)
-		marchingSquares();
+	if (model->algorithmChosen == 1){
+		boost::thread workerThread(boost::bind(&VolumeRenderer::marchingSquares, this));
+		workerThread.join();
+		//marchingSquares();
+	}
+		
 	if (model->algorithmChosen == 2)
 		adaptiveMarchingCubes();
 	if (model->algorithmChosen == 3)
 		adaptiveMarchingCubes2();
-	generateNormals();
+	if (model->algorithmChosen == 4)
+			ballPivot();
+
+	boost::thread workerThread(boost::bind(&VolumeRenderer::generateNormals, this));
+	//generateNormals();
+
+
+	//qWarning() << QString("%L1").arg(i);
+	QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedStates));
+	QLocale aEnglish;
+	//qWarning() << aEnglish.toString(i);
+	ui.numberOfTrianglesLabel->setText(aEnglish.toString(model->verts.size()/9));
+
+
+	/*QPalette palette;
+
+	//white text
+	QBrush brush(QColor(255, 255, 255, 255));
+	brush.setStyle(Qt::SolidPattern);
+
+	//black background
+	QBrush brush1(QColor(0, 0, 0, 255));
+	brush1.setStyle(Qt::SolidPattern);
+
+	//set white text    
+	palette.setBrush(QPalette::Active, QPalette::WindowText, brush);
+	palette.setBrush(QPalette::Inactive, QPalette::WindowText, brush);
+
+	//set black background
+	palette.setBrush(QPalette::Active, QPalette::Window, brush1);
+	palette.setBrush(QPalette::Inactive, QPalette::Window, brush1);
+
+	//set palette    
+	textLabel->setPalette(palette);*/
+
+	QPalette plt;
+	plt.setColor(QPalette::WindowText, Qt::white);
+	ui.numberOfTrianglesLabel->setPalette(plt);
+	
 }
 
 //************************************
@@ -2297,6 +2550,10 @@ void VolumeRenderer::generateMesh(){
 //************************************
 void VolumeRenderer::generateNormals(){
 	model->normals.clear();
+
+	if (model->verts.empty())
+		return;
+
 	glm::vec3 u, v, n;
 
 	if (model->normalsAlgChosen == 1){
@@ -2346,6 +2603,8 @@ void VolumeRenderer::generateNormals(){
 			y = boost::math::iround(model->verts[i+1]);
 			k = boost::math::iround(model->verts[i+2]);
 
+			//getSmoothPixelValue
+
 			dx = -1 * (model->getPixelValue(j - 1, y + 1, k - 1)) + 1 * (model->getPixelValue(j + 1, y + 1, k - 1)) -
 				2 * (model->getPixelValue(j - 1, y, k - 1)) + 2 * (model->getPixelValue(j + 1, y, k - 1)) -
 				1 * (model->getPixelValue(j - 1, y - 1, k - 1)) + 1 * (model->getPixelValue(j + 1, y - 1, k - 1)) -
@@ -2375,6 +2634,36 @@ void VolumeRenderer::generateNormals(){
 				2 * (model->getPixelValue(j - 1, y, k + 1)) + 4 * (model->getPixelValue(j, y, k + 1)) + 2 * (model->getPixelValue(j + 1, y, k + 1)) -
 				1 * (model->getPixelValue(j - 1, y - 1, k + 1)) + 2 * (model->getPixelValue(j, y - 1, k + 1)) + 1 * (model->getPixelValue(j + 1, y - 1, k + 1));
 
+			///Smooth one
+
+			/*dx = -1 * (model->getSmoothPixelValue(j - 1, y + 1, k - 1)) + 1 * (model->getSmoothPixelValue(j + 1, y + 1, k - 1)) -
+				2 * (model->getSmoothPixelValue(j - 1, y, k - 1)) + 2 * (model->getSmoothPixelValue(j + 1, y, k - 1)) -
+				1 * (model->getSmoothPixelValue(j - 1, y - 1, k - 1)) + 1 * (model->getSmoothPixelValue(j + 1, y - 1, k - 1)) -
+
+				2 * (model->getSmoothPixelValue(j - 1, y + 1, k)) + 2 * (model->getSmoothPixelValue(j + 1, y + 1, k)) -
+				4 * (model->getSmoothPixelValue(j - 1, y, k)) + 2 * (model->getSmoothPixelValue(j + 1, y, k)) -
+				2 * (model->getSmoothPixelValue(j - 1, y - 1, k)) + 2 * (model->getSmoothPixelValue(j + 1, y - 1, k)) -
+
+				1 * (model->getSmoothPixelValue(j - 1, y + 1, k + 1)) + 1 * (model->getSmoothPixelValue(j + 1, y + 1, k + 1)) -
+				2 * (model->getSmoothPixelValue(j - 1, y, k + 1)) + 2 * (model->getSmoothPixelValue(j + 1, y, k + 1)) -
+				1 * (model->getSmoothPixelValue(j - 1, y - 1, k + 1)) + 1 * (model->getSmoothPixelValue(j + 1, y - 1, k + 1));
+
+			dy = 1 * (model->getSmoothPixelValue(j - 1, y + 1, k - 1)) + 2 * (model->getSmoothPixelValue(j, y + 1, k - 1)) + 1 * (model->getSmoothPixelValue(j + 1, y + 1, k - 1)) -
+				1 * (model->getSmoothPixelValue(j - 1, y - 1, k - 1)) - 2 * (model->getSmoothPixelValue(j, y - 1, k - 1)) - 1 * (model->getSmoothPixelValue(j + 1, y - 1, k - 1)) +
+
+				2 * (model->getSmoothPixelValue(j - 1, y + 1, k)) + 4 * (model->getSmoothPixelValue(j, y + 1, k)) + 2 * (model->getSmoothPixelValue(j + 1, y + 1, k)) -
+				2 * (model->getSmoothPixelValue(j - 1, y - 1, k)) - 4 * (model->getSmoothPixelValue(j, y - 1, k)) - 2 * (model->getSmoothPixelValue(j + 1, y - 1, k)) +
+
+				1 * (model->getSmoothPixelValue(j - 1, y + 1, k + 1)) + 2 * (model->getSmoothPixelValue(j, y + 1, k + 1)) + 1 * (model->getSmoothPixelValue(j + 1, y + 1, k + 1)) -
+				1 * (model->getSmoothPixelValue(j - 1, y - 1, k + 1)) - 2 * (model->getSmoothPixelValue(j, y - 1, k + 1)) - 1 * (model->getSmoothPixelValue(j + 1, y - 1, k + 1));
+
+			dz = -1 * (model->getSmoothPixelValue(j - 1, y + 1, k - 1)) - 2 * (model->getSmoothPixelValue(j, y + 1, k - 1)) - 1 * (model->getSmoothPixelValue(j + 1, y + 1, k - 1)) -
+				2 * (model->getSmoothPixelValue(j - 1, y, k - 1)) - 4 * (model->getSmoothPixelValue(j, y, k - 1)) - 2 * (model->getSmoothPixelValue(j + 1, y, k - 1)) -
+				1 * (model->getSmoothPixelValue(j - 1, y - 1, k - 1)) - 2 * (model->getSmoothPixelValue(j, y - 1, k - 1)) - 1 * (model->getSmoothPixelValue(j + 1, y - 1, k - 1)) +
+
+				1 * (model->getSmoothPixelValue(j - 1, y + 1, k + 1)) + 2 * (model->getSmoothPixelValue(j, y + 1, k + 1)) + 1 * (model->getSmoothPixelValue(j + 1, y + 1, k + 1)) -
+				2 * (model->getSmoothPixelValue(j - 1, y, k + 1)) + 4 * (model->getSmoothPixelValue(j, y, k + 1)) + 2 * (model->getSmoothPixelValue(j + 1, y, k + 1)) -
+				1 * (model->getSmoothPixelValue(j - 1, y - 1, k + 1)) + 2 * (model->getSmoothPixelValue(j, y - 1, k + 1)) + 1 * (model->getSmoothPixelValue(j + 1, y - 1, k + 1));*/
 
 
 			//we now normalize it

@@ -13,7 +13,7 @@ DicomViewer2DGL::DicomViewer2DGL(QWidget *parent)
 	: QOpenGLWidget(parent)
 {
 	frame_to_display = 0;
-	tolerance = 0;
+	tolerance = 0;	
 }
 
 DicomViewer2DGL::~DicomViewer2DGL()
@@ -50,55 +50,12 @@ void DicomViewer2DGL::paintGL()
 	glPixelZoom((float)this->width() / (float)model->pixelDataWidth, (float)this->height() / (float)model->pixelDataHeight);  //used to scale the image down if the image is to big to fit in the window. 
 	//glPixelStorei(GL_UNPACK_ALIGNMENT, 2); //In case the size of the image is not a power of 2
 
-	if (model->pixelDataHeight != 0){
-		if (model->numberOfBytes == 1)
-			//glDrawPixels(model->pixelDataWidth, model->pixelDataHeight, GL_LUMINANCE, GL_UNSIGNED_BYTE, ((model->pixelData))[frame_to_display]);
-			if (!gradient.empty())
-				glDrawPixels(model->pixelDataWidth, model->pixelDataHeight, GL_LUMINANCE, GL_UNSIGNED_INT, gradient.data());
-		if (model->numberOfBytes == 2)
-			//glDrawPixels(model->pixelDataWidth, model->pixelDataHeight, GL_LUMINANCE, GL_UNSIGNED_SHORT, ((model->pixelData))[frame_to_display]);
-			if (!gradient.empty())
-				glDrawPixels(model->pixelDataWidth, model->pixelDataHeight, GL_LUMINANCE, GL_UNSIGNED_INT, gradient.data());
-		if (model->numberOfBytes == 3)
-			glDrawPixels(model->pixelDataWidth, model->pixelDataHeight, GL_LUMINANCE, GL_UNSIGNED_INT, ((model->pixelData))[frame_to_display]);
-
-	}
-	
+	displayFrame();
+	//displayGradient();
 
 	
 
-	//std::cout << "drawing cubes" << std::endl;
-	/*glColor3f(1.f, 0.f, 0.f);
-	glBegin(GL_LINES);
-	for (int i = 0; i < cubes.size(); i = i +1){
-		glVertex2f(cubes[i].topLeft.x, cubes[i].topLeft.y);
-		glVertex2f(cubes[i].topRight.x, cubes[i].topRight.y);
-
-		glVertex2f(cubes[i].topRight.x, cubes[i].topRight.y);
-		glVertex2f(cubes[i].bottomRight.x, cubes[i].bottomRight.y);
-
-		glVertex2f(cubes[i].bottomRight.x, cubes[i].bottomRight.y);
-		glVertex2f(cubes[i].bottomLeft.x, cubes[i].bottomLeft.y);
-
-		glVertex2f(cubes[i].bottomLeft.x, cubes[i].bottomLeft.y);
-		glVertex2f(cubes[i].topLeft.x, cubes[i].topLeft.y);
-	}
-	glEnd();
-
-	glColor3f(0.f, 1.f, 0.f);
-	glBegin(GL_LINES);
-	glVertex2f(selectedCube.topLeft.x, selectedCube.topLeft.y);
-	glVertex2f(selectedCube.topRight.x, selectedCube.topRight.y);
-
-	glVertex2f(selectedCube.topRight.x, selectedCube.topRight.y);
-	glVertex2f(selectedCube.bottomRight.x, selectedCube.bottomRight.y);
-
-	glVertex2f(selectedCube.bottomRight.x, selectedCube.bottomRight.y);
-	glVertex2f(selectedCube.bottomLeft.x, selectedCube.bottomLeft.y);
-
-	glVertex2f(selectedCube.bottomLeft.x, selectedCube.bottomLeft.y);
-	glVertex2f(selectedCube.topLeft.x, selectedCube.topLeft.y);
-	glEnd();*/
+	
 
 
 	/*glColor3f(0.f, 0.f, 1.f);
@@ -117,8 +74,136 @@ void DicomViewer2DGL::resizeGL(int w, int h)
 
 }
 
+
+void DicomViewer2DGL::displayFrame(){
+	if (model->pixelDataHeight != 0){
+
+		int orientation = model->orientation;
+		//Copy the data fo that frame in a new local frame. Depending on the orientation, z, x or y. We copy on orientation of the frame or another Z=1, x=2;y=3
+
+		
+
+
+		/*if (model->numberOfBytes == 1)
+			glDrawPixels(model->pixelDataWidth, model->pixelDataHeight, GL_LUMINANCE, GL_UNSIGNED_BYTE, ((model->pixelData))[frame_to_display]);
+			//if (!gradient.empty())
+				//glDrawPixels(model->pixelDataWidth, model->pixelDataHeight, GL_LUMINANCE, GL_UNSIGNED_INT, gradient.data());
+		if (model->numberOfBytes == 2)
+			glDrawPixels(model->pixelDataWidth, model->pixelDataHeight, GL_LUMINANCE, GL_UNSIGNED_SHORT, ((model->pixelData))[frame_to_display]);
+			//if (!gradient.empty())
+				//glDrawPixels(model->pixelDataWidth, model->pixelDataHeight, GL_LUMINANCE, GL_UNSIGNED_INT, gradient.data());
+		if (model->numberOfBytes == 3)
+			glDrawPixels(model->pixelDataWidth, model->pixelDataHeight, GL_LUMINANCE, GL_UNSIGNED_INT, ((model->pixelData))[frame_to_display]);*/
+
+		if (!localFrame.empty()){
+			if (orientation == 1)
+				glDrawPixels(model->pixelDataWidth, model->pixelDataHeight, GL_LUMINANCE, GL_UNSIGNED_INT, localFrame.data());
+			//if (!gradient.empty())
+			//glDrawPixels(model->pixelDataWidth, model->pixelDataHeight, GL_LUMINANCE, GL_UNSIGNED_INT, gradient.data());
+			if (orientation == 2)
+				glDrawPixels(model->pixelDataHeight, model->frames, GL_LUMINANCE, GL_UNSIGNED_INT, localFrame.data());
+			//if (!gradient.empty())
+			//glDrawPixels(model->pixelDataWidth, model->pixelDataHeight, GL_LUMINANCE, GL_UNSIGNED_INT, gradient.data());
+			if (orientation == 3)
+				glDrawPixels(model->pixelDataWidth, model->frames, GL_LUMINANCE, GL_UNSIGNED_INT, localFrame.data());
+		}
+
+	}
+}
+
+void DicomViewer2DGL::displayGradient(){
+
+	boost::unordered_map< std::pair<int, int>, glm::vec3>::iterator it;
+	glm::vec3 actualValue(-1, -1, -1);
+
+	if (model->gradient.empty())
+		return;
+
+	int orientation = model->orientation;
+
+	if (orientation == 1){
+		for (int i = 0; i < model->pixelDataHeight; i++){
+			for (int j = 0; j < model->pixelDataWidth; j++){
+
+				//Look for a gradient with values (j,i) If we found it display the line from (j,i) to the x,y of that gradient
+				
+				it = model->gradient[frame_to_display].find(std::make_pair(j, i));
+				if (it != model->gradient[frame_to_display].end())
+				{
+					//element found;
+					actualValue = it->second;
+					//The input for sin is in radians so we do *PI / 180. The output os sin is from -1 to 1. So we add 1 and then divide by 2 so we get a value from 0 to 1
+					glColor3f((sin(actualValue.x *PI / 180) + 1) / 2, (sin(actualValue.y *PI / 180) + 1) / 2, (sin(actualValue.z *PI / 180) + 1) / 2);
+					glBegin(GL_POINTS);
+						glVertex2f(j, i);
+					glEnd();
+				}
+
+			
+			}
+		}
+	}
+
+}
+
 void DicomViewer2DGL::setFrame(int frame)
 {
+	frame_to_display = frame;
+	localFrame.clear();
+	
+	unsigned char* dataPointer;
+	int value = 0;
+
+	int orientation = model->orientation;
+
+	//The value we have goes from o to pow(2,numberOfBytes*8). So in the case of the VHF which has 2 bytes per pixel. it goes from 0 to pow(2,16)=65536
+	//WE have to scale it up to 4 bytes (unsigned int) Which max value would be pow(2,4*8). The multiplier would thus be 
+	int multiplier = pow(2, 4 * 8) / pow(2,model->numberOfBytes * 8);	
+	if (orientation == 1){
+		//localFrame.reserve(model->pixelDataWidth*model->pixelDataHeight);
+		for (int i = 0; i < model->pixelDataHeight; i++){
+			for (int j = 0; j < model->pixelDataWidth; j++){
+
+
+				dataPointer = &(model->pixelData[frame][0]);
+				dataPointer = dataPointer + (j + i*model->pixelDataWidth)*model->numberOfBytes;
+				memcpy(&value, dataPointer, model->numberOfBytes);
+
+
+				localFrame.push_back(value*multiplier);
+			}
+		}
+	}
+
+	if (orientation == 2){
+		for (int i = 0; i < model->pixelDataHeight; i++){
+			for (int j = 0; j < model->pixelDataWidth; j++){
+
+				/*dataPointer = &(model->pixelData[i][0]);
+				dataPointer = dataPointer + (frame + j*model->pixelDataWidth)*model->numberOfBytes;
+				memcpy(&value, dataPointer, model->numberOfBytes);*/
+
+
+				localFrame.push_back(model->getPixelValue(frame, j, i)*multiplier);
+			}
+		}
+	}
+
+
+	if (orientation == 3){
+		for (int i = 0; i < model->pixelDataHeight; i++){
+			for (int j = 0; j < model->pixelDataWidth; j++){
+				localFrame.push_back(model->getPixelValue(j, frame, i)*multiplier);
+			}
+		}
+	}
+
+
+
+
+	//ALl of the below is for calculating gradient////////////
+	/*
+
 	model->frame_to_display = frame;
 	frame_to_display = frame; //We actually have to make something like frameToDisplay=frame% model-> numberOfFrameInDicomFile
 	//std::cout << "the first few pixels have value" << (int)model->pixelData[frame_to_display][1] << std::endl;
@@ -203,11 +288,11 @@ void DicomViewer2DGL::setFrame(int frame)
 			system("pause");
 		}
 	}*/
+	
 
 
 
-
-	//ALL THE CODE BENETH HERE IS TO MAKE OCTREE IN 3D, BUT IT NEEDS TO BE CHANGED SO THAT IT WORKS WITH THE NEW OCTREECUBE CLASS WHICH USES 0,1,2,3 FOR VERTICES INSTED OF TOPRIGHT, TOPlEFT ETC
+	//ALL THE CODE BENETH HERE IS TO MAKE OCTREE IN 2D, BUT IT NEEDS TO BE CHANGED SO THAT IT WORKS WITH THE NEW OCTREECUBE CLASS WHICH USES 0,1,2,3 FOR VERTICES INSTED OF TOPRIGHT, TOPlEFT ETC
 	
 	/*
 
@@ -432,3 +517,4 @@ void DicomViewer2DGL::setTolerance(int toleranceReceived){
 		setFrame(0);
 	
 }
+

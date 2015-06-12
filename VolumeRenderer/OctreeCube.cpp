@@ -18,11 +18,92 @@ OctreeCube::~OctreeCube()
 {
 }
 
-int OctreeCube::needsSubdivision(){
-	int needSubdivision;
+int OctreeCube::needsSubdivision(int tolerance, std::vector< boost::unordered_map< std::pair<int, int>, glm::vec3> > &gradient){
+	/*int needSubdivision;
 	//needSubdivision = rand() % 2;
 	needSubdivision = 1;
-	return needSubdivision;
+	return needSubdivision;*/
+
+	glm::vec3 firstAngle(-1, -1, -1);
+	
+	boost::unordered_map< std::pair<int, int>, glm::vec3>::iterator it;
+
+	for (int k = origin.z; k <sizeZ +origin.z; k = k + 1){
+		for (int i = origin.y; i < sizeY + origin.y; i = i + 1){
+			for (int j = origin.x; j < sizeX + origin.x; j = j + 1){
+
+
+
+
+
+
+				glm::vec3 actualValue(-1, -1, -1);
+				it = gradient[k].find(std::make_pair(j, i));
+				if (it !=gradient[k].end())
+				{
+					//element found;
+					actualValue = it->second;
+				}
+				//actualValue = model->gradient[k].find(std::make_pair(j,i));
+
+
+				if (firstAngle == glm::vec3(-1, -1, -1) && actualValue != glm::vec3(-1, -1, -1)){
+					firstAngle = actualValue;
+
+				}
+
+				/*if (firstAngle.x == -1 && firstAngle.y == -1 && firstAngle.z == -1 && actualValue.x != -1 && actualValue.y != -1 && actualValue.z != -1){
+				firstAngle.x = actualValue.x;
+				firstAngle.y = actualValue.y;
+				firstAngle.z = actualValue.z;
+				}*/
+
+				//std::cout << "i= " << i << " j= " << j << " k= " << k << std::endl;
+				//if (cubesSubdivided < 2 && firstAngleGiven==1)
+				//outputFile << " " << firstAngle.x << " " << firstAngle.y << " " << firstAngle.z << " -- " << actualValue.x << " " << actualValue.y << " " << actualValue.z << std::endl;
+
+
+				int angleDif;
+				angleDif = 180 - abs(abs(firstAngle.x - actualValue.x) - 180);
+
+				if (angleDif > tolerance && firstAngle != glm::vec3(-1, -1, -1) && actualValue != glm::vec3(-1, -1, -1)){
+					//cout << "Subdivide because X" << endl;
+					//return (int)rand % 2;
+					/*if (cubesSubdivided < 2 && firstAngleGiven == 1)
+					outputFile << "cube finished with YES subdivision" << endl;
+					cubesSubdivided++;*/
+					return true;
+				}
+				angleDif = 180 - abs(abs(firstAngle.y - actualValue.y) - 180);
+				if (angleDif > tolerance && firstAngle != glm::vec3(-1, -1, -1) && actualValue != glm::vec3(-1, -1, -1)){
+					//cout << "Subdivide because Y" << endl;
+					return true;
+				}
+				angleDif = 180 - abs(abs(firstAngle.z - actualValue.z) - 180);
+				if (angleDif > tolerance && firstAngle != glm::vec3(-1, -1, -1) && actualValue != glm::vec3(-1, -1, -1)){
+					//cout << "Subdivide because Z" << endl;
+					return true;
+				}
+
+
+				/*if (abs(firstAngle.x - actualValue.x) > tolerance && firstAngle.x != -1 && firstAngle.y != -1 && firstAngle.z != -1){
+				return true;
+				}
+				if (abs(firstAngle.y - actualValue.y) > tolerance && firstAngle.x != -1 && firstAngle.y != -1 && firstAngle.z != -1){
+				return true;
+				}
+				if (abs(firstAngle.y - actualValue.y) > tolerance && firstAngle.x != -1 && firstAngle.y != -1 && firstAngle.z != -1){
+				return true;
+				}*/
+
+			}
+		}
+	}
+	//outputFile << "cube finished with NO subdivision" << endl;
+	//cube.isLeaf=false;	//If it doesnt need subdivision we just mark it as a non-leaf (as a father of no cubes) just so we don't recheck it later 
+	needsChecking = false;
+	return false;
+
 }
 int OctreeCube::subdivide(std::vector <OctreeCube> & cubes){
 

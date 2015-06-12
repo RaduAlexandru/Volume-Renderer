@@ -51,10 +51,12 @@ private:
 	int adaptiveMarchingCubes();
 	void calculateGradient();
 	inline bool cubeNeedsSubdivision(OctreeCube&);
-	int generateOctree(OctreeCube,int);
+	int generateOctree(OctreeCube,int=0);	//The int=0 is the default value of the depth. We obviously start at 0
 	int adaptiveMarchingCubes2();
 	void generateMesh();
 	void generateNormals();
+	void createInitialCube();
+	void ballPivot();
 	
 	void marchingSquares();
 	void wipeBitmap();
@@ -80,10 +82,17 @@ private slots:
 	void on_marchingCubesButton_clicked();
 	void on_adaptiveMarchingCubesButton_clicked();
 	void on_adaptiveMarchingCubes2Button_clicked();
+	void on_ballPivotButton_clicked();
 	void on_perspectiveButton_clicked();
 	void on_normalsPerTriangleButton_clicked();
 	void on_normalsPerVerticeButton_clicked();
 	void on_interpolateDepthText_editingFinished();
+	void on_showMeshButton_clicked();
+	void on_showGradientButton_clicked();
+	void on_orientationZButton_clicked();
+	void on_orientationXButton_clicked();
+	void on_orientationYButton_clicked();
+	void on_showCubesButton_clicked();
 
 	
 };

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1211</width>
-    <height>713</height>
+    <width>1346</width>
+    <height>692</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -39,12 +39,31 @@
       <height>591</height>
      </rect>
     </property>
+    <widget class="QLabel" name="numberOfTrianglesLabel">
+     <property name="geometry">
+      <rect>
+       <x>560</x>
+       <y>560</y>
+       <width>131</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::RichText</enum>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
    </widget>
    <widget class="QSlider" name="frameSlider">
     <property name="geometry">
      <rect>
-      <x>1030</x>
-      <y>540</y>
+      <x>1020</x>
+      <y>600</y>
       <width>121</width>
       <height>22</height>
      </rect>
@@ -88,8 +107,8 @@
    <widget class="QPushButton" name="loadTestImageButton">
     <property name="geometry">
      <rect>
-      <x>260</x>
-      <y>20</y>
+      <x>1220</x>
+      <y>10</y>
       <width>81</width>
       <height>23</height>
      </rect>
@@ -101,8 +120,8 @@
    <widget class="QPushButton" name="loadDICOMButton">
     <property name="geometry">
      <rect>
-      <x>490</x>
-      <y>20</y>
+      <x>1220</x>
+      <y>70</y>
       <width>75</width>
       <height>23</height>
      </rect>
@@ -114,8 +133,8 @@
    <widget class="QPushButton" name="loadTestImage2Button">
     <property name="geometry">
      <rect>
-      <x>370</x>
-      <y>20</y>
+      <x>1210</x>
+      <y>40</y>
       <width>91</width>
       <height>23</height>
      </rect>
@@ -140,8 +159,8 @@
    <widget class="QLabel" name="label_2">
     <property name="geometry">
      <rect>
-      <x>980</x>
-      <y>540</y>
+      <x>970</x>
+      <y>600</y>
       <width>47</width>
       <height>13</height>
      </rect>
@@ -220,8 +239,8 @@
    <widget class="QLabel" name="label_6">
     <property name="geometry">
      <rect>
-      <x>1160</x>
-      <y>550</y>
+      <x>1150</x>
+      <y>610</y>
       <width>47</width>
       <height>13</height>
      </rect>
@@ -249,7 +268,7 @@
    <widget class="QGroupBox" name="groupBox">
     <property name="geometry">
      <rect>
-      <x>1060</x>
+      <x>990</x>
       <y>130</y>
       <width>141</width>
       <height>80</height>
@@ -288,8 +307,8 @@
    <widget class="QPushButton" name="loadMFDICOMButton">
     <property name="geometry">
      <rect>
-      <x>590</x>
-      <y>20</y>
+      <x>1200</x>
+      <y>100</y>
       <width>121</width>
       <height>23</height>
      </rect>
@@ -301,10 +320,10 @@
    <widget class="DicomViewer2DGL" name="dicomviewer2dgl" native="true">
     <property name="geometry">
      <rect>
-      <x>1020</x>
-      <y>400</y>
-      <width>151</width>
-      <height>131</height>
+      <x>960</x>
+      <y>250</y>
+      <width>371</width>
+      <height>341</height>
      </rect>
     </property>
    </widget>
@@ -376,7 +395,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>1</string>
+     <string>10</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_7">
@@ -396,9 +415,9 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>130</y>
+      <y>120</y>
       <width>171</width>
-      <height>101</height>
+      <height>111</height>
      </rect>
     </property>
     <property name="title">
@@ -444,6 +463,19 @@
      </property>
      <property name="text">
       <string>Adaptive Marching Cubes 2</string>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="ballPivotButton">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>80</y>
+       <width>82</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Ball Pivot</string>
      </property>
     </widget>
    </widget>
@@ -502,7 +534,7 @@
      <string>Tolerance</string>
     </property>
    </widget>
-   <widget class="QCheckBox" name="checkBox_2">
+   <widget class="QCheckBox" name="showCubesButton">
     <property name="geometry">
      <rect>
       <x>20</x>
@@ -567,13 +599,110 @@
      <string>readObj</string>
     </property>
    </widget>
+   <widget class="QPushButton" name="pushButton_3">
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>60</y>
+      <width>111</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>ResetModelPosition</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="showMeshButton">
+    <property name="geometry">
+     <rect>
+      <x>120</x>
+      <y>520</y>
+      <width>70</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>showMesh</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="showGradientButton">
+    <property name="geometry">
+     <rect>
+      <x>120</x>
+      <y>550</y>
+      <width>91</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>showGradient</string>
+    </property>
+   </widget>
+   <widget class="QGroupBox" name="groupBox_4">
+    <property name="geometry">
+     <rect>
+      <x>1160</x>
+      <y>130</y>
+      <width>120</width>
+      <height>101</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Orientation</string>
+    </property>
+    <widget class="QRadioButton" name="orientationZButton">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>20</y>
+       <width>82</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Z</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="orientationXButton">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>40</y>
+       <width>82</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>X</string>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="orientationYButton">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>60</y>
+       <width>82</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Y</string>
+     </property>
+    </widget>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1211</width>
+     <width>1346</width>
      <height>21</height>
     </rect>
    </property>
@@ -620,12 +749,12 @@
    <slot>setNum(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>262</x>
-     <y>603</y>
+     <x>190</x>
+     <y>414</y>
     </hint>
     <hint type="destinationlabel">
-     <x>342</x>
-     <y>603</y>
+     <x>256</x>
+     <y>405</y>
     </hint>
    </hints>
   </connection>
@@ -636,12 +765,12 @@
    <slot>setNum(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>279</x>
-     <y>643</y>
+     <x>1020</x>
+     <y>654</y>
     </hint>
     <hint type="destinationlabel">
-     <x>338</x>
-     <y>643</y>
+     <x>1150</x>
+     <y>655</y>
     </hint>
    </hints>
   </connection>
@@ -652,12 +781,12 @@
    <slot>setNum(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>282</x>
-     <y>553</y>
+     <x>190</x>
+     <y>384</y>
     </hint>
     <hint type="destinationlabel">
-     <x>357</x>
-     <y>553</y>
+     <x>256</x>
+     <y>375</y>
     </hint>
    </hints>
   </connection>
@@ -668,12 +797,12 @@
    <slot>setTolerance(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>549</x>
-     <y>544</y>
+     <x>190</x>
+     <y>434</y>
     </hint>
     <hint type="destinationlabel">
-     <x>672</x>
-     <y>551</y>
+     <x>960</x>
+     <y>614</y>
     </hint>
    </hints>
   </connection>

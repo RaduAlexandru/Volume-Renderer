@@ -31,6 +31,7 @@ public:
 	void drawBackground();
 	void readBackgroundImage();
 	void setMatrices();
+	void displayGradient();
 
 	int dataSended;
 	unsigned char* background;
