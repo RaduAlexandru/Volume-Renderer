@@ -12,6 +12,8 @@ OctreeCube::OctreeCube()
 	isLeaf = true;
 	needsChecking = true;
 	polygonised = false;
+	containsVerts = false;
+	points = NULL;
 
 	parent = NULL;
 	for (int i = 0; i < 8; i++){

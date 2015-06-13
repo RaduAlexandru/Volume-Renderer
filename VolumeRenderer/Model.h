@@ -75,6 +75,9 @@ public:
 	int cellSizeZ;	
 	unsigned char** pixelData;
 
+	std::vector<std::vector<std::vector<std::vector<OctreeCube*> > > > array4D;
+	std::vector<OctreeCube*>  octreeVector;
+
 	std::vector<int>  edgeTable;
 	std::vector< std::vector<int> > triTable;
 

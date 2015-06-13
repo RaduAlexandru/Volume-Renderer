@@ -43,7 +43,7 @@ private:
 	int getRepresentation(QString , int& , int& , int& , int& ,int&, int&, int&);
 	//void showPixels(void* pixelData, std::vector<Model::POINTF>);
 	void load_image_data(const char*);
-	void polygonise(CELL&, std::vector<glm::vec3>&);
+	int polygonise(CELL&, std::vector<glm::vec3>&);
 	inline void interpolate(int, glm::vec3 point1, glm::vec3 point2, float, float, glm::vec3&, int depth=0);
 	int loadDICOMPixelData(const char*);
 	int loadDICOMPixelData(QStringList);
@@ -56,12 +56,20 @@ private:
 	int adaptiveMarchingCubes2();
 	int adaptiveMarchingCubes3();
 	int polygoniseOctree(OctreeCube*,int=0);
-	void VolumeRenderer::octree2CellPolygonise(OctreeCube);
+	int polygoniseOctree2(OctreeCube* );
+	int polygoniseAssignToCube(OctreeCube* );
+	int readPointsFromOctree(OctreeCube*);
+	glm::vec3 pointOnLine(glm::vec3 , glm::vec3 , glm::vec3& );
+
+	void octree2CellPolygonise(OctreeCube&);
+	void generateHypercube();
+	void correctlyAssignLeafs(OctreeCube*);
+
 	void generateMesh();
 	void generateNormals();
 	OctreeCube createInitialCube();
 	void ballPivot();
-	void crackPatch();
+	void crackPatch(OctreeCube*);
 	
 	void marchingSquares();
 	void wipeBitmap();
