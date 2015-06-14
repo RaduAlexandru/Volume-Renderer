@@ -257,7 +257,7 @@ void GLWidget::paintGL()
 		displayGradient();
 
 	if (model->showCubes)
-		drawCubes();
+		drawCubes2();
 
 
 	if (model->showWireframe){
@@ -416,6 +416,67 @@ void GLWidget::drawCubes(){
 
 		glVertex3f(model->cubes[i].origin.x, model->cubes[i].origin.y + model->cubes[i].sizeY, model->cubes[i].origin.z);
 		glVertex3f(model->cubes[i].origin.x + model->cubes[i].sizeX, model->cubes[i].origin.y + model->cubes[i].sizeY, model->cubes[i].origin.z);
+
+
+	}
+	glEnd();
+}
+
+
+//This one get the octreecubes from octreevector which is the one that gets used when adaptivemarchingvubes3
+void GLWidget::drawCubes2(){
+	//Draw the cubes now The cube configuracion can be found as a comment in the adaptiveMarchingCubes function
+
+	glBegin(GL_LINES);
+	for (int i = 0; i < model->octreeVector.size(); i = i + 1){
+
+		/*if (!model->octreeVector[i]->isLeaf){
+			continue;
+		}*/
+
+		if (!model->octreeVector[i]->containsVerts){
+			continue;
+		}
+
+		glVertex3f(model->octreeVector[i]->origin.x, model->octreeVector[i]->origin.y, model->octreeVector[i]->origin.z);
+		glVertex3f(model->octreeVector[i]->origin.x + model->octreeVector[i]->sizeX, model->octreeVector[i]->origin.y, model->octreeVector[i]->origin.z);
+
+		glVertex3f(model->octreeVector[i]->origin.x, model->octreeVector[i]->origin.y, model->octreeVector[i]->origin.z);
+		glVertex3f(model->octreeVector[i]->origin.x, model->octreeVector[i]->origin.y + model->octreeVector[i]->sizeY, model->octreeVector[i]->origin.z);
+
+		glVertex3f(model->octreeVector[i]->origin.x, model->octreeVector[i]->origin.y, model->octreeVector[i]->origin.z);
+		glVertex3f(model->octreeVector[i]->origin.x, model->octreeVector[i]->origin.y, model->octreeVector[i]->origin.z + model->octreeVector[i]->sizeZ);
+
+
+		glVertex3f(model->octreeVector[i]->origin.x + model->octreeVector[i]->sizeX, model->octreeVector[i]->origin.y + model->octreeVector[i]->sizeY, model->octreeVector[i]->origin.z + model->octreeVector[i]->sizeZ);
+		glVertex3f(model->octreeVector[i]->origin.x, model->octreeVector[i]->origin.y + model->octreeVector[i]->sizeY, model->octreeVector[i]->origin.z + model->octreeVector[i]->sizeZ);
+
+		glVertex3f(model->octreeVector[i]->origin.x + model->octreeVector[i]->sizeX, model->octreeVector[i]->origin.y + model->octreeVector[i]->sizeY, model->octreeVector[i]->origin.z + model->octreeVector[i]->sizeZ);
+		glVertex3f(model->octreeVector[i]->origin.x + model->octreeVector[i]->sizeX, model->octreeVector[i]->origin.y, model->octreeVector[i]->origin.z + model->octreeVector[i]->sizeZ);
+
+		glVertex3f(model->octreeVector[i]->origin.x + model->octreeVector[i]->sizeX, model->octreeVector[i]->origin.y + model->octreeVector[i]->sizeY, model->octreeVector[i]->origin.z + model->octreeVector[i]->sizeZ);
+		glVertex3f(model->octreeVector[i]->origin.x + model->octreeVector[i]->sizeX, model->octreeVector[i]->origin.y + model->octreeVector[i]->sizeY, model->octreeVector[i]->origin.z);
+
+
+
+
+		glVertex3f(model->octreeVector[i]->origin.x, model->octreeVector[i]->origin.y + model->octreeVector[i]->sizeY, model->octreeVector[i]->origin.z);
+		glVertex3f(model->octreeVector[i]->origin.x, model->octreeVector[i]->origin.y + model->octreeVector[i]->sizeY, model->octreeVector[i]->origin.z + model->octreeVector[i]->sizeZ);
+
+		glVertex3f(model->octreeVector[i]->origin.x, model->octreeVector[i]->origin.y + model->octreeVector[i]->sizeY, model->octreeVector[i]->origin.z + model->octreeVector[i]->sizeZ);
+		glVertex3f(model->octreeVector[i]->origin.x, model->octreeVector[i]->origin.y, model->octreeVector[i]->origin.z + model->octreeVector[i]->sizeZ);
+
+		glVertex3f(model->octreeVector[i]->origin.x + model->octreeVector[i]->sizeX, model->octreeVector[i]->origin.y, model->octreeVector[i]->origin.z);
+		glVertex3f(model->octreeVector[i]->origin.x + model->octreeVector[i]->sizeX, model->octreeVector[i]->origin.y, model->octreeVector[i]->origin.z + model->octreeVector[i]->sizeZ);
+
+		glVertex3f(model->octreeVector[i]->origin.x + model->octreeVector[i]->sizeX, model->octreeVector[i]->origin.y, model->octreeVector[i]->origin.z + model->octreeVector[i]->sizeZ);
+		glVertex3f(model->octreeVector[i]->origin.x, model->octreeVector[i]->origin.y, model->octreeVector[i]->origin.z + model->octreeVector[i]->sizeZ);
+
+		glVertex3f(model->octreeVector[i]->origin.x + model->octreeVector[i]->sizeX, model->octreeVector[i]->origin.y, model->octreeVector[i]->origin.z);
+		glVertex3f(model->octreeVector[i]->origin.x + model->octreeVector[i]->sizeX, model->octreeVector[i]->origin.y + model->octreeVector[i]->sizeY, model->octreeVector[i]->origin.z);
+
+		glVertex3f(model->octreeVector[i]->origin.x, model->octreeVector[i]->origin.y + model->octreeVector[i]->sizeY, model->octreeVector[i]->origin.z);
+		glVertex3f(model->octreeVector[i]->origin.x + model->octreeVector[i]->sizeX, model->octreeVector[i]->origin.y + model->octreeVector[i]->sizeY, model->octreeVector[i]->origin.z);
 
 
 	}

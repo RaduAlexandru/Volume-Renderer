@@ -28,6 +28,7 @@ public:
 	void sendDataToGL();
 	void drawMesh();
 	void drawCubes();
+	void drawCubes2();
 	void drawBackground();
 	void readBackgroundImage();
 	void setMatrices();

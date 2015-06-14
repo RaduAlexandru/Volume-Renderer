@@ -1439,7 +1439,7 @@ void VolumeRenderer::crackPatch(OctreeCube* root){
 
 	OctreeCube* right,*left,*top,*bottom,*further,*closer;
 
-	int count = 0;
+	int count = 0; 
 	//Do the same but using the octree vector insted of a queue
 	for (int i = 0; i < model->octreeVector.size(); i++){
 		currentCube = model->octreeVector[i];
@@ -1548,6 +1548,10 @@ void VolumeRenderer::crackPatch(OctreeCube* root){
 
 			}
 
+			/*if (right != NULL && left != NULL && top != NULL && bottom != NULL && further != NULL && closer != NULL){
+				std::cout << "found one with all the neighbours" << std::endl;
+			}*/
+
 			//Now we have the current cube and it's neighbour, we need to check and see if there are any conflicts woth the neighbours. A conflict occurs if the current cube is leaf and the neighbour isint
 			
 			//The right one is not a leaf, we must check it's chilcren and return their verts. If the children have any verts, check if they are on the correspondant face
@@ -1625,11 +1629,11 @@ void VolumeRenderer::crackPatch(OctreeCube* root){
 					for (int i = 0; i < pointsOnFace2Old.size(); i++){
 						pointsOnFace2New.push_back( pointOnLine(pointsOnFaceNoDuplicates[0], pointsOnFaceNoDuplicates[1], pointsOnFace2Old[i])  );
 
-						std::cout << "point 1 " << pointsOnFaceNoDuplicates[0].x << "  " << pointsOnFaceNoDuplicates[0].y << "  " << pointsOnFaceNoDuplicates[0].z << std::endl;
-						std::cout << "point 2 " << pointsOnFaceNoDuplicates[1].x << "  " << pointsOnFaceNoDuplicates[1].y << "  " << pointsOnFaceNoDuplicates[1].z << std::endl;
-						std::cout << "point for projection " << pointsOnFace2Old[i].x << "  " << pointsOnFace2Old[i].y << "  " << pointsOnFace2Old[i].z << std::endl;
-						std::cout << "point projected " << pointsOnFace2New[i].x << "  " << pointsOnFace2New[i].y << "  " << pointsOnFace2New[i].z << std::endl;
-						std::cin.get();
+						//std::cout << "point 1 " << pointsOnFaceNoDuplicates[0].x << "  " << pointsOnFaceNoDuplicates[0].y << "  " << pointsOnFaceNoDuplicates[0].z << std::endl;
+						//std::cout << "point 2 " << pointsOnFaceNoDuplicates[1].x << "  " << pointsOnFaceNoDuplicates[1].y << "  " << pointsOnFaceNoDuplicates[1].z << std::endl;
+						//std::cout << "point for projection " << pointsOnFace2Old[i].x << "  " << pointsOnFace2Old[i].y << "  " << pointsOnFace2Old[i].z << std::endl;
+						//std::cout << "point projected " << pointsOnFace2New[i].x << "  " << pointsOnFace2New[i].y << "  " << pointsOnFace2New[i].z << std::endl;
+						//std::cin.get();
 
 						//std::cout << "  " << pointsOnFace2New[i].x << "  " << pointsOnFace2New[i].y << "  " << pointsOnFace2New[i].z << endl;
 					}
@@ -1706,7 +1710,7 @@ void VolumeRenderer::crackPatch(OctreeCube* root){
 
 
 
-			/*
+		
 
 			///////////////////////////////////////////////////////
 			if (left != NULL && !left->isLeaf){
@@ -2232,11 +2236,11 @@ void VolumeRenderer::crackPatch(OctreeCube* root){
 					for (int i = 0; i < pointsOnFace2Old.size(); i++){
 						pointsOnFace2New.push_back((pointsOnFaceNoDuplicates[0], pointsOnFaceNoDuplicates[1], pointsOnFace2Old[i]));
 
-						std::cout << "point 1 " << pointsOnFaceNoDuplicates[0].x << "  " << pointsOnFaceNoDuplicates[0].y << "  " << pointsOnFaceNoDuplicates[0].z << std::endl;
-						std::cout << "point 2 " << pointsOnFaceNoDuplicates[1].x << "  " << pointsOnFaceNoDuplicates[1].y << "  " << pointsOnFaceNoDuplicates[1].z << std::endl;
-						std::cout << "point for projection " << pointsOnFace2Old[i].x << "  " << pointsOnFace2Old[i].y << "  " << pointsOnFace2Old[i].z << std::endl;
-						std::cout << "point projected " << pointsOnFace2New[i].x << "  " << pointsOnFace2New[i].y << "  " << pointsOnFace2New[i].z << std::endl;
-						std::cin.get();
+						//std::cout << "point 1 " << pointsOnFaceNoDuplicates[0].x << "  " << pointsOnFaceNoDuplicates[0].y << "  " << pointsOnFaceNoDuplicates[0].z << std::endl;
+						//std::cout << "point 2 " << pointsOnFaceNoDuplicates[1].x << "  " << pointsOnFaceNoDuplicates[1].y << "  " << pointsOnFaceNoDuplicates[1].z << std::endl;
+						//std::cout << "point for projection " << pointsOnFace2Old[i].x << "  " << pointsOnFace2Old[i].y << "  " << pointsOnFace2Old[i].z << std::endl;
+						//std::cout << "point projected " << pointsOnFace2New[i].x << "  " << pointsOnFace2New[i].y << "  " << pointsOnFace2New[i].z << std::endl;
+						//std::cin.get();
 						//std::cout << "  " << pointsOnFace2New[i].x << "  " << pointsOnFace2New[i].y << "  " << pointsOnFace2New[i].z << endl;
 					}
 
@@ -2276,8 +2280,8 @@ void VolumeRenderer::crackPatch(OctreeCube* root){
 			}
 
 
-
-			*/
+			
+			
 
 
 
@@ -2422,12 +2426,43 @@ glm::vec3 VolumeRenderer::pointOnLine(glm::vec3 a, glm::vec3 b, glm::vec3& x){
 
 
 
-	dot = a.x*x2 + y1*y2 + z1*z2
-	lenSq1 = x1*x1 + y1*y1 + z1*z1
-	lenSq2 = x2*x2 + y2*y2 + z2*z2
-	angle = acos(dot / sqrt(lenSq1 * lenSq2))
+	//double dot = a.x*b.x + a.y*b.y + a.z*b.z;
+	//double lenSq1 = a.x*a.x + a.y*a.y + a.z*a.z;
+	//double lenSq2 = b.x*b.x + b.y*b.y + b.z*b.z;
+	//double angle = acos(dot / sqrt(lenSq1 * lenSq2));
+
+	//std::cout << "the angles is " << angle << std::endl;
 
 
+	glm::vec3 x_b, a_b ,a_bDiv, projection;
+	double x_b_a_bDot, a_bModule, a_bModulePow, div;
+
+	x_b.x = x.x - b.x;
+	x_b.y = x.y - b.y ;
+	x_b.z = x.z - b.z;
+
+	a_b.x = a.x - b.x;
+	a_b.y = a.y - b.y;
+	a_b.z = a.z - b.z;
+
+
+	x_b_a_bDot = x_b.x*a_b.x + x_b.y*a_b.y + x_b.z*a_b.z;
+	a_bModule = sqrt(a_b.x*a_b.x + a_b.y*a_b.y + a_b.z*a_b.z);
+	a_bModulePow = a_bModule*a_bModule;
+
+	div = x_b_a_bDot / a_bModulePow;
+
+	a_bDiv.x = a_b.x*div;
+	a_bDiv.y = a_b.y*div;
+	a_bDiv.z = a_b.z*div;
+
+	projection.x = b.x + a_bDiv.x;
+	projection.y = b.y + a_bDiv.y;
+	projection.z = b.z + a_bDiv.z;
+
+	return projection;
+
+	//return x;
 
 	/*glm::vec3 u;
 	glm::vec3 projection;
@@ -3160,6 +3195,8 @@ int VolumeRenderer::adaptiveMarchingCubes3(){
 
 	std::cout << "starting patch cracks" << std::endl;
 	crackPatch(initial);
+	//crackPatch(initial);
+	//crackPatch(initial);
 	std::cout << "finished patching cracks" << std::endl;
 
 	readPointsFromOctree(initial);
