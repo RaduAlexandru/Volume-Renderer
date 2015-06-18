@@ -30,6 +30,7 @@
 #include "Model.h"
 #include "MarchingCuber.h"
 #include "AdaptiveCuber.h"
+#include "FileReader.h"
 #include <math.h> 
 #include <tuple>
 #include <boost/math/special_functions/round.hpp>
@@ -630,89 +631,11 @@ void VolumeRenderer::on_addDICOMFiles_clicked(){
 
 
 
-int VolumeRenderer::getRepresentation(QString fileName,int& bitsAllocated, int& bitsStored,int& hightBit,int& pixelRepresentation,int& frames,int& height, int& width){
-	DcmFileFormat fileformat;
-	OFCondition status = fileformat.loadFile(fileName.toStdString().c_str());
-	if (!status.good())
-	{
-		cerr << "Error: cannot read DICOM file (" << status.text() << ")" << endl;
-		return 1;
-	}
-
-
-	long bitsAllocatedLong;
-	long bitsStoredLong;
-	long highBitLong;
-	long pixelRepresentationLong;
-	long framesLong;
-	long heightLong;
-	long widthLong;
-	
-	fileformat.getDataset()->findAndGetLongInt(DCM_BitsAllocated, bitsAllocatedLong);
-	fileformat.getDataset()->findAndGetLongInt(DCM_BitsStored, bitsStoredLong);
-	fileformat.getDataset()->findAndGetLongInt(DCM_HighBit, highBitLong);
-	fileformat.getDataset()->findAndGetLongInt(DCM_PixelRepresentation, pixelRepresentationLong);
-	fileformat.getDataset()->findAndGetLongInt(DCM_NumberOfFrames, framesLong);
-	fileformat.getDataset()->findAndGetLongInt(DCM_Rows, heightLong);
-	fileformat.getDataset()->findAndGetLongInt(DCM_Columns, widthLong);
-
-	bitsAllocated = (int)bitsAllocatedLong;
-	bitsStored = (int)bitsStoredLong;
-	hightBit = (int)highBitLong;
-	pixelRepresentation = (int)pixelRepresentationLong;
-	frames = (int)framesLong;
-	height = (int)heightLong;
-	width = (int)widthLong;
-	return 0;
-}
 
 
 
-void VolumeRenderer::load_image_data(const char* file) {
-	
-
-	//FILE *f = fopen("E:\\Universidad\\Hecho por mi\\Volume Renderer\\TFG\\VolumeRenderer\\Win32\\Debug\\angkor-grey.bmp", "rb");
-	FILE *f = fopen(file, "rb");
-	if (!f) {
-		printf("failed to open file\n");
-		exit(0);
-	}
-
-	BITMAPFILEHEADER bfh;
-	BITMAPINFOHEADER bih;
-
-	//fread(signature, 1, 2, f);
-	fread(&bfh, sizeof(BITMAPFILEHEADER), 1, f);
-	fread(&bih, sizeof(BITMAPINFOHEADER), 1, f);
-	fseek(f, bfh.bfOffBits, SEEK_SET);	//The offbits is the byte where the pixels start so we move the file pointer there and we read from it
-
-	model->frame_to_display = 0;
-	ui.glwidget->setFrame(0);
-	model->pixelData->width = bih.biWidth;
-	model->pixelData->height = bih.biHeight;
-	model->bitmapNumberOfPixels = bih.biWidth * bih.biHeight;
-	model->bitmapImageSize = sizeof(char)* model->bitmapNumberOfPixels;
-	model->pixelData->numberOfBytes = 1;
-	ui.isoLevelSlider->setMaximum(255);
-
-	model->pixelData->data = (unsigned char**)malloc(1*sizeof(unsigned char*));
-	model->pixelData->data[0] = (unsigned char *)malloc(model->bitmapImageSize);
-	
-	fread((model->pixelData->data)[0], 1, model->bitmapImageSize, f);
 
 
-	//int pixel_value = 0;
-	//int step = n_pixels / 255;
-	//DEspite that we have this image here, we shall make a new one with values from0 to 255
-	/*for (int i = 0; i < n_pixels; i++){
-		if (i%step==0)
-			pixel_value++;
-		input_pixels[i] = pixel_value;
-	}*/
-
-	
-	fclose(f);
-}
 
 
 
@@ -3262,106 +3185,9 @@ void VolumeRenderer::ballPivot(){
 
 }
 
-int VolumeRenderer::loadDICOMPixelData(const char* file){
 
 
-	int bitsAllocated, bitsStored, highBit, pixelRepresentation, frames, height, width;
 
-	DcmFileFormat fileformat;
-	OFCondition status = fileformat.loadFile(file);
-	DcmDataset *data = fileformat.getDataset();
-	data->chooseRepresentation(EXS_LittleEndianImplicit, NULL); //Not really necesarry because the dicomImage class already does that
-	DicomImage* img = new DicomImage(file);
-
-	img->setMinMaxWindow();	//It is setting the adequate contrast and brightness
-
-
-	getRepresentation(file, bitsAllocated, bitsStored, highBit, pixelRepresentation, frames, height, width);
-	if (frames == 0){	//It didnt find the frame tag so it's a singleframe dicom
-		frames = 1;
-	}
-	cout << "bitsAlocated=" << bitsAllocated << " bitsStored=" << bitsStored << " pixelRepresentation=" << pixelRepresentation << " frames=" << frames << " height=" << height << endl;
-	model->pixelData->height = height;
-	model->pixelData->width = width;
-	model->pixelData->frames = frames;
-	model->pixelData->numberOfBytes = bitsAllocated/8;
-	ui.frameSlider->setMaximum(frames-1);
-	if (bitsAllocated==8)
-		ui.isoLevelSlider->setMaximum(255);
-	if (bitsAllocated == 16)
-		ui.isoLevelSlider->setMaximum(65536);
-	if (bitsAllocated == 32)
-		ui.isoLevelSlider->setMaximum(4294967296);
-	
-	
-	model->pixelData->data = (unsigned char**)malloc(frames*sizeof(unsigned char*));
-	for (int i = 0; i < frames; i++){
-		//Allocate data for the pixeldata from each frame, read data dn then store it in another free space in model->pixelData
-		img = new DicomImage(data, data->getOriginalXfer(), CIF_UsePartialAccessToPixelData, i, 1);	//Get the img
-		img->setMinMaxWindow();
-		//(boost::get<unsigned char**>(model->pixelData))[i] = (unsigned char*)img->getOutputData(bitsAllocated, 0, 0);
-		(model->pixelData->data)[i] = (unsigned char*)img->getOutputData(bitsAllocated, 0, 0);
-	}
-
-	return 1;
-}
-
-int VolumeRenderer::loadDICOMPixelData(QStringList fileNames){
-
-
-	int bitsAllocated, bitsStored, highBit, pixelRepresentation, frames, height, width;
-
-	getRepresentation(fileNames[0].toStdString().c_str(), bitsAllocated, bitsStored, highBit, pixelRepresentation, frames, height, width);
-	if (frames == 0){	//It didnt find the frame tag so it's a singleframe dicom
-		frames = 1;
-	}
-	cout << "bitsAlocated=" << bitsAllocated << " bitsStored=" << bitsStored << " pixelRepresentation=" << pixelRepresentation << " frames=" << frames << " height=" << height << endl;
-	model->pixelData->height = height;
-	model->pixelData->width = width;
-	model->pixelData->frames = fileNames.size();
-	model->pixelData->numberOfBytes = bitsAllocated / 8;
-	ui.frameSlider->setMaximum(fileNames.size()-1);
-	if (bitsAllocated == 8)
-		ui.isoLevelSlider->setMaximum(255);
-	if (bitsAllocated == 16)
-		ui.isoLevelSlider->setMaximum(65536);
-	if (bitsAllocated == 32)
-		ui.isoLevelSlider->setMaximum(4294967296);
-
-
-	model->pixelData->data = (unsigned char**)malloc(fileNames.size()*sizeof(unsigned char*));
-	for (int i = 0; i < fileNames.size(); i++){
-		
-		cout << "reading file" << fileNames[i].toStdString() <<endl;
-		//DicomImage *img = new DicomImage(fileNames[i].toStdString().c_str(), 0);
-		/*DcmFileFormat fileformat;
-		OFCondition status = fileformat.loadFile(fileNames[i].toStdString().c_str());
-		DcmDataset *data = fileformat.getDataset();
-		data->chooseRepresentation(EXS_LittleEndianImplicit, NULL);*/ //Not really necesarry because the dicomImage class already does tha
-		//DicomImage* img = new DicomImage(data, data->getOriginalXfer(), CIF_UsePartialAccessToPixelData, i, 1);	//Get the img
-		DicomImage *img = new DicomImage(fileNames[i].toStdString().c_str(), CIF_MayDetachPixelData , 0, 1);	//WatchOut. If you put CIF_UsePartialAccessToPixelData as the flag it seems to work but on the 510th frame it stops reading it. If you leave it at 0 it works correctly but it may not work well for multiframe dicomfiles (like the heart) more teasting needed
-		//img->setMinMaxWindow();
-		double center, width;
-		img->getWindow(center, width);
-		img->setWindow(400, 2000);
-		//cout << "window is " << center << "  " << width << endl;
-		cout << "copying pixel data" << endl;
-		//(boost::get<unsigned char**>(model->pixelData))[i] = (unsigned char*)img->getOutputData(bitsAllocated, 0, 0);
-		unsigned char* outputPointer=NULL;
-		//(model->pixelData)[i] = (unsigned char*)img->getOutputData(bitsAllocated, 0, 0);		//WatchOut you are asinging pixel data to the output of that image which is made on the stack. when the function terminates, the data may not exist anymore
-		outputPointer = (unsigned char*)img->getOutputData(bitsAllocated, 0, 0);
-		(model->pixelData->data)[i] = (unsigned char*)malloc(model->pixelData->width*model->pixelData->height*bitsAllocated / 8);
-		for (int j = 0; j < model->pixelData->width*model->pixelData->height*bitsAllocated / 8; j++){
-			(model->pixelData->data)[i][j] = outputPointer[j];
-		}
-		
-		img->deleteOutputData();
-		delete(img);
-		cout << "done" << endl;
-	}
-
-	return 1;
-}
 
 
 
@@ -3440,7 +3266,19 @@ void VolumeRenderer::on_loadDICOMFromFile_clicked(){
 	wipePixelData();
 
 
-	loadDICOMPixelData(fileNames);
+	FileReader* fileReader = new FileReader;
+	fileReader->loadDICOMPixelData(fileNames, model->pixelData);
+
+	//loadDICOMPixelData(fileNames);
+
+
+	ui.frameSlider->setMaximum(fileNames.size() - 1);
+	if (model->pixelData->numberOfBytes ==1)
+		ui.isoLevelSlider->setMaximum(255);
+	if (model->pixelData->numberOfBytes == 2)
+		ui.isoLevelSlider->setMaximum(65536);
+	if (model->pixelData->numberOfBytes == 3)
+		ui.isoLevelSlider->setMaximum(4294967296);
 
 	generateMesh();
 	ui.dicomviewer2dgl->setFrame(model->pixelData->frames / 2);

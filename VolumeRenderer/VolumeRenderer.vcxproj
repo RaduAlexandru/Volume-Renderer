@@ -147,6 +147,7 @@
   <ItemGroup>
     <ClCompile Include="AdaptiveCuber.cpp" />
     <ClCompile Include="dicomviewer2dgl.cpp" />
+    <ClCompile Include="FileReader.cpp" />
     <ClCompile Include="GeneratedFiles\Debug\moc_dicomviewer2dgl.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -234,6 +235,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AdaptiveCuber.h" />
+    <ClInclude Include="FileReader.h" />
     <ClInclude Include="MarchingCuber.h" />
     <ClInclude Include="OctreeCube.h" />
     <ClInclude Include="PixelData.h" />
