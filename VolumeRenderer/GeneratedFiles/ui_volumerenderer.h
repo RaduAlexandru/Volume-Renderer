@@ -87,6 +87,9 @@ public:
     QRadioButton *orientationXButton;
     QRadioButton *orientationYButton;
     QProgressBar *progressBar;
+    QLineEdit *xPosText;
+    QLineEdit *yPosText;
+    QLineEdit *zPosText;
     QMenuBar *menuBar;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
@@ -104,7 +107,7 @@ public:
         glwidget = new GLWidget(centralWidget);
         glwidget->setObjectName(QStringLiteral("glwidget"));
         glwidget->setEnabled(true);
-        glwidget->setGeometry(QRect(250, 10, 701, 591));
+        glwidget->setGeometry(QRect(250, 10, 701, 461));
         numberOfTrianglesLabel = new QLabel(glwidget);
         numberOfTrianglesLabel->setObjectName(QStringLiteral("numberOfTrianglesLabel"));
         numberOfTrianglesLabel->setGeometry(QRect(560, 560, 131, 20));
@@ -274,6 +277,15 @@ public:
         progressBar->setObjectName(QStringLiteral("progressBar"));
         progressBar->setGeometry(QRect(280, 610, 301, 23));
         progressBar->setValue(0);
+        xPosText = new QLineEdit(centralWidget);
+        xPosText->setObjectName(QStringLiteral("xPosText"));
+        xPosText->setGeometry(QRect(10, 610, 61, 20));
+        yPosText = new QLineEdit(centralWidget);
+        yPosText->setObjectName(QStringLiteral("yPosText"));
+        yPosText->setGeometry(QRect(80, 610, 61, 20));
+        zPosText = new QLineEdit(centralWidget);
+        zPosText->setObjectName(QStringLiteral("zPosText"));
+        zPosText->setGeometry(QRect(150, 610, 71, 20));
         VolumeRendererClass->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(VolumeRendererClass);
         menuBar->setObjectName(QStringLiteral("menuBar"));

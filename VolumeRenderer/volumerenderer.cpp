@@ -28,6 +28,8 @@
 #include "glwidget.h"
 #include "dicomviewer2dgl.h"
 #include "Model.h"
+#include "MarchingCuber.h"
+#include "AdaptiveCuber.h"
 #include <math.h> 
 #include <tuple>
 #include <boost/math/special_functions/round.hpp>
@@ -1437,9 +1439,1202 @@ void VolumeRenderer::crackPatch(OctreeCube* root){
 	OctreeCube* currentCube;
 	OctreeCube* adyacent;
 
-	OctreeCube* right,*left,*top,*bottom,*further,*closer;
+	OctreeCube* right, *left, *top, *bottom, *further, *closer;
 
-	int count = 0; 
+	int count = 0;
+	//Do the same but using the octree vector insted of a queue
+	for (int i = 0; i < model->octreeVector.size(); i++){
+		currentCube = model->octreeVector[i];
+		count++;
+		right = NULL;
+		left = NULL;
+		top = NULL;
+		bottom = NULL;
+		further = NULL;
+		closer = NULL;
+
+		if (currentCube->isLeaf && currentCube->containsVerts){
+			//std::cout << "We need to check it's adyacents of cube "  << count << std::endl;
+			//std::cout << "checking cube  " << count << "of " << model->octreeVector.size() << std::endl;
+			for (int j = 0; j < model->octreeVector.size(); j++){
+
+
+
+				//We check if it adyacent is the one on the right, left, top, bottom, further and closer cube
+				adyacent = model->octreeVector[j];
+
+				//Right cube
+				if (right == NULL &&
+
+					adyacent->origin.x == currentCube->origin.x + currentCube->sizeX &&
+					adyacent->origin.y == currentCube->origin.y &&
+					adyacent->origin.z == currentCube->origin.z &&
+
+					adyacent->sizeX == currentCube->sizeX &&
+					adyacent->sizeY == currentCube->sizeY &&
+					adyacent->sizeZ == currentCube->sizeZ)
+				{
+					right = adyacent;
+				}
+
+				//Left cube
+				if (left == NULL &&
+
+					adyacent->origin.x == currentCube->origin.x - currentCube->sizeX &&
+					adyacent->origin.y == currentCube->origin.y &&
+					adyacent->origin.z == currentCube->origin.z &&
+
+					adyacent->sizeX == currentCube->sizeX &&
+					adyacent->sizeY == currentCube->sizeY &&
+					adyacent->sizeZ == currentCube->sizeZ)
+				{
+					left = adyacent;
+				}
+
+				//Top cube
+				if (top == NULL &&
+
+					adyacent->origin.x == currentCube->origin.x &&
+					adyacent->origin.y == currentCube->origin.y + currentCube->sizeY &&
+					adyacent->origin.z == currentCube->origin.z &&
+
+					adyacent->sizeX == currentCube->sizeX &&
+					adyacent->sizeY == currentCube->sizeY &&
+					adyacent->sizeZ == currentCube->sizeZ)
+				{
+					top = adyacent;
+				}
+
+				//bottom cube
+				if (bottom == NULL &&
+
+					adyacent->origin.x == currentCube->origin.x &&
+					adyacent->origin.y == currentCube->origin.y - currentCube->sizeY &&
+					adyacent->origin.z == currentCube->origin.z &&
+
+					adyacent->sizeX == currentCube->sizeX &&
+					adyacent->sizeY == currentCube->sizeY &&
+					adyacent->sizeZ == currentCube->sizeZ)
+				{
+					bottom = adyacent;
+				}
+
+				//further cube
+				if (further == NULL &&
+
+					adyacent->origin.x == currentCube->origin.x &&
+					adyacent->origin.y == currentCube->origin.y &&
+					adyacent->origin.z == currentCube->origin.z + currentCube->sizeZ &&
+
+					adyacent->sizeX == currentCube->sizeX &&
+					adyacent->sizeY == currentCube->sizeY &&
+					adyacent->sizeZ == currentCube->sizeZ)
+				{
+					further = adyacent;
+				}
+
+
+				//closer cube
+				if (closer == NULL &&
+
+					adyacent->origin.x == currentCube->origin.x &&
+					adyacent->origin.y == currentCube->origin.y &&
+					adyacent->origin.z == currentCube->origin.z - currentCube->sizeZ &&
+
+					adyacent->sizeX == currentCube->sizeX &&
+					adyacent->sizeY == currentCube->sizeY &&
+					adyacent->sizeZ == currentCube->sizeZ)
+				{
+					closer = adyacent;
+				}
+
+				if (right != NULL && left != NULL && top != NULL && bottom != NULL && further != NULL && closer != NULL){
+					break;	//WE stop searching because we found all the neihbours
+				}
+
+
+			}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+			
+			/*
+
+			if (currentCube->origin.x == 256 && currentCube->origin.y == 168 && currentCube->origin.z == 56 && currentCube->sizeX == 8){
+				std::cout << "found cube" << std::endl << std::endl;
+				//Grab the points that are on the closer face
+				//get rid of the duplicates
+
+				//grab all the  points from the closer cube
+				//remove those that are not on the face
+
+				if (closer!=NULL)
+					std::cout << "we have a closer cube" << std::endl;
+				
+
+				//we grab the points from the cube that are on the closer face
+				std::vector<glm::vec3> pointsOnFace;
+				pointsOnFace.clear();
+				for (int i = 0; i < currentCube->points->size(); i++){
+					if (currentCube->points->at(i).z == (currentCube->origin.z)){
+						pointsOnFace.push_back(currentCube->points->at(i));
+					}
+				}
+
+				for (int i = 0; i < pointsOnFace.size(); i++){
+					std::cout << "all point from currentcube on closer face " << pointsOnFace[i].x << "  " << pointsOnFace[i].y << "  " << pointsOnFace[i].z << std::endl;
+				}
+
+				//Remove the duplicates from points on face
+				std::vector<glm::vec3> pointsOnFaceNoDuplicates;
+				bool skipPoint = false;
+				for (int i = 0; i < pointsOnFace.size(); i++){
+					skipPoint = false;
+					//For each point check if it's not already in the pointOnFaceNoDuplicates
+					for (int j = 0; j < pointsOnFaceNoDuplicates.size(); j++){
+						if (pointsOnFace[i].x == pointsOnFaceNoDuplicates[j].x && pointsOnFace[i].y == pointsOnFaceNoDuplicates[j].y && pointsOnFace[i].z == pointsOnFaceNoDuplicates[j].z){
+							//There is already on in pointface no duplicates with the same value
+							skipPoint = true;
+						}
+					}
+					if (!skipPoint)
+						pointsOnFaceNoDuplicates.push_back(pointsOnFace[i]);
+				}
+
+				//The points from the current cube with no duplicates
+				for (int i = 0; i < pointsOnFaceNoDuplicates.size(); i++){
+					std::cout << "point from currentcube on closer face " << pointsOnFaceNoDuplicates[i].x << "  " << pointsOnFaceNoDuplicates[i].y << "  " << pointsOnFaceNoDuplicates[i].z << std::endl;
+				}
+
+
+
+				//After removing the duplicates , if we have lines (2 points) we continue with the algorithm
+				if (pointsOnFaceNoDuplicates.size() == 2){
+					//Now we get the points from the face on the cube on the right. WE establish an old vector for the points that we read and a new vector of points in witch we store the modified points
+					std::vector<glm::vec3> pointsOnFace2Old;
+					std::vector<glm::vec3> pointsOnFace2New;
+
+					std::queue<OctreeCube*> queue;
+					OctreeCube* child;
+					queue.push(closer);
+					while (!queue.empty()){
+						child = queue.front();
+						queue.pop();
+						if (!child->isLeaf){
+							queue.push(child->children[0]);
+							queue.push(child->children[1]);
+							queue.push(child->children[2]);
+							queue.push(child->children[3]);
+							queue.push(child->children[4]);
+							queue.push(child->children[5]);
+							queue.push(child->children[6]);
+							queue.push(child->children[7]);
+						}
+						//Get the points from that child and put them in pointsOnFace2Old
+						if (child->points != NULL){
+							for (int j = 0; j < child->points->size(); j++){
+								if (child->points->at(j).z == currentCube->origin.z){
+									pointsOnFace2Old.push_back(child->points->at(j));
+								}
+							}
+						}
+					}
+
+
+					std::cout << "the points from the closer cube on the face" << std::endl;
+					for (int i = 0; i < pointsOnFace2Old.size(); i++){
+						std::cout << "point from closer cube on closer face " << pointsOnFace2Old[i].x << "  " << pointsOnFace2Old[i].y << "  " << pointsOnFace2Old[i].z << std::endl;
+					}
+
+
+
+					//Now that we have the points from the cube on the right, we need to get only those which are on the face on the left (Right of current cube)
+					
+
+					//No we have the points from the face on the right, We iterate through every point and change the value to be the paralel projection of that point onto the two point from face1. The new point is stored in PointsonFace2New
+					//std::cout << "we have points on the right face" << pointsOnFace2Old.size() << endl;
+					//pointsOnFace2New.reserve(pointsOnFace2Old.size());
+					for (int i = 0; i < pointsOnFace2Old.size(); i++){
+						pointsOnFace2New.push_back(pointOnLine(pointsOnFaceNoDuplicates[0], pointsOnFaceNoDuplicates[1], pointsOnFace2Old[i]));
+
+						//std::cout << "point 1 " << pointsOnFaceNoDuplicates[0].x << "  " << pointsOnFaceNoDuplicates[0].y << "  " << pointsOnFaceNoDuplicates[0].z << std::endl;
+						//std::cout << "point 2 " << pointsOnFaceNoDuplicates[1].x << "  " << pointsOnFaceNoDuplicates[1].y << "  " << pointsOnFaceNoDuplicates[1].z << std::endl;
+						//std::cout << "point for projection " << pointsOnFace2Old[i].x << "  " << pointsOnFace2Old[i].y << "  " << pointsOnFace2Old[i].z << std::endl;
+						//std::cout << "point projected " << pointsOnFace2New[i].x << "  " << pointsOnFace2New[i].y << "  " << pointsOnFace2New[i].z << std::endl;
+						//std::cin.get();
+						//std::cout << "  " << pointsOnFace2New[i].x << "  " << pointsOnFace2New[i].y << "  " << pointsOnFace2New[i].z << endl;
+					}
+
+
+					std::cout  << "the points from the closer cube projected" << std::endl;
+					for (int i = 0; i < pointsOnFace2New.size(); i++){
+						std::cout << "point from closer cube projected " << pointsOnFace2New[i].x << "  " << pointsOnFace2New[i].y << "  " << pointsOnFace2New[i].z << std::endl;
+					}
+
+
+					//We have all the points already changed in the pointsOnFace2New. Iteare throgh the children again and change their points
+
+					std::cout << std::endl << "interchanging old with the new" << std::endl;
+
+					queue.push(closer);
+					while (!queue.empty()){
+						child = queue.front();
+						queue.pop();
+						if (!child->isLeaf){
+							queue.push(child->children[0]);
+							queue.push(child->children[1]);
+							queue.push(child->children[2]);
+							queue.push(child->children[3]);
+							queue.push(child->children[4]);
+							queue.push(child->children[5]);
+							queue.push(child->children[6]);
+							queue.push(child->children[7]);
+						}
+						if (child->points != NULL){
+							for (int j = 0; j < child->points->size(); j++){
+								//For each one of those points, check to see if it matches on in pointsOnFace2old, If it does, change it with the point in the same index in pointsOnFace2New
+								for (int k = 0; k < pointsOnFace2Old.size(); k++){
+									if (child->points->at(j).x == pointsOnFace2Old[k].x && child->points->at(j).y == pointsOnFace2Old[k].y && child->points->at(j).z == pointsOnFace2Old[k].z){
+
+										std::cout << "changing " << pointsOnFace2Old[k].x << "|" << pointsOnFace2Old[k].y << "|" << pointsOnFace2Old[k].z << "|" << " With " <<
+											pointsOnFace2New[k].x << "|" << pointsOnFace2New[k].y << "|" << pointsOnFace2New[k].z << "|" << std::endl;
+
+
+										child->points->at(j).x = pointsOnFace2New[k].x;
+										child->points->at(j).y = pointsOnFace2New[k].y;
+										child->points->at(j).z = pointsOnFace2New[k].z;
+									}
+								}
+
+							}
+						}
+					}
+
+
+				}
+				
+
+
+
+			}
+
+			*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+			/*if (right != NULL && left != NULL && top != NULL && bottom != NULL && further != NULL && closer != NULL){
+			std::cout << "found one with all the neighbours" << std::endl;
+			}*/
+
+			//Now we have the current cube and it's neighbour, we need to check and see if there are any conflicts woth the neighbours. A conflict occurs if the current cube is leaf and the neighbour isint
+
+			//The right one is not a leaf, we must check it's chilcren and return their verts. If the children have any verts, check if they are on the correspondant face
+			if (right != NULL && !right->isLeaf){
+				//std::cout << "possible conflict with the cube on the right" << std::endl;
+
+				//we grab the points from the cube that are on the right face
+				std::vector<glm::vec3> pointsOnFace;
+				pointsOnFace.clear();
+				for (int i = 0; i < currentCube->points->size(); i++){
+					if (currentCube->points->at(i).x == (currentCube->origin.x + currentCube->sizeX)){
+						pointsOnFace.push_back(currentCube->points->at(i));
+					}
+				}
+
+				//Remove the duplicates from points on face
+				std::vector<glm::vec3> pointsOnFaceNoDuplicates;
+				bool skipPoint = false;
+				for (int i = 0; i < pointsOnFace.size(); i++){
+					skipPoint = false;
+					//For each point check if it's not already in the pointOnFaceNoDuplicates
+					for (int j = 0; j < pointsOnFaceNoDuplicates.size(); j++){
+						if (pointsOnFace[i].x == pointsOnFaceNoDuplicates[j].x && pointsOnFace[i].y == pointsOnFaceNoDuplicates[j].y && pointsOnFace[i].z == pointsOnFaceNoDuplicates[j].z){
+							//There is already on in pointface no duplicates with the same value
+							skipPoint = true;
+						}
+					}
+					if (!skipPoint)
+						pointsOnFaceNoDuplicates.push_back(pointsOnFace[i]);
+				}
+
+
+				//After removing the duplicates , if we have lines (2 points) we continue with the algorithm
+				if (pointsOnFaceNoDuplicates.size() == 2){
+					//Now we get the points from the face on the cube on the right. WE establish an old vector for the points that we read and a new vector of points in witch we store the modified points
+					std::vector<glm::vec3> pointsOnFace2Old;
+					std::vector<glm::vec3> pointsOnFace2New;
+
+					std::queue<OctreeCube*> queue;
+					OctreeCube* child;
+					queue.push(right);
+					while (!queue.empty()){
+						child = queue.front();
+						queue.pop();
+						if (!child->isLeaf){
+							queue.push(child->children[0]);
+							queue.push(child->children[1]);
+							queue.push(child->children[2]);
+							queue.push(child->children[3]);
+							queue.push(child->children[4]);
+							queue.push(child->children[5]);
+							queue.push(child->children[6]);
+							queue.push(child->children[7]);
+						}
+						//Get the points from that child and put them in pointsOnFace2Old
+						if (child->points != NULL){
+							for (int j = 0; j < child->points->size(); j++){
+								pointsOnFace2Old.push_back(child->points->at(j));
+							}
+						}
+					}
+
+					//Now that we have the points from the cube on the right, we need to get only those which are on the face on the left (Right of current cube)
+					vector< glm::vec3 >::iterator it = pointsOnFace2Old.begin();
+					while (it != pointsOnFace2Old.end()) {
+
+						if ((*it).x != (currentCube->origin.x + currentCube->sizeX)) {
+
+							it = pointsOnFace2Old.erase(it);
+						}
+						else ++it;
+					}
+
+					//No we have the points from the face on the right, We iterate through every point and change the value to be the paralel projection of that point onto the two point from face1. The new point is stored in PointsonFace2New
+					//std::cout << "we have points on the right face" << pointsOnFace2Old.size() << endl;
+					for (int i = 0; i < pointsOnFace2Old.size(); i++){
+						pointsOnFace2New.push_back(pointOnLine(pointsOnFaceNoDuplicates[0], pointsOnFaceNoDuplicates[1], pointsOnFace2Old[i]));
+
+						//std::cout << "point 1 " << pointsOnFaceNoDuplicates[0].x << "  " << pointsOnFaceNoDuplicates[0].y << "  " << pointsOnFaceNoDuplicates[0].z << std::endl;
+						//std::cout << "point 2 " << pointsOnFaceNoDuplicates[1].x << "  " << pointsOnFaceNoDuplicates[1].y << "  " << pointsOnFaceNoDuplicates[1].z << std::endl;
+						//std::cout << "point for projection " << pointsOnFace2Old[i].x << "  " << pointsOnFace2Old[i].y << "  " << pointsOnFace2Old[i].z << std::endl;
+						//std::cout << "point projected " << pointsOnFace2New[i].x << "  " << pointsOnFace2New[i].y << "  " << pointsOnFace2New[i].z << std::endl;
+						//std::cin.get();
+
+						//std::cout << "  " << pointsOnFace2New[i].x << "  " << pointsOnFace2New[i].y << "  " << pointsOnFace2New[i].z << endl;
+					}
+
+					//We have all the points already changed in the pointsOnFace2New. Iteare throgh the children again and change their points
+
+					queue.push(right);
+					while (!queue.empty()){
+						child = queue.front();
+						queue.pop();
+						if (!child->isLeaf){
+							queue.push(child->children[0]);
+							queue.push(child->children[1]);
+							queue.push(child->children[2]);
+							queue.push(child->children[3]);
+							queue.push(child->children[4]);
+							queue.push(child->children[5]);
+							queue.push(child->children[6]);
+							queue.push(child->children[7]);
+						}
+						if (child->points != NULL){
+							for (int j = 0; j < child->points->size(); j++){
+								//For each one of those points, check to see if it matches on in pointsOnFace2old, If it does, change it with the point in the same index in pointsOnFace2New
+								for (int k = 0; k < pointsOnFace2Old.size(); k++){
+									if (child->points->at(j).x == pointsOnFace2Old[k].x && child->points->at(j).y == pointsOnFace2Old[k].y && child->points->at(j).z == pointsOnFace2Old[k].z){
+										child->points->at(j).x = pointsOnFace2New[k].x;
+										child->points->at(j).y = pointsOnFace2New[k].y;
+										child->points->at(j).z = pointsOnFace2New[k].z;
+									}
+								}
+
+							}
+						}
+					}
+
+
+				}
+
+
+
+
+				/*std::cout << "point on the right hace are " << pointsOnFaceNoDuplicates.size() << std::endl;
+				if (pointsOnFaceNoDuplicates.size() >= 3){
+				std::cout << "cube has sizes " << endl << " origin.x= " << currentCube->origin.x << endl <<
+				" origin.y= " << currentCube->origin.y <<
+				" origin.z= " << currentCube->origin.z <<
+				" sizex= " << currentCube->sizeX <<
+				" sizey= " << currentCube->sizeY <<
+				" sizez= " << currentCube->sizeZ << endl;
+				std::cout << "the vertices are" << endl;
+				for (int j = 0; j < currentCube->points->size(); j++){
+				std::cout << "  " << currentCube->points->at(j).x << "  " << currentCube->points->at(j).y << "  " << currentCube->points->at(j).z << endl;
+				}
+				std::cin.get();
+				std::cout << endl << endl;
+				}*/
+			}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+			///////////////////////////////////////////////////////
+			if (left != NULL && !left->isLeaf){
+				//std::cout << "possible conflict with the cube on the right" << std::endl;
+
+				//we grab the points from the cube that are on the right face
+				std::vector<glm::vec3> pointsOnFace;
+				pointsOnFace.clear();
+				for (int i = 0; i < currentCube->points->size(); i++){
+					if (currentCube->points->at(i).x == (currentCube->origin.x)){
+						pointsOnFace.push_back(currentCube->points->at(i));
+					}
+				}
+
+				//Remove the duplicates from points on face
+				std::vector<glm::vec3> pointsOnFaceNoDuplicates;
+				bool skipPoint = false;
+				for (int i = 0; i < pointsOnFace.size(); i++){
+					skipPoint = false;
+					//For each point check if it's not already in the pointOnFaceNoDuplicates
+					for (int j = 0; j < pointsOnFaceNoDuplicates.size(); j++){
+						if (pointsOnFace[i].x == pointsOnFaceNoDuplicates[j].x && pointsOnFace[i].y == pointsOnFaceNoDuplicates[j].y && pointsOnFace[i].z == pointsOnFaceNoDuplicates[j].z){
+							//There is already on in pointface no duplicates with the same value
+							skipPoint = true;
+						}
+					}
+					if (!skipPoint)
+						pointsOnFaceNoDuplicates.push_back(pointsOnFace[i]);
+				}
+
+
+				//After removing the duplicates , if we have lines (2 points) we continue with the algorithm
+				if (pointsOnFaceNoDuplicates.size() == 2){
+					//Now we get the points from the face on the cube on the right. WE establish an old vector for the points that we read and a new vector of points in witch we store the modified points
+					std::vector<glm::vec3> pointsOnFace2Old;
+					std::vector<glm::vec3> pointsOnFace2New;
+
+					std::queue<OctreeCube*> queue;
+					OctreeCube* child;
+					queue.push(left);
+					while (!queue.empty()){
+						child = queue.front();
+						queue.pop();
+						if (!child->isLeaf){
+							queue.push(child->children[0]);
+							queue.push(child->children[1]);
+							queue.push(child->children[2]);
+							queue.push(child->children[3]);
+							queue.push(child->children[4]);
+							queue.push(child->children[5]);
+							queue.push(child->children[6]);
+							queue.push(child->children[7]);
+						}
+						//Get the points from that child and put them in pointsOnFace2Old
+						if (child->points != NULL){
+							for (int j = 0; j < child->points->size(); j++){
+								pointsOnFace2Old.push_back(child->points->at(j));
+							}
+						}
+					}
+
+					//Now that we have the points from the cube on the right, we need to get only those which are on the face on the left (Right of current cube)
+					vector< glm::vec3 >::iterator it = pointsOnFace2Old.begin();
+					while (it != pointsOnFace2Old.end()) {
+
+						if ((*it).x != (currentCube->origin.x)) {
+
+							it = pointsOnFace2Old.erase(it);
+						}
+						else ++it;
+					}
+
+					//No we have the points from the face on the right, We iterate through every point and change the value to be the paralel projection of that point onto the two point from face1. The new point is stored in PointsonFace2New
+					//std::cout << "we have points on the right face" << pointsOnFace2Old.size() << endl;
+					for (int i = 0; i < pointsOnFace2Old.size(); i++){
+						pointsOnFace2New.push_back(pointOnLine(pointsOnFaceNoDuplicates[0], pointsOnFaceNoDuplicates[1], pointsOnFace2Old[i]));
+						//std::cout << "  " << pointsOnFace2New[i].x << "  " << pointsOnFace2New[i].y << "  " << pointsOnFace2New[i].z << endl;
+					}
+
+					//We have all the points already changed in the pointsOnFace2New. Iteare throgh the children again and change their points
+
+					queue.push(left);
+					while (!queue.empty()){
+						child = queue.front();
+						queue.pop();
+						if (!child->isLeaf){
+							queue.push(child->children[0]);
+							queue.push(child->children[1]);
+							queue.push(child->children[2]);
+							queue.push(child->children[3]);
+							queue.push(child->children[4]);
+							queue.push(child->children[5]);
+							queue.push(child->children[6]);
+							queue.push(child->children[7]);
+						}
+						if (child->points != NULL){
+							for (int j = 0; j < child->points->size(); j++){
+								//For each one of those points, check to see if it matches on in pointsOnFace2old, If it does, change it with the point in the same index in pointsOnFace2New
+								for (int k = 0; k < pointsOnFace2Old.size(); k++){
+									if (child->points->at(j).x == pointsOnFace2Old[k].x && child->points->at(j).y == pointsOnFace2Old[k].y && child->points->at(j).z == pointsOnFace2Old[k].z){
+										child->points->at(j).x = pointsOnFace2New[k].x;
+										child->points->at(j).y = pointsOnFace2New[k].y;
+										child->points->at(j).z = pointsOnFace2New[k].z;
+									}
+								}
+
+							}
+						}
+					}
+
+
+				}
+			}
+
+
+
+			if (top != NULL && !top->isLeaf){
+				//std::cout << "possible conflict with the cube on the right" << std::endl;
+
+				//we grab the points from the cube that are on the right face
+				std::vector<glm::vec3> pointsOnFace;
+				pointsOnFace.clear();
+				for (int i = 0; i < currentCube->points->size(); i++){
+					if (currentCube->points->at(i).y == (currentCube->origin.y + currentCube->sizeY)){
+						pointsOnFace.push_back(currentCube->points->at(i));
+					}
+				}
+
+				//Remove the duplicates from points on face
+				std::vector<glm::vec3> pointsOnFaceNoDuplicates;
+				bool skipPoint = false;
+				for (int i = 0; i < pointsOnFace.size(); i++){
+					skipPoint = false;
+					//For each point check if it's not already in the pointOnFaceNoDuplicates
+					for (int j = 0; j < pointsOnFaceNoDuplicates.size(); j++){
+						if (pointsOnFace[i].x == pointsOnFaceNoDuplicates[j].x && pointsOnFace[i].y == pointsOnFaceNoDuplicates[j].y && pointsOnFace[i].z == pointsOnFaceNoDuplicates[j].z){
+							//There is already on in pointface no duplicates with the same value
+							skipPoint = true;
+						}
+					}
+					if (!skipPoint)
+						pointsOnFaceNoDuplicates.push_back(pointsOnFace[i]);
+				}
+
+
+				//After removing the duplicates , if we have lines (2 points) we continue with the algorithm
+				if (pointsOnFaceNoDuplicates.size() == 2){
+					//Now we get the points from the face on the cube on the right. WE establish an old vector for the points that we read and a new vector of points in witch we store the modified points
+					std::vector<glm::vec3> pointsOnFace2Old;
+					std::vector<glm::vec3> pointsOnFace2New;
+
+					std::queue<OctreeCube*> queue;
+					OctreeCube* child;
+					queue.push(top);
+					while (!queue.empty()){
+						child = queue.front();
+						queue.pop();
+						if (!child->isLeaf){
+							queue.push(child->children[0]);
+							queue.push(child->children[1]);
+							queue.push(child->children[2]);
+							queue.push(child->children[3]);
+							queue.push(child->children[4]);
+							queue.push(child->children[5]);
+							queue.push(child->children[6]);
+							queue.push(child->children[7]);
+						}
+						//Get the points from that child and put them in pointsOnFace2Old
+						if (child->points != NULL){
+							for (int j = 0; j < child->points->size(); j++){
+								pointsOnFace2Old.push_back(child->points->at(j));
+							}
+						}
+					}
+
+					//Now that we have the points from the cube on the right, we need to get only those which are on the face on the left (Right of current cube)
+					vector< glm::vec3 >::iterator it = pointsOnFace2Old.begin();
+					while (it != pointsOnFace2Old.end()) {
+
+						if ((*it).y != (currentCube->origin.y + currentCube->sizeY)) {
+
+							it = pointsOnFace2Old.erase(it);
+						}
+						else ++it;
+					}
+
+					//No we have the points from the face on the right, We iterate through every point and change the value to be the paralel projection of that point onto the two point from face1. The new point is stored in PointsonFace2New
+					//std::cout << "we have points on the right face" << pointsOnFace2Old.size() << endl;
+					for (int i = 0; i < pointsOnFace2Old.size(); i++){
+						pointsOnFace2New.push_back(pointOnLine(pointsOnFaceNoDuplicates[0], pointsOnFaceNoDuplicates[1], pointsOnFace2Old[i]));
+						//std::cout << "  " << pointsOnFace2New[i].x << "  " << pointsOnFace2New[i].y << "  " << pointsOnFace2New[i].z << endl;
+					}
+
+					//We have all the points already changed in the pointsOnFace2New. Iteare throgh the children again and change their points
+
+					queue.push(top);
+					while (!queue.empty()){
+						child = queue.front();
+						queue.pop();
+						if (!child->isLeaf){
+							queue.push(child->children[0]);
+							queue.push(child->children[1]);
+							queue.push(child->children[2]);
+							queue.push(child->children[3]);
+							queue.push(child->children[4]);
+							queue.push(child->children[5]);
+							queue.push(child->children[6]);
+							queue.push(child->children[7]);
+						}
+						if (child->points != NULL){
+							for (int j = 0; j < child->points->size(); j++){
+								//For each one of those points, check to see if it matches on in pointsOnFace2old, If it does, change it with the point in the same index in pointsOnFace2New
+								for (int k = 0; k < pointsOnFace2Old.size(); k++){
+									if (child->points->at(j).x == pointsOnFace2Old[k].x && child->points->at(j).y == pointsOnFace2Old[k].y && child->points->at(j).z == pointsOnFace2Old[k].z){
+										child->points->at(j).x = pointsOnFace2New[k].x;
+										child->points->at(j).y = pointsOnFace2New[k].y;
+										child->points->at(j).z = pointsOnFace2New[k].z;
+									}
+								}
+
+							}
+						}
+					}
+
+
+				}
+			}
+
+			if (bottom != NULL && !bottom->isLeaf){
+				//std::cout << "possible conflict with the cube on the right" << std::endl;
+
+				//we grab the points from the cube that are on the right face
+				std::vector<glm::vec3> pointsOnFace;
+				pointsOnFace.clear();
+				for (int i = 0; i < currentCube->points->size(); i++){
+					if (currentCube->points->at(i).y == (currentCube->origin.y)){
+						pointsOnFace.push_back(currentCube->points->at(i));
+					}
+				}
+
+				//Remove the duplicates from points on face
+				std::vector<glm::vec3> pointsOnFaceNoDuplicates;
+				bool skipPoint = false;
+				for (int i = 0; i < pointsOnFace.size(); i++){
+					skipPoint = false;
+					//For each point check if it's not already in the pointOnFaceNoDuplicates
+					for (int j = 0; j < pointsOnFaceNoDuplicates.size(); j++){
+						if (pointsOnFace[i].x == pointsOnFaceNoDuplicates[j].x && pointsOnFace[i].y == pointsOnFaceNoDuplicates[j].y && pointsOnFace[i].z == pointsOnFaceNoDuplicates[j].z){
+							//There is already on in pointface no duplicates with the same value
+							skipPoint = true;
+						}
+					}
+					if (!skipPoint)
+						pointsOnFaceNoDuplicates.push_back(pointsOnFace[i]);
+				}
+
+
+				//After removing the duplicates , if we have lines (2 points) we continue with the algorithm
+				if (pointsOnFaceNoDuplicates.size() == 2){
+					//Now we get the points from the face on the cube on the right. WE establish an old vector for the points that we read and a new vector of points in witch we store the modified points
+					std::vector<glm::vec3> pointsOnFace2Old;
+					std::vector<glm::vec3> pointsOnFace2New;
+
+					std::queue<OctreeCube*> queue;
+					OctreeCube* child;
+					queue.push(bottom);
+					while (!queue.empty()){
+						child = queue.front();
+						queue.pop();
+						if (!child->isLeaf){
+							queue.push(child->children[0]);
+							queue.push(child->children[1]);
+							queue.push(child->children[2]);
+							queue.push(child->children[3]);
+							queue.push(child->children[4]);
+							queue.push(child->children[5]);
+							queue.push(child->children[6]);
+							queue.push(child->children[7]);
+						}
+						//Get the points from that child and put them in pointsOnFace2Old
+						if (child->points != NULL){
+							for (int j = 0; j < child->points->size(); j++){
+								pointsOnFace2Old.push_back(child->points->at(j));
+							}
+						}
+					}
+
+					//Now that we have the points from the cube on the right, we need to get only those which are on the face on the left (Right of current cube)
+					vector< glm::vec3 >::iterator it = pointsOnFace2Old.begin();
+					while (it != pointsOnFace2Old.end()) {
+
+						if ((*it).y != (currentCube->origin.y)) {
+
+							it = pointsOnFace2Old.erase(it);
+						}
+						else ++it;
+					}
+
+					//No we have the points from the face on the right, We iterate through every point and change the value to be the paralel projection of that point onto the two point from face1. The new point is stored in PointsonFace2New
+					//std::cout << "we have points on the right face" << pointsOnFace2Old.size() << endl;
+					for (int i = 0; i < pointsOnFace2Old.size(); i++){
+						pointsOnFace2New.push_back(pointOnLine(pointsOnFaceNoDuplicates[0], pointsOnFaceNoDuplicates[1], pointsOnFace2Old[i]));
+						//std::cout << "  " << pointsOnFace2New[i].x << "  " << pointsOnFace2New[i].y << "  " << pointsOnFace2New[i].z << endl;
+					}
+
+					//We have all the points already changed in the pointsOnFace2New. Iteare throgh the children again and change their points
+
+					queue.push(bottom);
+					while (!queue.empty()){
+						child = queue.front();
+						queue.pop();
+						if (!child->isLeaf){
+							queue.push(child->children[0]);
+							queue.push(child->children[1]);
+							queue.push(child->children[2]);
+							queue.push(child->children[3]);
+							queue.push(child->children[4]);
+							queue.push(child->children[5]);
+							queue.push(child->children[6]);
+							queue.push(child->children[7]);
+						}
+						if (child->points != NULL){
+							for (int j = 0; j < child->points->size(); j++){
+								//For each one of those points, check to see if it matches on in pointsOnFace2old, If it does, change it with the point in the same index in pointsOnFace2New
+								for (int k = 0; k < pointsOnFace2Old.size(); k++){
+									if (child->points->at(j).x == pointsOnFace2Old[k].x && child->points->at(j).y == pointsOnFace2Old[k].y && child->points->at(j).z == pointsOnFace2Old[k].z){
+										child->points->at(j).x = pointsOnFace2New[k].x;
+										child->points->at(j).y = pointsOnFace2New[k].y;
+										child->points->at(j).z = pointsOnFace2New[k].z;
+									}
+								}
+
+							}
+						}
+					}
+
+
+				}
+			}
+
+
+			if (further != NULL && !further->isLeaf){
+				//std::cout << "possible conflict with the cube on the right" << std::endl;
+
+				//we grab the points from the cube that are on the right face
+				std::vector<glm::vec3> pointsOnFace;
+				pointsOnFace.clear();
+				for (int i = 0; i < currentCube->points->size(); i++){
+					if (currentCube->points->at(i).z == (currentCube->origin.z + currentCube->sizeZ)){
+						pointsOnFace.push_back(currentCube->points->at(i));
+					}
+				}
+
+				//Remove the duplicates from points on face
+				std::vector<glm::vec3> pointsOnFaceNoDuplicates;
+				bool skipPoint = false;
+				for (int i = 0; i < pointsOnFace.size(); i++){
+					skipPoint = false;
+					//For each point check if it's not already in the pointOnFaceNoDuplicates
+					for (int j = 0; j < pointsOnFaceNoDuplicates.size(); j++){
+						if (pointsOnFace[i].x == pointsOnFaceNoDuplicates[j].x && pointsOnFace[i].y == pointsOnFaceNoDuplicates[j].y && pointsOnFace[i].z == pointsOnFaceNoDuplicates[j].z){
+							//There is already on in pointface no duplicates with the same value
+							skipPoint = true;
+						}
+					}
+					if (!skipPoint)
+						pointsOnFaceNoDuplicates.push_back(pointsOnFace[i]);
+				}
+
+
+				//After removing the duplicates , if we have lines (2 points) we continue with the algorithm
+				if (pointsOnFaceNoDuplicates.size() == 2){
+					//Now we get the points from the face on the cube on the right. WE establish an old vector for the points that we read and a new vector of points in witch we store the modified points
+					std::vector<glm::vec3> pointsOnFace2Old;
+					std::vector<glm::vec3> pointsOnFace2New;
+
+					std::queue<OctreeCube*> queue;
+					OctreeCube* child;
+					queue.push(further);
+					while (!queue.empty()){
+						child = queue.front();
+						queue.pop();
+						if (!child->isLeaf){
+							queue.push(child->children[0]);
+							queue.push(child->children[1]);
+							queue.push(child->children[2]);
+							queue.push(child->children[3]);
+							queue.push(child->children[4]);
+							queue.push(child->children[5]);
+							queue.push(child->children[6]);
+							queue.push(child->children[7]);
+						}
+						//Get the points from that child and put them in pointsOnFace2Old
+						if (child->points != NULL){
+							for (int j = 0; j < child->points->size(); j++){
+								pointsOnFace2Old.push_back(child->points->at(j));
+							}
+						}
+					}
+
+					//Now that we have the points from the cube on the right, we need to get only those which are on the face on the left (Right of current cube)
+					vector< glm::vec3 >::iterator it = pointsOnFace2Old.begin();
+					while (it != pointsOnFace2Old.end()) {
+
+						if ((*it).z != (currentCube->origin.z + currentCube->sizeZ)) {
+
+							it = pointsOnFace2Old.erase(it);
+						}
+						else ++it;
+					}
+
+					//No we have the points from the face on the right, We iterate through every point and change the value to be the paralel projection of that point onto the two point from face1. The new point is stored in PointsonFace2New
+					//std::cout << "we have points on the right face" << pointsOnFace2Old.size() << endl;
+					for (int i = 0; i < pointsOnFace2Old.size(); i++){
+						pointsOnFace2New.push_back(pointOnLine(pointsOnFaceNoDuplicates[0], pointsOnFaceNoDuplicates[1], pointsOnFace2Old[i]));
+						//std::cout << "  " << pointsOnFace2New[i].x << "  " << pointsOnFace2New[i].y << "  " << pointsOnFace2New[i].z << endl;
+					}
+
+					//We have all the points already changed in the pointsOnFace2New. Iteare throgh the children again and change their points
+
+					queue.push(further);
+					while (!queue.empty()){
+						child = queue.front();
+						queue.pop();
+						if (!child->isLeaf){
+							queue.push(child->children[0]);
+							queue.push(child->children[1]);
+							queue.push(child->children[2]);
+							queue.push(child->children[3]);
+							queue.push(child->children[4]);
+							queue.push(child->children[5]);
+							queue.push(child->children[6]);
+							queue.push(child->children[7]);
+						}
+						if (child->points != NULL){
+							for (int j = 0; j < child->points->size(); j++){
+								//For each one of those points, check to see if it matches on in pointsOnFace2old, If it does, change it with the point in the same index in pointsOnFace2New
+								for (int k = 0; k < pointsOnFace2Old.size(); k++){
+									if (child->points->at(j).x == pointsOnFace2Old[k].x && child->points->at(j).y == pointsOnFace2Old[k].y && child->points->at(j).z == pointsOnFace2Old[k].z){
+										child->points->at(j).x = pointsOnFace2New[k].x;
+										child->points->at(j).y = pointsOnFace2New[k].y;
+										child->points->at(j).z = pointsOnFace2New[k].z;
+									}
+								}
+
+							}
+						}
+					}
+
+
+				}
+			}
+
+			
+			if (closer != NULL && !closer->isLeaf){
+				//std::cout << "possible conflict with the cube on the right" << std::endl;
+
+				//we grab the points from the cube that are on the right face
+				std::vector<glm::vec3> pointsOnFace;
+				pointsOnFace.clear();
+				for (int i = 0; i < currentCube->points->size(); i++){
+					if (currentCube->points->at(i).z == (currentCube->origin.z)){
+						pointsOnFace.push_back(currentCube->points->at(i));
+					}
+				}
+
+				//Remove the duplicates from points on face
+				std::vector<glm::vec3> pointsOnFaceNoDuplicates;
+				bool skipPoint = false;
+				for (int i = 0; i < pointsOnFace.size(); i++){
+					skipPoint = false;
+					//For each point check if it's not already in the pointOnFaceNoDuplicates
+					for (int j = 0; j < pointsOnFaceNoDuplicates.size(); j++){
+						if (pointsOnFace[i].x == pointsOnFaceNoDuplicates[j].x && pointsOnFace[i].y == pointsOnFaceNoDuplicates[j].y && pointsOnFace[i].z == pointsOnFaceNoDuplicates[j].z){
+							//There is already on in pointface no duplicates with the same value
+							skipPoint = true;
+						}
+					}
+					if (!skipPoint)
+						pointsOnFaceNoDuplicates.push_back(pointsOnFace[i]);
+				}
+
+
+				//After removing the duplicates , if we have lines (2 points) we continue with the algorithm
+				if (pointsOnFaceNoDuplicates.size() == 2){
+					//Now we get the points from the face on the cube on the right. WE establish an old vector for the points that we read and a new vector of points in witch we store the modified points
+					std::vector<glm::vec3> pointsOnFace2Old;
+					std::vector<glm::vec3> pointsOnFace2New;
+
+					std::queue<OctreeCube*> queue;
+					OctreeCube* child;
+					queue.push(closer);
+					while (!queue.empty()){
+						child = queue.front();
+						queue.pop();
+						if (!child->isLeaf){
+							queue.push(child->children[0]);
+							queue.push(child->children[1]);
+							queue.push(child->children[2]);
+							queue.push(child->children[3]);
+							queue.push(child->children[4]);
+							queue.push(child->children[5]);
+							queue.push(child->children[6]);
+							queue.push(child->children[7]);
+						}
+						//Get the points from that child and put them in pointsOnFace2Old
+						if (child->points != NULL){
+							for (int j = 0; j < child->points->size(); j++){
+								pointsOnFace2Old.push_back(child->points->at(j));
+							}
+						}
+					}
+
+					//Now that we have the points from the cube on the right, we need to get only those which are on the face on the left (Right of current cube)
+					vector< glm::vec3 >::iterator it = pointsOnFace2Old.begin();
+					while (it != pointsOnFace2Old.end()) {
+
+						if ((*it).z != (currentCube->origin.z)) {
+
+							it = pointsOnFace2Old.erase(it);
+						}
+						else ++it;
+					}
+
+					//No we have the points from the face on the right, We iterate through every point and change the value to be the paralel projection of that point onto the two point from face1. The new point is stored in PointsonFace2New
+					//std::cout << "we have points on the right face" << pointsOnFace2Old.size() << endl;
+					//pointsOnFace2New.reserve(pointsOnFace2Old.size());
+					for (int i = 0; i < pointsOnFace2Old.size(); i++){
+						pointsOnFace2New.push_back(pointOnLine(pointsOnFaceNoDuplicates[0], pointsOnFaceNoDuplicates[1], pointsOnFace2Old[i]));
+
+						//std::cout << "point 1 " << pointsOnFaceNoDuplicates[0].x << "  " << pointsOnFaceNoDuplicates[0].y << "  " << pointsOnFaceNoDuplicates[0].z << std::endl;
+						//std::cout << "point 2 " << pointsOnFaceNoDuplicates[1].x << "  " << pointsOnFaceNoDuplicates[1].y << "  " << pointsOnFaceNoDuplicates[1].z << std::endl;
+						//std::cout << "point for projection " << pointsOnFace2Old[i].x << "  " << pointsOnFace2Old[i].y << "  " << pointsOnFace2Old[i].z << std::endl;
+						//std::cout << "point projected " << pointsOnFace2New[i].x << "  " << pointsOnFace2New[i].y << "  " << pointsOnFace2New[i].z << std::endl;
+						//std::cin.get();
+						//std::cout << "  " << pointsOnFace2New[i].x << "  " << pointsOnFace2New[i].y << "  " << pointsOnFace2New[i].z << endl;
+					}
+
+					//We have all the points already changed in the pointsOnFace2New. Iteare throgh the children again and change their points
+
+					queue.push(closer);
+					while (!queue.empty()){
+						child = queue.front();
+						queue.pop();
+						if (!child->isLeaf){
+							queue.push(child->children[0]);
+							queue.push(child->children[1]);
+							queue.push(child->children[2]);
+							queue.push(child->children[3]);
+							queue.push(child->children[4]);
+							queue.push(child->children[5]);
+							queue.push(child->children[6]);
+							queue.push(child->children[7]);
+						}
+						if (child->points != NULL){
+							for (int j = 0; j < child->points->size(); j++){
+								//For each one of those points, check to see if it matches on in pointsOnFace2old, If it does, change it with the point in the same index in pointsOnFace2New
+								for (int k = 0; k < pointsOnFace2Old.size(); k++){
+									if (child->points->at(j).x == pointsOnFace2Old[k].x && child->points->at(j).y == pointsOnFace2Old[k].y && child->points->at(j).z == pointsOnFace2Old[k].z){
+										child->points->at(j).x = pointsOnFace2New[k].x;
+										child->points->at(j).y = pointsOnFace2New[k].y;
+										child->points->at(j).z = pointsOnFace2New[k].z;
+									}
+								}
+
+							}
+						}
+					}
+
+
+				}
+			}
+
+			
+
+
+
+
+
+
+
+
+		}
+	}
+
+
+
+
+
+
+	//Go breath-first through the octree
+	//For each cube, find its neibhours
+	//check if thos eneigbours have a conflict, if there is a conflict then resolve it
+	/*OctreeCube* currentCube;
+	OctreeCube* adyacent;
+	std::queue<OctreeCube*> queue;
+	std::queue<OctreeCube*> queueInternal;
+	int count = 0;
+
+	queue.push(root);
+	while (!queue.empty()){
+		currentCube = queue.front();
+		queue.pop();
+		if (currentCube->children[0] != NULL){
+			queue.push(currentCube->children[0]);
+			queue.push(currentCube->children[1]);
+			queue.push(currentCube->children[2]);
+			queue.push(currentCube->children[3]);
+			queue.push(currentCube->children[4]);
+			queue.push(currentCube->children[5]);
+			queue.push(currentCube->children[6]);
+			queue.push(currentCube->children[7]);
+		}
+
+		std::cout << "iter number " << count << std::endl;
+		count++;
+
+		if (currentCube->children[0] != NULL)	//If the current cube is not a leaf one then it does not polygonons in it so it doesnt need checking  for conflicts with adyacent cubes
+			continue;
+
+		//For this current cube, make another loop so that it finds the nighours
+		queueInternal.push(root);
+		while (!queueInternal.empty()){
+			adyacent = queueInternal.front();
+			queueInternal.pop();
+			if (adyacent->children[0] != NULL){
+				queueInternal.push(adyacent->children[0]);
+				queueInternal.push(adyacent->children[1]);
+				queueInternal.push(adyacent->children[2]);
+				queueInternal.push(adyacent->children[3]);
+				queueInternal.push(adyacent->children[4]);
+				queueInternal.push(adyacent->children[5]);
+				queueInternal.push(adyacent->children[6]);
+				queueInternal.push(adyacent->children[7]);
+			}
+		}
+
+	}*/
+
+	
+
+
+	//THe code below is higly unoptimized because is On^6
+	/*for (int cube = 0; cube < model->cubes.size(); cube++){
+		if (model->cubes[cube].isLeaf && model->cubes[cube].needsChecking){
+			// check the adyacent cubes, if there are not leaf that means that they are subdivided and thus the face that divides the two cubes is a transition face
+			
+			//we search for the cube that is on the right
+			for (int ady = 0; ady < model->cubes.size(); ady++){
+				if (model->cubes[ady].origin.x == (model->cubes[cube].origin.x + model->cubes[cube].sizeX) &&
+					model->cubes[ady].origin.y == model->cubes[cube].origin.y &&
+					model->cubes[ady].origin.z == model->cubes[cube].origin.z && 
+					!model->cubes[ady].isLeaf){
+					cout << "found a cube on the right that is not leaf" << endl;
+				}
+			}
+
+			//we search for the cube that is on the left
+			for (int ady = 0; ady < model->cubes.size(); ady++){
+				if (model->cubes[ady].origin.x == (model->cubes[cube].origin.x - model->cubes[cube].sizeX) &&
+					model->cubes[ady].origin.y == model->cubes[cube].origin.y &&
+					model->cubes[ady].origin.z == model->cubes[cube].origin.z && 
+					!model->cubes[ady].isLeaf){
+					cout << "found a cube on the left that is not leaf" << endl;
+				}
+			}
+
+			//we search for the cube that is toward the screen
+			for (int ady = 0; ady < model->cubes.size(); ady++){
+				if (model->cubes[ady].origin.x == model->cubes[cube].origin.x &&
+					model->cubes[ady].origin.y == model->cubes[cube].origin.y &&
+					model->cubes[ady].origin.z == (model->cubes[cube].origin.z + model->cubes[cube].sizeZ) &&
+					!model->cubes[ady].isLeaf){
+					cout << "found a cube on the z+ that is not leaf" << endl;
+				}
+			}
+
+			//we search for the cube that is toward me
+			for (int ady = 0; ady < model->cubes.size(); ady++){
+				if (model->cubes[ady].origin.x == model->cubes[cube].origin.x &&
+					model->cubes[ady].origin.y == model->cubes[cube].origin.y &&
+					model->cubes[ady].origin.z == (model->cubes[cube].origin.z - model->cubes[cube].sizeZ) &&
+					!model->cubes[ady].isLeaf){
+					cout << "found a cube on the z- that is not leaf" << endl;
+				}
+			}
+
+			//we search for the cube that is on top
+			for (int ady = 0; ady < model->cubes.size(); ady++){
+				if (model->cubes[ady].origin.x == model->cubes[cube].origin.x &&
+					model->cubes[ady].origin.y == (model->cubes[cube].origin.y + model->cubes[cube].sizeY) &&
+					model->cubes[ady].origin.z == model->cubes[cube].origin.z &&
+					!model->cubes[ady].isLeaf){
+					cout << "found a cube on the top that is not leaf" << endl;
+				}
+			}
+
+			//we search for the cube that is on bottom
+			for (int ady = 0; ady < model->cubes.size(); ady++){
+				if (model->cubes[ady].origin.x == model->cubes[cube].origin.x &&
+					model->cubes[ady].origin.y == (model->cubes[cube].origin.y - model->cubes[cube].sizeY) &&
+					model->cubes[ady].origin.z == model->cubes[cube].origin.z &&
+					!model->cubes[ady].isLeaf){
+					cout << "found a cube on the bottom that is not leaf" << endl;
+				}
+			}
+
+
+			cout << "Finished with that cube" << cube << " of " << model->cubes.size() << endl << endl;
+
+		}
+
+	}*/
+}
+
+
+
+
+
+
+void VolumeRenderer::crackPatch2(OctreeCube* root){
+
+
+	OctreeCube* currentCube;
+	OctreeCube* adyacent;
+
+	OctreeCube* right, *left, *top, *bottom, *further, *closer;
+
+	int count = 0;
 	//Do the same but using the octree vector insted of a queue
 	for (int i = 0; i < model->octreeVector.size(); i++){
 		currentCube = model->octreeVector[i];
@@ -1461,15 +2656,15 @@ void VolumeRenderer::crackPatch(OctreeCube* root){
 				adyacent = model->octreeVector[j];
 
 				//Right cube
-				if (right==NULL &&
-					
+				if (right == NULL &&
+
 					adyacent->origin.x == currentCube->origin.x + currentCube->sizeX &&
 					adyacent->origin.y == currentCube->origin.y &&
 					adyacent->origin.z == currentCube->origin.z &&
 
 					adyacent->sizeX == currentCube->sizeX &&
 					adyacent->sizeY == currentCube->sizeY &&
-					adyacent->sizeZ == currentCube->sizeZ )
+					adyacent->sizeZ == currentCube->sizeZ)
 				{
 					right = adyacent;
 				}
@@ -1549,11 +2744,11 @@ void VolumeRenderer::crackPatch(OctreeCube* root){
 			}
 
 			/*if (right != NULL && left != NULL && top != NULL && bottom != NULL && further != NULL && closer != NULL){
-				std::cout << "found one with all the neighbours" << std::endl;
+			std::cout << "found one with all the neighbours" << std::endl;
 			}*/
 
 			//Now we have the current cube and it's neighbour, we need to check and see if there are any conflicts woth the neighbours. A conflict occurs if the current cube is leaf and the neighbour isint
-			
+
 			//The right one is not a leaf, we must check it's chilcren and return their verts. If the children have any verts, check if they are on the correspondant face
 			if (right != NULL && !right->isLeaf){
 				//std::cout << "possible conflict with the cube on the right" << std::endl;
@@ -1561,7 +2756,7 @@ void VolumeRenderer::crackPatch(OctreeCube* root){
 				//we grab the points from the cube that are on the right face
 				std::vector<glm::vec3> pointsOnFace;
 				pointsOnFace.clear();
-				for (int i = 0; i < currentCube->points->size();i++){
+				for (int i = 0; i < currentCube->points->size(); i++){
 					if (currentCube->points->at(i).x == (currentCube->origin.x + currentCube->sizeX)){
 						pointsOnFace.push_back(currentCube->points->at(i));
 					}
@@ -1575,11 +2770,11 @@ void VolumeRenderer::crackPatch(OctreeCube* root){
 					for (int j = 0; j < pointsOnFaceNoDuplicates.size(); j++){
 						if (pointsOnFace[i].x == pointsOnFaceNoDuplicates[j].x && pointsOnFace[i].y == pointsOnFaceNoDuplicates[j].y && pointsOnFace[i].z == pointsOnFaceNoDuplicates[j].z){
 							//There is already on in pointface no duplicates with the same value
-							 skipPoint = true;
+							skipPoint = true;
 						}
 					}
 					if (!skipPoint)
-						pointsOnFaceNoDuplicates.push_back(pointsOnFace[i]);	
+						pointsOnFaceNoDuplicates.push_back(pointsOnFace[i]);
 				}
 
 
@@ -1617,7 +2812,7 @@ void VolumeRenderer::crackPatch(OctreeCube* root){
 					vector< glm::vec3 >::iterator it = pointsOnFace2Old.begin();
 					while (it != pointsOnFace2Old.end()) {
 
-						if ((*it).x!=(currentCube->origin.x+currentCube->sizeX)  ) {
+						if ((*it).x != (currentCube->origin.x + currentCube->sizeX)) {
 
 							it = pointsOnFace2Old.erase(it);
 						}
@@ -1627,7 +2822,7 @@ void VolumeRenderer::crackPatch(OctreeCube* root){
 					//No we have the points from the face on the right, We iterate through every point and change the value to be the paralel projection of that point onto the two point from face1. The new point is stored in PointsonFace2New
 					//std::cout << "we have points on the right face" << pointsOnFace2Old.size() << endl;
 					for (int i = 0; i < pointsOnFace2Old.size(); i++){
-						pointsOnFace2New.push_back( pointOnLine(pointsOnFaceNoDuplicates[0], pointsOnFaceNoDuplicates[1], pointsOnFace2Old[i])  );
+						pointsOnFace2New.push_back(pointOnLine(pointsOnFaceNoDuplicates[0], pointsOnFaceNoDuplicates[1], pointsOnFace2Old[i]));
 
 						//std::cout << "point 1 " << pointsOnFaceNoDuplicates[0].x << "  " << pointsOnFaceNoDuplicates[0].y << "  " << pointsOnFaceNoDuplicates[0].z << std::endl;
 						//std::cout << "point 2 " << pointsOnFaceNoDuplicates[1].x << "  " << pointsOnFaceNoDuplicates[1].y << "  " << pointsOnFaceNoDuplicates[1].z << std::endl;
@@ -1639,7 +2834,7 @@ void VolumeRenderer::crackPatch(OctreeCube* root){
 					}
 
 					//We have all the points already changed in the pointsOnFace2New. Iteare throgh the children again and change their points
-					
+
 					queue.push(right);
 					while (!queue.empty()){
 						child = queue.front();
@@ -1672,34 +2867,29 @@ void VolumeRenderer::crackPatch(OctreeCube* root){
 
 				}
 
-				
+
 
 
 				/*std::cout << "point on the right hace are " << pointsOnFaceNoDuplicates.size() << std::endl;
 				if (pointsOnFaceNoDuplicates.size() >= 3){
-					std::cout << "cube has sizes " << endl << " origin.x= " << currentCube->origin.x << endl <<
-						" origin.y= " << currentCube->origin.y <<
-						" origin.z= " << currentCube->origin.z <<
-						" sizex= " << currentCube->sizeX <<
-						" sizey= " << currentCube->sizeY <<
-						" sizez= " << currentCube->sizeZ << endl;
-
-					std::cout << "the vertices are" << endl;
-
-					for (int j = 0; j < currentCube->points->size(); j++){
-						std::cout << "  " << currentCube->points->at(j).x << "  " << currentCube->points->at(j).y << "  " << currentCube->points->at(j).z << endl;
-					}
-
-					std::cin.get();
-
-					std::cout << endl << endl;
+				std::cout << "cube has sizes " << endl << " origin.x= " << currentCube->origin.x << endl <<
+				" origin.y= " << currentCube->origin.y <<
+				" origin.z= " << currentCube->origin.z <<
+				" sizex= " << currentCube->sizeX <<
+				" sizey= " << currentCube->sizeY <<
+				" sizez= " << currentCube->sizeZ << endl;
+				std::cout << "the vertices are" << endl;
+				for (int j = 0; j < currentCube->points->size(); j++){
+				std::cout << "  " << currentCube->points->at(j).x << "  " << currentCube->points->at(j).y << "  " << currentCube->points->at(j).z << endl;
+				}
+				std::cin.get();
+				std::cout << endl << endl;
 				}*/
 			}
 
 
 
 
-			
 
 
 
@@ -1710,7 +2900,8 @@ void VolumeRenderer::crackPatch(OctreeCube* root){
 
 
 
-		
+
+
 
 			///////////////////////////////////////////////////////
 			if (left != NULL && !left->isLeaf){
@@ -1720,7 +2911,7 @@ void VolumeRenderer::crackPatch(OctreeCube* root){
 				std::vector<glm::vec3> pointsOnFace;
 				pointsOnFace.clear();
 				for (int i = 0; i < currentCube->points->size(); i++){
-					if (currentCube->points->at(i).x == (currentCube->origin.x )){
+					if (currentCube->points->at(i).x == (currentCube->origin.x)){
 						pointsOnFace.push_back(currentCube->points->at(i));
 					}
 				}
@@ -1775,7 +2966,7 @@ void VolumeRenderer::crackPatch(OctreeCube* root){
 					vector< glm::vec3 >::iterator it = pointsOnFace2Old.begin();
 					while (it != pointsOnFace2Old.end()) {
 
-						if ((*it).x != (currentCube->origin.x )) {
+						if ((*it).x != (currentCube->origin.x)) {
 
 							it = pointsOnFace2Old.erase(it);
 						}
@@ -1999,7 +3190,7 @@ void VolumeRenderer::crackPatch(OctreeCube* root){
 					vector< glm::vec3 >::iterator it = pointsOnFace2Old.begin();
 					while (it != pointsOnFace2Old.end()) {
 
-						if ((*it).y != (currentCube->origin.y )) {
+						if ((*it).y != (currentCube->origin.y)) {
 
 							it = pointsOnFace2Old.erase(it);
 						}
@@ -2168,7 +3359,7 @@ void VolumeRenderer::crackPatch(OctreeCube* root){
 				std::vector<glm::vec3> pointsOnFace;
 				pointsOnFace.clear();
 				for (int i = 0; i < currentCube->points->size(); i++){
-					if (currentCube->points->at(i).z == (currentCube->origin.z )){
+					if (currentCube->points->at(i).z == (currentCube->origin.z)){
 						pointsOnFace.push_back(currentCube->points->at(i));
 					}
 				}
@@ -2223,7 +3414,7 @@ void VolumeRenderer::crackPatch(OctreeCube* root){
 					vector< glm::vec3 >::iterator it = pointsOnFace2Old.begin();
 					while (it != pointsOnFace2Old.end()) {
 
-						if ((*it).z != (currentCube->origin.z )) {
+						if ((*it).z != (currentCube->origin.z)) {
 
 							it = pointsOnFace2Old.erase(it);
 						}
@@ -2234,7 +3425,7 @@ void VolumeRenderer::crackPatch(OctreeCube* root){
 					//std::cout << "we have points on the right face" << pointsOnFace2Old.size() << endl;
 					//pointsOnFace2New.reserve(pointsOnFace2Old.size());
 					for (int i = 0; i < pointsOnFace2Old.size(); i++){
-						pointsOnFace2New.push_back((pointsOnFaceNoDuplicates[0], pointsOnFaceNoDuplicates[1], pointsOnFace2Old[i]));
+						pointsOnFace2New.push_back(pointOnLine(pointsOnFaceNoDuplicates[0], pointsOnFaceNoDuplicates[1], pointsOnFace2Old[i]));
 
 						//std::cout << "point 1 " << pointsOnFaceNoDuplicates[0].x << "  " << pointsOnFaceNoDuplicates[0].y << "  " << pointsOnFaceNoDuplicates[0].z << std::endl;
 						//std::cout << "point 2 " << pointsOnFaceNoDuplicates[1].x << "  " << pointsOnFaceNoDuplicates[1].y << "  " << pointsOnFaceNoDuplicates[1].z << std::endl;
@@ -2280,8 +3471,8 @@ void VolumeRenderer::crackPatch(OctreeCube* root){
 			}
 
 
-			
-			
+
+
 
 
 
@@ -2305,140 +3496,128 @@ void VolumeRenderer::crackPatch(OctreeCube* root){
 	std::queue<OctreeCube*> queue;
 	std::queue<OctreeCube*> queueInternal;
 	int count = 0;
-
 	queue.push(root);
 	while (!queue.empty()){
-		currentCube = queue.front();
-		queue.pop();
-		if (currentCube->children[0] != NULL){
-			queue.push(currentCube->children[0]);
-			queue.push(currentCube->children[1]);
-			queue.push(currentCube->children[2]);
-			queue.push(currentCube->children[3]);
-			queue.push(currentCube->children[4]);
-			queue.push(currentCube->children[5]);
-			queue.push(currentCube->children[6]);
-			queue.push(currentCube->children[7]);
-		}
-
-		std::cout << "iter number " << count << std::endl;
-		count++;
-
-		if (currentCube->children[0] != NULL)	//If the current cube is not a leaf one then it does not polygonons in it so it doesnt need checking  for conflicts with adyacent cubes
-			continue;
-
-		//For this current cube, make another loop so that it finds the nighours
-		queueInternal.push(root);
-		while (!queueInternal.empty()){
-			adyacent = queueInternal.front();
-			queueInternal.pop();
-			if (adyacent->children[0] != NULL){
-				queueInternal.push(adyacent->children[0]);
-				queueInternal.push(adyacent->children[1]);
-				queueInternal.push(adyacent->children[2]);
-				queueInternal.push(adyacent->children[3]);
-				queueInternal.push(adyacent->children[4]);
-				queueInternal.push(adyacent->children[5]);
-				queueInternal.push(adyacent->children[6]);
-				queueInternal.push(adyacent->children[7]);
-			}
-		}
-
+	currentCube = queue.front();
+	queue.pop();
+	if (currentCube->children[0] != NULL){
+	queue.push(currentCube->children[0]);
+	queue.push(currentCube->children[1]);
+	queue.push(currentCube->children[2]);
+	queue.push(currentCube->children[3]);
+	queue.push(currentCube->children[4]);
+	queue.push(currentCube->children[5]);
+	queue.push(currentCube->children[6]);
+	queue.push(currentCube->children[7]);
+	}
+	std::cout << "iter number " << count << std::endl;
+	count++;
+	if (currentCube->children[0] != NULL)	//If the current cube is not a leaf one then it does not polygonons in it so it doesnt need checking  for conflicts with adyacent cubes
+	continue;
+	//For this current cube, make another loop so that it finds the nighours
+	queueInternal.push(root);
+	while (!queueInternal.empty()){
+	adyacent = queueInternal.front();
+	queueInternal.pop();
+	if (adyacent->children[0] != NULL){
+	queueInternal.push(adyacent->children[0]);
+	queueInternal.push(adyacent->children[1]);
+	queueInternal.push(adyacent->children[2]);
+	queueInternal.push(adyacent->children[3]);
+	queueInternal.push(adyacent->children[4]);
+	queueInternal.push(adyacent->children[5]);
+	queueInternal.push(adyacent->children[6]);
+	queueInternal.push(adyacent->children[7]);
+	}
+	}
 	}*/
 
-	
+
 
 
 	//THe code below is higly unoptimized because is On^6
 	/*for (int cube = 0; cube < model->cubes.size(); cube++){
-		if (model->cubes[cube].isLeaf && model->cubes[cube].needsChecking){
-			// check the adyacent cubes, if there are not leaf that means that they are subdivided and thus the face that divides the two cubes is a transition face
-			
-			//we search for the cube that is on the right
-			for (int ady = 0; ady < model->cubes.size(); ady++){
-				if (model->cubes[ady].origin.x == (model->cubes[cube].origin.x + model->cubes[cube].sizeX) &&
-					model->cubes[ady].origin.y == model->cubes[cube].origin.y &&
-					model->cubes[ady].origin.z == model->cubes[cube].origin.z && 
-					!model->cubes[ady].isLeaf){
-					cout << "found a cube on the right that is not leaf" << endl;
-				}
-			}
+	if (model->cubes[cube].isLeaf && model->cubes[cube].needsChecking){
+	// check the adyacent cubes, if there are not leaf that means that they are subdivided and thus the face that divides the two cubes is a transition face
 
-			//we search for the cube that is on the left
-			for (int ady = 0; ady < model->cubes.size(); ady++){
-				if (model->cubes[ady].origin.x == (model->cubes[cube].origin.x - model->cubes[cube].sizeX) &&
-					model->cubes[ady].origin.y == model->cubes[cube].origin.y &&
-					model->cubes[ady].origin.z == model->cubes[cube].origin.z && 
-					!model->cubes[ady].isLeaf){
-					cout << "found a cube on the left that is not leaf" << endl;
-				}
-			}
-
-			//we search for the cube that is toward the screen
-			for (int ady = 0; ady < model->cubes.size(); ady++){
-				if (model->cubes[ady].origin.x == model->cubes[cube].origin.x &&
-					model->cubes[ady].origin.y == model->cubes[cube].origin.y &&
-					model->cubes[ady].origin.z == (model->cubes[cube].origin.z + model->cubes[cube].sizeZ) &&
-					!model->cubes[ady].isLeaf){
-					cout << "found a cube on the z+ that is not leaf" << endl;
-				}
-			}
-
-			//we search for the cube that is toward me
-			for (int ady = 0; ady < model->cubes.size(); ady++){
-				if (model->cubes[ady].origin.x == model->cubes[cube].origin.x &&
-					model->cubes[ady].origin.y == model->cubes[cube].origin.y &&
-					model->cubes[ady].origin.z == (model->cubes[cube].origin.z - model->cubes[cube].sizeZ) &&
-					!model->cubes[ady].isLeaf){
-					cout << "found a cube on the z- that is not leaf" << endl;
-				}
-			}
-
-			//we search for the cube that is on top
-			for (int ady = 0; ady < model->cubes.size(); ady++){
-				if (model->cubes[ady].origin.x == model->cubes[cube].origin.x &&
-					model->cubes[ady].origin.y == (model->cubes[cube].origin.y + model->cubes[cube].sizeY) &&
-					model->cubes[ady].origin.z == model->cubes[cube].origin.z &&
-					!model->cubes[ady].isLeaf){
-					cout << "found a cube on the top that is not leaf" << endl;
-				}
-			}
-
-			//we search for the cube that is on bottom
-			for (int ady = 0; ady < model->cubes.size(); ady++){
-				if (model->cubes[ady].origin.x == model->cubes[cube].origin.x &&
-					model->cubes[ady].origin.y == (model->cubes[cube].origin.y - model->cubes[cube].sizeY) &&
-					model->cubes[ady].origin.z == model->cubes[cube].origin.z &&
-					!model->cubes[ady].isLeaf){
-					cout << "found a cube on the bottom that is not leaf" << endl;
-				}
-			}
-
-
-			cout << "Finished with that cube" << cube << " of " << model->cubes.size() << endl << endl;
-
-		}
-
+	//we search for the cube that is on the right
+	for (int ady = 0; ady < model->cubes.size(); ady++){
+	if (model->cubes[ady].origin.x == (model->cubes[cube].origin.x + model->cubes[cube].sizeX) &&
+	model->cubes[ady].origin.y == model->cubes[cube].origin.y &&
+	model->cubes[ady].origin.z == model->cubes[cube].origin.z &&
+	!model->cubes[ady].isLeaf){
+	cout << "found a cube on the right that is not leaf" << endl;
+	}
+	}
+	//we search for the cube that is on the left
+	for (int ady = 0; ady < model->cubes.size(); ady++){
+	if (model->cubes[ady].origin.x == (model->cubes[cube].origin.x - model->cubes[cube].sizeX) &&
+	model->cubes[ady].origin.y == model->cubes[cube].origin.y &&
+	model->cubes[ady].origin.z == model->cubes[cube].origin.z &&
+	!model->cubes[ady].isLeaf){
+	cout << "found a cube on the left that is not leaf" << endl;
+	}
+	}
+	//we search for the cube that is toward the screen
+	for (int ady = 0; ady < model->cubes.size(); ady++){
+	if (model->cubes[ady].origin.x == model->cubes[cube].origin.x &&
+	model->cubes[ady].origin.y == model->cubes[cube].origin.y &&
+	model->cubes[ady].origin.z == (model->cubes[cube].origin.z + model->cubes[cube].sizeZ) &&
+	!model->cubes[ady].isLeaf){
+	cout << "found a cube on the z+ that is not leaf" << endl;
+	}
+	}
+	//we search for the cube that is toward me
+	for (int ady = 0; ady < model->cubes.size(); ady++){
+	if (model->cubes[ady].origin.x == model->cubes[cube].origin.x &&
+	model->cubes[ady].origin.y == model->cubes[cube].origin.y &&
+	model->cubes[ady].origin.z == (model->cubes[cube].origin.z - model->cubes[cube].sizeZ) &&
+	!model->cubes[ady].isLeaf){
+	cout << "found a cube on the z- that is not leaf" << endl;
+	}
+	}
+	//we search for the cube that is on top
+	for (int ady = 0; ady < model->cubes.size(); ady++){
+	if (model->cubes[ady].origin.x == model->cubes[cube].origin.x &&
+	model->cubes[ady].origin.y == (model->cubes[cube].origin.y + model->cubes[cube].sizeY) &&
+	model->cubes[ady].origin.z == model->cubes[cube].origin.z &&
+	!model->cubes[ady].isLeaf){
+	cout << "found a cube on the top that is not leaf" << endl;
+	}
+	}
+	//we search for the cube that is on bottom
+	for (int ady = 0; ady < model->cubes.size(); ady++){
+	if (model->cubes[ady].origin.x == model->cubes[cube].origin.x &&
+	model->cubes[ady].origin.y == (model->cubes[cube].origin.y - model->cubes[cube].sizeY) &&
+	model->cubes[ady].origin.z == model->cubes[cube].origin.z &&
+	!model->cubes[ady].isLeaf){
+	cout << "found a cube on the bottom that is not leaf" << endl;
+	}
+	}
+	cout << "Finished with that cube" << cube << " of " << model->cubes.size() << endl << endl;
+	}
 	}*/
 }
+
+
 
 glm::vec3 VolumeRenderer::pointOnLine(glm::vec3 a, glm::vec3 b, glm::vec3& x){
 
 
 
-	//double dot = a.x*b.x + a.y*b.y + a.z*b.z;
-	//double lenSq1 = a.x*a.x + a.y*a.y + a.z*a.z;
-	//double lenSq2 = b.x*b.x + b.y*b.y + b.z*b.z;
-	//double angle = acos(dot / sqrt(lenSq1 * lenSq2));
+	double dot = a.x*b.x + a.y*b.y + a.z*b.z;
+	double lenSq1 = a.x*a.x + a.y*a.y + a.z*a.z;
+	double lenSq2 = b.x*b.x + b.y*b.y + b.z*b.z;
+	double angle = acos(dot / sqrt(lenSq1 * lenSq2));
 
 	//std::cout << "the angles is " << angle << std::endl;
 
 
 	glm::vec3 x_b, a_b ,a_bDiv, projection;
-	double x_b_a_bDot, a_bModule, a_bModulePow, div;
+	float x_b_a_bDot, a_bModule, a_bModulePow, div, x_bModule,optional;
 
 	x_b.x = x.x - b.x;
-	x_b.y = x.y - b.y ;
+	x_b.y = x.y - b.y;
 	x_b.z = x.z - b.z;
 
 	a_b.x = a.x - b.x;
@@ -2446,10 +3625,26 @@ glm::vec3 VolumeRenderer::pointOnLine(glm::vec3 a, glm::vec3 b, glm::vec3& x){
 	a_b.z = a.z - b.z;
 
 
+
+	/////////////Optional
+	x_bModule = sqrt(x_b.x*x_b.x + x_b.y*x_b.y + x_b.z*x_b.z);
+	a_bModule = sqrt(a_b.x*a_b.x + a_b.y*a_b.y + a_b.z*a_b.z);
+	optional = x_bModule*a_bModule*cos(angle);
+
+	/*if (angle < 0.001){
+		std:cout << "angle is too small" << std::endl;
+		return x;
+	}*/
+
+
+	///////End of optional
+
+
 	x_b_a_bDot = x_b.x*a_b.x + x_b.y*a_b.y + x_b.z*a_b.z;
 	a_bModule = sqrt(a_b.x*a_b.x + a_b.y*a_b.y + a_b.z*a_b.z);
 	a_bModulePow = a_bModule*a_bModule;
 
+	//div = optional / a_bModulePow;
 	div = x_b_a_bDot / a_bModulePow;
 
 	a_bDiv.x = a_b.x*div;
@@ -3442,6 +4637,8 @@ void VolumeRenderer::octree2CellPolygonise(OctreeCube& currentCube){
 }
 
 
+
+
 int VolumeRenderer::polygoniseOctree2(OctreeCube* root){
 
 	OctreeCube* currentCube;
@@ -3932,6 +5129,7 @@ void VolumeRenderer::on_loadDICOMFromFile_clicked(){
 	loadDICOMPixelData(fileNames);
 
 	generateMesh();
+	ui.dicomviewer2dgl->setFrame(model->frames / 2);
 	ui.glwidget->sendDataToGL();
 	//ui.glwidget->dataSended = 0;
 	ui.glwidget->update();
@@ -4148,7 +5346,12 @@ void VolumeRenderer::generateMesh(){
 
 	model->generatingMesh = true;
 	if (model->algorithmChosen == 1){
-		boost::thread workerThread(boost::bind(&VolumeRenderer::marchingSquares, this));
+		//boost::thread workerThread(boost::bind(&VolumeRenderer::marchingSquares, this));
+
+		MarchingCuber* mc = new MarchingCuber(&(model->pixelData), &(model->verts), &(model->normals), model->isoLevel, model->frames, model->pixelDataHeight, model->pixelDataWidth, model->cellSizeX, model->cellSizeY, model->cellSizeZ, model->numberOfBytes, model->interpolateDepth, model->linearInterpolation);
+		mc->run();
+		generateNormals();
+
 		//workerThread.join();
 		//marchingSquares();
 	}
@@ -4157,8 +5360,12 @@ void VolumeRenderer::generateMesh(){
 		adaptiveMarchingCubes();
 	if (model->algorithmChosen == 3)
 		adaptiveMarchingCubes2();
-	if (model->algorithmChosen == 4)
-		adaptiveMarchingCubes3();
+	if (model->algorithmChosen == 4){
+		//adaptiveMarchingCubes3();
+		AdaptiveCuber* amc = new AdaptiveCuber(&(model->pixelData), &(model->verts), &(model->normals), model->isoLevel, model->frames, model->pixelDataHeight, model->pixelDataWidth, model->cellSizeX, model->cellSizeY, model->cellSizeZ, model->numberOfBytes, model->interpolateDepth, model->linearInterpolation,model->octreeMaxDepth,&(model->gradient),model->tolerance);
+		amc->run();
+		generateNormals();
+	}
 
 	//model->generatingMesh = true;
 	//boost::thread workerThread(boost::bind(&VolumeRenderer::generateNormals, this));
@@ -4372,6 +5579,7 @@ void VolumeRenderer::wipePoints(){
 	
 	model->verts.clear();
 	model->normals.clear();
+	model->octreeVector.clear();
 }
 //************************************
 // Wipes and frees all the PixelData. It is used before loading a new Dicom file
@@ -4400,4 +5608,33 @@ void VolumeRenderer::progressValueChangedSlot(int newValue){
 void VolumeRenderer::generatingFinishedSlot(){
 	model->generatingMesh = false;
 	ui.progressBar->setValue(0);
+}
+
+void VolumeRenderer::on_xPosText_editingFinished(){
+	//std::cout << "the text is" << ui.interpolateDepthText->text().toUtf8().constData() << std::endl;
+	if (model->xPosPoint == ui.xPosText->text().toInt())
+		return;
+	model->xPosPoint = ui.xPosText->text().toInt();
+	std::cout << "setting x to " << model->xPosPoint << std::endl;
+	//wipePoints();
+	//generateMesh();
+}
+void VolumeRenderer::on_yPosText_editingFinished(){
+	//std::cout << "the text is" << ui.interpolateDepthText->text().toUtf8().constData() << std::endl;
+	if (model->yPosPoint == ui.yPosText->text().toInt())
+		return;
+	model->yPosPoint = ui.yPosText->text().toInt();
+	std::cout << "setting y to " << model->yPosPoint << std::endl;
+	//wipePoints();
+	//generateMesh();
+}
+
+void VolumeRenderer::on_zPosText_editingFinished(){
+	//std::cout << "the text is" << ui.interpolateDepthText->text().toUtf8().constData() << std::endl;
+	if (model->zPosPoint == ui.zPosText->text().toInt())
+		return;
+	model->zPosPoint = ui.zPosText->text().toInt();
+	std::cout << "setting z to " << model->zPosPoint << std::endl;
+	//wipePoints();
+	//generateMesh();
 }

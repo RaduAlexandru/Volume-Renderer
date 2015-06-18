@@ -70,11 +70,14 @@ private:
 	OctreeCube createInitialCube();
 	void ballPivot();
 	void crackPatch(OctreeCube*);
+	void crackPatch2(OctreeCube*);
 	
 	void marchingSquares();
 	void wipeBitmap();
 	void wipePoints();
 	void wipePixelData();
+
+	
 
 
 signals:
@@ -112,6 +115,9 @@ private slots:
 	void on_orientationXButton_clicked();
 	void on_orientationYButton_clicked();
 	void on_showCubesButton_clicked();
+	void on_xPosText_editingFinished();
+	void on_yPosText_editingFinished();
+	void on_zPosText_editingFinished();
 
 	void progressValueChangedSlot(int newValue);
 	void generatingFinishedSlot();

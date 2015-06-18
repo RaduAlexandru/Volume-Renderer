@@ -40,6 +40,11 @@ Model::Model()
 	generatingMesh = false;
 
 
+	xPosPoint = 0;
+	yPosPoint = 0;
+	zPosPoint = 0;
+
+
 	int v;
 
 	//Read values from the EdgeTable file, and read them as hex values. Store them in an 1D vector of 256

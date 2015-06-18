@@ -101,6 +101,11 @@ public:
 	int orientation;
 
 
+
+	int xPosPoint, yPosPoint, zPosPoint;
+
+
+
 	//boost::variant< unsigned char, unsigned short, unsigned long > ** pixelData;
 	//boost::variant< unsigned char**, unsigned short**, unsigned long** >  pixelData;
 	//boost::any **  pixelData;

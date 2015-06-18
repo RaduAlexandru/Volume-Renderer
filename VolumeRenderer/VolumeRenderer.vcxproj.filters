@@ -74,6 +74,12 @@
     <ClCompile Include="OctreeCube.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MarchingCuber.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AdaptiveCuber.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="volumerenderer.h">
@@ -100,6 +106,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="OctreeCube.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MarchingCuber.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AdaptiveCuber.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

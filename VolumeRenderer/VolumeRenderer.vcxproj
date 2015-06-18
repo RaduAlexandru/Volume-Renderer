@@ -145,6 +145,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AdaptiveCuber.cpp" />
     <ClCompile Include="dicomviewer2dgl.cpp" />
     <ClCompile Include="GeneratedFiles\Debug\moc_dicomviewer2dgl.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -185,6 +186,7 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Qt\Qt5.4.0\5.4\msvc2013_64_opengl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Qt\Qt5.4.0\5.4\msvc2013_64_opengl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
+    <ClCompile Include="MarchingCuber.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="OctreeCube.cpp" />
     <ClCompile Include="volumerenderer.cpp" />
@@ -230,6 +232,8 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AdaptiveCuber.h" />
+    <ClInclude Include="MarchingCuber.h" />
     <ClInclude Include="OctreeCube.h" />
     <CustomBuild Include="dicomviewer2dgl.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>

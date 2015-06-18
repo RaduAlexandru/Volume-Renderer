@@ -271,8 +271,163 @@ void GLWidget::paintGL()
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 
+	//Draw the point for debugging
+	glPointSize(6.0f);
+	glColor3f(0.f, 0.f, 1.f);
+	glBegin(GL_POINTS);
+	glVertex3f(model->xPosPoint, model->yPosPoint, model->zPosPoint);
+	glEnd();
+
+	//240, 160, 48 of size 16
+
+	//another cube with problems cube
+	//x=320-8
+	//y=192
+	//z=32
+	//size=8
+
+	//another cube with problems cube
+	//x=256
+	//y=168
+	//z=56
+	//size=8
+ 
+	//Draw the cube for debugging
+	int x, y, z, size;
+	x = 256;
+	y = 168;
+	z = 56;
+	size = 8;
+
+	glColor3f(0.f, 0.f, 1.f);
+	glLineWidth(2.5f);
+	glBegin(GL_LINES);
+
+	
+
+		glVertex3f(x, y, z);
+		glVertex3f(x + size, y, z);
+
+		glVertex3f(x, y, z);
+		glVertex3f(x, y + size, z);
+
+		glVertex3f(x, y, z);
+		glVertex3f(x, y, z + size);
 
 
+		glVertex3f(x + size, y + size, z + size);
+		glVertex3f(x, y + size, z +size);
+
+		glVertex3f(x + size, y + size, z + size);
+		glVertex3f(x + size, y, z + size);
+
+		glVertex3f(x + size, y + size, z + size);
+		glVertex3f(x +size, y + size, z);
+
+
+
+
+		glVertex3f(x, y + size, z);
+		glVertex3f(x, y + size, z + size);
+
+		glVertex3f(x, y + size, z + size);
+		glVertex3f(x, y, z + size);
+
+		glVertex3f(x + size, y, z);
+		glVertex3f(x + size, y, z + size);
+
+		glVertex3f(x + size, y,z + size);
+		glVertex3f(x, y, z + size);
+
+		glVertex3f(x + size, y, z);
+		glVertex3f(x + size,y + size, z);
+
+		glVertex3f(x, y + size,z);
+		glVertex3f(x + size, y + size, z);
+
+	glEnd();
+
+
+
+
+
+	x = 256;
+	y = 168;
+	z = 56 - 8;
+	size = 8;
+
+	glColor3f(0.f, 1.f, 0.f);
+	glLineWidth(2.5f);
+	glBegin(GL_LINES);
+
+
+
+	glVertex3f(x, y, z);
+	glVertex3f(x + size, y, z);
+
+	glVertex3f(x, y, z);
+	glVertex3f(x, y + size, z);
+
+	glVertex3f(x, y, z);
+	glVertex3f(x, y, z + size);
+
+
+	glVertex3f(x + size, y + size, z + size);
+	glVertex3f(x, y + size, z + size);
+
+	glVertex3f(x + size, y + size, z + size);
+	glVertex3f(x + size, y, z + size);
+
+	glVertex3f(x + size, y + size, z + size);
+	glVertex3f(x + size, y + size, z);
+
+
+
+
+	glVertex3f(x, y + size, z);
+	glVertex3f(x, y + size, z + size);
+
+	glVertex3f(x, y + size, z + size);
+	glVertex3f(x, y, z + size);
+
+	glVertex3f(x + size, y, z);
+	glVertex3f(x + size, y, z + size);
+
+	glVertex3f(x + size, y, z + size);
+	glVertex3f(x, y, z + size);
+
+	glVertex3f(x + size, y, z);
+	glVertex3f(x + size, y + size, z);
+
+	glVertex3f(x, y + size, z);
+	glVertex3f(x + size, y + size, z);
+
+	glEnd();
+
+	//Draw face for debugging
+
+	/*x = 240;
+	y = 160;
+	z = 48 ;
+	size = 16;
+
+	glColor3f(0.f, 1.f, 0.f);
+	glLineWidth(2.5f);
+	glBegin(GL_LINES);
+
+	glVertex3f(x, y, z);
+	glVertex3f(x + size, y, z);
+
+	glVertex3f(x + size, y, z);
+	glVertex3f(x + size, y + size, z);
+
+	glVertex3f(x + size, y + size, z);
+	glVertex3f(x, y + size, z);
+
+	glVertex3f(x, y + size, z);
+	glVertex3f(x, y, z);
+
+	glEnd();*/
 	
 
 	/*glBegin(GL_TRIANGLES);
@@ -370,12 +525,16 @@ void GLWidget::drawMesh(){
 void GLWidget::drawCubes(){
 	//Draw the cubes now The cube configuracion can be found as a comment in the adaptiveMarchingCubes function
 	
+	glLineWidth(1.0f);
 	glBegin(GL_LINES);
 	for (int i = 0; i < model->cubes.size(); i = i + 1){
 
 		if (!model->cubes[i].isLeaf){
 			continue;
 		}
+		//240, 160, 48 of size 16
+
+		
 
 		glVertex3f(model->cubes[i].origin.x, model->cubes[i].origin.y, model->cubes[i].origin.z);
 		glVertex3f(model->cubes[i].origin.x + model->cubes[i].sizeX, model->cubes[i].origin.y, model->cubes[i].origin.z);
