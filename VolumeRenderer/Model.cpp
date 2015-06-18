@@ -15,12 +15,11 @@ Model::Model()
 	cellSizeX=6;
 	cellSizeY=6;
 	cellSizeZ=6;
-	pixelData = NULL;
-	frames = 0;
+	//frames = 0;
 	
 	frame_to_display = 0;
-	pixelDataHeight = 0;
-	pixelDataWidth = 0;
+	//pixelDataHeight = 0;
+	//pixelDataWidth = 0;
 
 	linearInterpolation = true;
 	pointFlag = false;
@@ -44,6 +43,7 @@ Model::Model()
 	yPosPoint = 0;
 	zPosPoint = 0;
 
+	pixelData = new PixelData();
 
 	int v;
 
@@ -73,20 +73,7 @@ Model::~Model()
 {
 }
 
-int Model::getPixelValue(int x, int y, int z){
 
-	if (x<0 || x>pixelDataWidth || y<0 || y>pixelDataHeight || z <0 || z>=frames)
-		return 1;
-
-
-	unsigned char* dataPointer;
-	int value=0;
-
-	dataPointer = &(pixelData[z][0]);
-	dataPointer = dataPointer + (x + y*pixelDataWidth)*numberOfBytes;
-	memcpy(&value, dataPointer, numberOfBytes);
-	return value;
-}
 
 int Model::getSmoothPixelValue(int x, int y, int z){
 
@@ -96,12 +83,12 @@ int Model::getSmoothPixelValue(int x, int y, int z){
 
 	
 
-	value = 4 * getPixelValue(x, y, z) + 2 * getPixelValue(x + 1, y, z) + 2 * getPixelValue(x - 1, y, z) +
-		2 * getPixelValue(x, y + 1, z) + 2 * getPixelValue(x, y - 1, z)
-		+ 1 * getPixelValue(x - 1, y + 1, z) + 1 * getPixelValue(x + 1, y + 1, z) + 1 * getPixelValue(x - 1, y - 1, z) + 1 * getPixelValue(x + 1, y - 1, z)
+	value = 4 * pixelData->getPixelValue(x, y, z) + 2 * pixelData->getPixelValue(x + 1, y, z) + 2 * pixelData->getPixelValue(x - 1, y, z) +
+		2 * pixelData->getPixelValue(x, y + 1, z) + 2 * pixelData->getPixelValue(x, y - 1, z)
+		+ 1 * pixelData->getPixelValue(x - 1, y + 1, z) + 1 * pixelData->getPixelValue(x + 1, y + 1, z) + 1 * pixelData->getPixelValue(x - 1, y - 1, z) + 1 * pixelData->getPixelValue(x + 1, y - 1, z)
 
-		+ 2 * getPixelValue(x, y, z - 1) + 1 * getPixelValue(x - 1, y, z - 1) + 1 * getPixelValue(x, y + 1, z - 1) + 1 * getPixelValue(x, y - 1, z - 1) + 1 * getPixelValue(x + 1, y, z - 1)
-		+ 2 * getPixelValue(x, y, z + 1) + 1 * getPixelValue(x - 1, y, z + 1) + 1 * getPixelValue(x, y + 1, z + 1) + 1 * getPixelValue(x, y - 1, z + 1) + 1 * getPixelValue(x + 1, y, z + 1);
+		+ 2 * pixelData->getPixelValue(x, y, z - 1) + 1 * pixelData->getPixelValue(x - 1, y, z - 1) + 1 * pixelData->getPixelValue(x, y + 1, z - 1) + 1 * pixelData->getPixelValue(x, y - 1, z - 1) + 1 * pixelData->getPixelValue(x + 1, y, z - 1)
+		+ 2 * pixelData->getPixelValue(x, y, z + 1) + 1 * pixelData->getPixelValue(x - 1, y, z + 1) + 1 * pixelData->getPixelValue(x, y + 1, z + 1) + 1 * pixelData->getPixelValue(x, y - 1, z + 1) + 1 * pixelData->getPixelValue(x + 1, y, z + 1);
 
 	value = value / 28;
 	return value;

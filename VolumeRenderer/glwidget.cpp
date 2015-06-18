@@ -196,14 +196,14 @@ void GLWidget::paintGL()
 
 	//std::cout << "xrot is" << xRot << std::endl;
 
-	glTranslatef((model->pixelDataWidth / 2), (model->pixelDataHeight / 2 - yMove), -(510.0f) + zMove);
+	glTranslatef((model->pixelData->width / 2), (model->pixelData->height / 2 - yMove), -(510.0f) + zMove);
 	//glScalef(scale, scale, scale);
 	glRotatef(xRot, 1, 0, 0);
-	glTranslatef(-(model->pixelDataWidth / 2  -xMove), -(model->pixelDataHeight / 2  ), 0.0f );
+	glTranslatef(-(model->pixelData->width / 2  -xMove), -(model->pixelData->height / 2  ), 0.0f );
 
-	glTranslatef((model->pixelDataWidth / 2 ), (model->pixelDataHeight / 2 ), 0.0f  );
+	glTranslatef((model->pixelData->width / 2 ), (model->pixelData->height / 2 ), 0.0f  );
 	glRotatef(yRot, 0, 0, 1);	//We put it to minus so that the rotation is reversed
-	glTranslatef(-(model->pixelDataWidth / 2 ), -(model->pixelDataHeight / 2 ), 0.0f - (model->frames / 2 ));
+	glTranslatef(-(model->pixelData->width / 2 ), -(model->pixelData->height / 2 ), 0.0f - (model->pixelData->frames / 2 ));
 
 	
 	
@@ -233,11 +233,11 @@ void GLWidget::paintGL()
 	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 
 	//Position of light 2
-	float lightPosition1[4] = { model->pixelDataWidth, model->pixelDataHeight/8, 0, 1 };
+	float lightPosition1[4] = { model->pixelData->width, model->pixelData->height/8, 0, 1 };
 	glLightfv(GL_LIGHT1, GL_POSITION, lightPosition1);
 
 	//Position of light 3
-	float lightPosition2[4] = { model->pixelDataWidth/2, model->pixelDataHeight/1.1, 0, 1 };
+	float lightPosition2[4] = { model->pixelData->width/2, model->pixelData->height/1.1, 0, 1 };
 	glLightfv(GL_LIGHT2, GL_POSITION, lightPosition2);
 
 
@@ -729,7 +729,7 @@ void GLWidget::displayGradient(){
 
 	//We read values only if keys is emty
 	if (keys.empty())
-	for (int k = 0; k < model->frames; k++){
+	for (int k = 0; k < model->pixelData->frames; k++){
 		for (auto kv : model->gradient[k]) {
 			glm::vec3 positionKey;
 			positionKey.x = kv.first.first;
@@ -788,8 +788,8 @@ void GLWidget::setMatrices(){
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		//Now we position the camera in the middle of the screen (width/2 and heidth /2 ) and looking at the negative z axis
-		gluLookAt(model->pixelDataWidth / 2, model->pixelDataHeight / 2, model->frames,
-			model->pixelDataWidth / 2, model->pixelDataHeight / 2, -model->frames,
+		gluLookAt(model->pixelData->width / 2, model->pixelData->height / 2, model->pixelData->frames,
+			model->pixelData->width / 2, model->pixelData->height / 2, -model->pixelData->frames,
 			0.0, 1.0, 0.0);
 	}
 	else{
@@ -801,11 +801,11 @@ void GLWidget::setMatrices(){
 
 		float aspectRatio = (GLfloat)width() / (GLfloat)height();
 		if (width() <= height())
-			glOrtho(0.0f, model->pixelDataWidth, 0.0f - (model->pixelDataHeight* (aspectRatio - 1)), model->pixelDataHeight / aspectRatio, -1024.0f, 1024.0f);
+			glOrtho(0.0f, model->pixelData->width, 0.0f - (model->pixelData->height* (aspectRatio - 1)), model->pixelData->height / aspectRatio, -1024.0f, 1024.0f);
 		if (width() > height())
-			glOrtho(0.0f - (model->pixelDataWidth* (aspectRatio-1)), model->pixelDataWidth*aspectRatio, 0.0f, model->pixelDataHeight, -1024.0f, 1024.0f);
+			glOrtho(0.0f - (model->pixelData->width* (aspectRatio-1)), model->pixelData->width*aspectRatio, 0.0f, model->pixelData->height, -1024.0f, 1024.0f);
 		else
-			glOrtho(0.0f, model->pixelDataWidth, 0.0f, model->pixelDataHeight, -1024.0f, 1024.0f);
+			glOrtho(0.0f, model->pixelData->width, 0.0f, model->pixelData->height, -1024.0f, 1024.0f);
 
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();

@@ -18,8 +18,7 @@ border: 1px solid black;
 }
 
 
-
-
+/* ______________________________________QSlider              */
 
 
 
@@ -47,10 +46,10 @@ height: 10px;
 }
 
 QSlider::handle:horizontal {
-background: rgb(22,69,99);
+background: rgb(20,20,20);
 width: 10px;
-/*margin-top: -2px;*/
-/*margin-bottom: -2px;*/
+margin-top: -2px;
+margin-bottom: -2px;
 border-radius: 30px;
 }
 
@@ -80,6 +79,9 @@ QSlider::hover{
 	QSlider::handle{background: rgb(47,123,153);};
 }
 
+QSlider {
+color:white;
+}
 
 
 /*QSlider::groove:horizontal {
@@ -100,7 +102,7 @@ border-radius: 18px;
 
 
 
-/*Buttons*/
+/* ______________________________________Buttons              */
 
 QPushButton{
         border: 1px solid rgb(0,0,0);
@@ -117,7 +119,18 @@ QPushButton::hover{
  color: rgb(20,20,20);
 }
 
-/*Radio buttons*/
+/* ______________________________________ Radio Buttons              */
+
+QRadioButton::indicator {
+    width: 13px;
+    height: 13px;
+}
+
+QRadioButton{
+color:white;
+}
+
+
 
 /*QRadioButton::indicator {
     width: 13px;
@@ -152,3 +165,28 @@ QRadioButton::indicator:checked:pressed {
 
 
 
+/* ______________________________________Label              */
+
+QLabel{
+color:white;
+size:20px;
+font-size: 15px;
+font-weight: bold;
+border:white;
+text-shadow: 0 0 3px #F00;
+}
+
+QLabel {
+font-weight: bold;
+font-size: 12px;
+}
+
+
+/* ______________________________________QGroupBox              */
+
+QGroupBox{
+background: rgb(10,10,10);
+color:white;
+margin-top: -0px;
+border: rgb(10,10,10);
+}

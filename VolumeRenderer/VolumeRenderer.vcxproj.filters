@@ -80,6 +80,9 @@
     <ClCompile Include="AdaptiveCuber.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="PixelData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="volumerenderer.h">
@@ -112,6 +115,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AdaptiveCuber.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PixelData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

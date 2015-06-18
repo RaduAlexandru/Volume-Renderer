@@ -688,17 +688,17 @@ void VolumeRenderer::load_image_data(const char* file) {
 
 	model->frame_to_display = 0;
 	ui.glwidget->setFrame(0);
-	model->pixelDataWidth = bih.biWidth;
-	model->pixelDataHeight = bih.biHeight;
+	model->pixelData->width = bih.biWidth;
+	model->pixelData->height = bih.biHeight;
 	model->bitmapNumberOfPixels = bih.biWidth * bih.biHeight;
 	model->bitmapImageSize = sizeof(char)* model->bitmapNumberOfPixels;
-	model->numberOfBytes = 1;
+	model->pixelData->numberOfBytes = 1;
 	ui.isoLevelSlider->setMaximum(255);
 
-	model->pixelData = (unsigned char**)malloc(1*sizeof(unsigned char*));
-	model->pixelData[0] = (unsigned char *)malloc(model->bitmapImageSize);
+	model->pixelData->data = (unsigned char**)malloc(1*sizeof(unsigned char*));
+	model->pixelData->data[0] = (unsigned char *)malloc(model->bitmapImageSize);
 	
-	fread((model->pixelData)[0], 1, model->bitmapImageSize, f);
+	fread((model->pixelData->data)[0], 1, model->bitmapImageSize, f);
 
 
 	//int pixel_value = 0;
@@ -717,515 +717,7 @@ void VolumeRenderer::load_image_data(const char* file) {
 
 
 
-int VolumeRenderer::polygonise(CELL & cell, std::vector<glm::vec3>& verts){
 
-	//std::cout << "we are poligonizisng" << std::endl;
-	//vector<Model::POINTF> points;
-	glm::vec3 vertlist[12];
-	
-	int isoLevel = model->isoLevel;
-
-	int cubeIndex = 0;
-
-	if (cell.val[0] > isoLevel) cubeIndex += 1;
-	if (cell.val[1] > isoLevel) cubeIndex += 2;
-	if (cell.val[2] > isoLevel) cubeIndex += 4;
-	if (cell.val[3] > isoLevel) cubeIndex += 8;
-	if (cell.val[4] > isoLevel) cubeIndex += 16;
-	if (cell.val[5] > isoLevel) cubeIndex += 32;
-	if (cell.val[6] > isoLevel) cubeIndex += 64;
-	if (cell.val[7] > isoLevel) cubeIndex += 128;
-
-
-	if (cubeIndex == 255 || cubeIndex == 0){
-		return 0;	//REturn a 0 to indicate that the cell doesnt contain any vertices
-	}
-
-	glm::vec3 point;
-
-	/* Find the vertices where the surface intersects the cube */
-	if (model->edgeTable[cubeIndex] & 1) {
-		 interpolate(model->isoLevel, cell.position[0], cell.position[1], cell.val[0], cell.val[1], point);
-		 vertlist[0] = point;
-	}
-	if (model->edgeTable[cubeIndex] & 2) {
-		 interpolate(model->isoLevel, cell.position[1], cell.position[2], cell.val[1], cell.val[2] ,point);
-		 vertlist[1] = point;
-	}
-	if (model->edgeTable[cubeIndex] & 4) {
-		 interpolate(model->isoLevel, cell.position[2], cell.position[3], cell.val[2], cell.val[3], point);
-		 vertlist[2] = point;
-	}
-	if (model->edgeTable[cubeIndex] & 8) {
-		 interpolate(model->isoLevel, cell.position[3], cell.position[0], cell.val[3], cell.val[0], point);
-		 vertlist[3] = point;
-
-	}
-	if (model->edgeTable[cubeIndex] & 16) {
-		 interpolate(model->isoLevel, cell.position[4], cell.position[5], cell.val[4], cell.val[5], point);
-		 vertlist[4] = point;
-	}
-	if (model->edgeTable[cubeIndex] & 32) {
-		 interpolate(model->isoLevel, cell.position[5], cell.position[6], cell.val[5], cell.val[6], point);
-		 vertlist[5] = point;
-	}
-	if (model->edgeTable[cubeIndex] & 64) {
-		 interpolate(model->isoLevel, cell.position[6], cell.position[7], cell.val[6], cell.val[7], point);
-		 vertlist[6] = point;
-	}
-	if (model->edgeTable[cubeIndex] & 128) {
-		 interpolate(model->isoLevel, cell.position[7], cell.position[4], cell.val[7], cell.val[4], point);
-		 vertlist[7] = point;
-	}
-	if (model->edgeTable[cubeIndex] & 256) {
-		 interpolate(model->isoLevel, cell.position[0], cell.position[4], cell.val[0], cell.val[4], point);
-		 vertlist[8] = point;
-	}
-	if (model->edgeTable[cubeIndex] & 512) {
-		 interpolate(model->isoLevel, cell.position[1], cell.position[5], cell.val[1], cell.val[5], point);
-		 vertlist[9] = point;
-	}
-	if (model->edgeTable[cubeIndex] & 1024) {
-		 interpolate(model->isoLevel, cell.position[2], cell.position[6], cell.val[2], cell.val[6], point);
-		 vertlist[10] = point;
-	}
-	if (model->edgeTable[cubeIndex] & 2048) {
-		 interpolate(model->isoLevel, cell.position[3], cell.position[7], cell.val[3], cell.val[7], point);
-		 vertlist[11] = point;
-	}
-
-
-	glm::vec3 normal;
-	unsigned char* dataPointer;
-	int pointerOffset = model->numberOfBytes;
-	int value1 = 0, value2 = 0;
-
-	/* Create the triangles */
-
-	glm::vec3 point1, point2, point3;
-	for (int i = 0; model->triTable[cubeIndex][i] != -1; i += 3) {
-		
-		point1.x = (vertlist[model->triTable[cubeIndex][i]]).x;
-		point1.y = (vertlist[model->triTable[cubeIndex][i]]).y;
-		point1.z = (vertlist[model->triTable[cubeIndex][i]]).z;
-
-		point2.x = (vertlist[model->triTable[cubeIndex][i + 1]]).x;
-		point2.y = (vertlist[model->triTable[cubeIndex][i + 1]]).y;
-		point2.z = (vertlist[model->triTable[cubeIndex][i + 1]]).z;
-
-		point3.x = (vertlist[model->triTable[cubeIndex][i + 2]]).x;
-		point3.y = (vertlist[model->triTable[cubeIndex][i + 2]]).y;
-		point3.z = (vertlist[model->triTable[cubeIndex][i + 2]]).z;
-
-		
-		verts.push_back(point1);
-		verts.push_back(point2);
-		verts.push_back(point3);
-
-		/*verts.push_back((vertlist[model->triTable[cubeIndex][i]]).x);
-		verts.push_back((vertlist[model->triTable[cubeIndex][i]]).y);
-		verts.push_back((vertlist[model->triTable[cubeIndex][i]]).z);
-
-		verts.push_back((vertlist[model->triTable[cubeIndex][i + 1]]).x);
-		verts.push_back((vertlist[model->triTable[cubeIndex][i + 1]]).y);
-		verts.push_back((vertlist[model->triTable[cubeIndex][i + 1]]).z);
-		
-		verts.push_back((vertlist[model->triTable[cubeIndex][i + 2]]).x);
-		verts.push_back((vertlist[model->triTable[cubeIndex][i + 2]]).y);
-		verts.push_back((vertlist[model->triTable[cubeIndex][i + 2]]).z);*/
-
-		//Now we calculate the normal
-		/*u = p2 - p1;
-		2
-			v = p3 - p1;
-		3
-			np.x = ((u.y * v.z) - (u.z * v.y));
-		4
-			np.y = ((u.z * v.x) - (u.x * v.z));
-		5
-			np.z = ((u.x * v.y) - (u.y * v.x));
-		6
-			DrawNormal(p1, p2, p3, np);
-		7
-			glNormal3f(np.x, np.y, np.z);
-
-
-		Begin Function CalculateSurfaceNormal(Input Triangle) Returns Vector
-
-			Set Vector U to(Triangle.p2 minus Triangle.p1)
-			Set Vector V to(Triangle.p3 minus Triangle.p1)
-
-			Set Normal.x to(multiply U.y by V.z) minus(multiply U.z by V.y)
-			Set Normal.y to(multiply U.z by V.x) minus(multiply U.x by V.z)
-			Set Normal.z to(multiply U.x by V.y) minus(multiply U.y by V.x)
-
-			Returning Normal
-
-			End Function*/
-
-		/*glm::vec3 u,v,n;
-		u.x = (vertlist[model->triTable[cubeIndex][i + 1]]).x - (vertlist[model->triTable[cubeIndex][i]]).x;
-		u.y = (vertlist[model->triTable[cubeIndex][i + 1]]).y - (vertlist[model->triTable[cubeIndex][i]]).y;
-		u.z = (vertlist[model->triTable[cubeIndex][i + 1]]).z - (vertlist[model->triTable[cubeIndex][i]]).z;
-
-		v.x = (vertlist[model->triTable[cubeIndex][i + 2]]).x - (vertlist[model->triTable[cubeIndex][i]]).x;
-		v.y = (vertlist[model->triTable[cubeIndex][i + 2]]).y - (vertlist[model->triTable[cubeIndex][i]]).y;
-		v.z = (vertlist[model->triTable[cubeIndex][i + 2]]).z - (vertlist[model->triTable[cubeIndex][i]]).z;
-
-		n.x = u.y*v.z - u.z*v.y;
-		n.y = u.z*v.x - u.x*v.z;
-		n.z = u.x*v.y - u.y*v.x;
-
-		//we now normalize it
-		
-
-		double length = sqrt(n.x*n.x + n.y*n.y + n.z*n.z);
-
-		n.x = n.x / length;
-		n.y = n.y / length;
-		n.z = n.z / length;
-		
-
-		//WE push it once. Because we have 1 normal per triangle
-		model->normals.push_back(n.x);
-		model->normals.push_back(n.y);
-		model->normals.push_back(n.z);*/
-
-		//I will now try to do the same normal but with the sobel operator///
-		///////////////////////////////////////////////////////////////////
-		 
-		/*double dx=0.0, dy=0.0, dz=0.0;
-		int j, y, k;
-		double length;
-
-		j = boost::math::iround((vertlist[model->triTable[cubeIndex][i]]).x);
-		y = boost::math::iround((vertlist[model->triTable[cubeIndex][i]]).y);
-		k = boost::math::iround((vertlist[model->triTable[cubeIndex][i]]).z);
-
-		dx = -1 * (model->getPixelValue(j - 1, y + 1, k - 1)) + 1 * (model->getPixelValue(j + 1, y + 1, k - 1)) -
-			2 * (model->getPixelValue(j - 1, y, k - 1)) + 2 * (model->getPixelValue(j + 1, y, k - 1)) -
-			1 * (model->getPixelValue(j - 1, y - 1, k - 1)) + 1 * (model->getPixelValue(j + 1, y - 1, k - 1)) -
-
-			2 * (model->getPixelValue(j - 1, y + 1, k)) + 2 * (model->getPixelValue(j + 1, y + 1, k)) -
-			4 * (model->getPixelValue(j - 1, y, k)) + 2 * (model->getPixelValue(j + 1, y, k)) -
-			2 * (model->getPixelValue(j - 1, y - 1, k)) + 2 * (model->getPixelValue(j + 1, y - 1, k)) -
-
-			1 * (model->getPixelValue(j - 1, y + 1, k + 1)) + 1 * (model->getPixelValue(j + 1, y + 1, k + 1)) -
-			2 * (model->getPixelValue(j - 1, y, k + 1)) + 2 * (model->getPixelValue(j + 1, y, k + 1)) -
-			1 * (model->getPixelValue(j - 1, y - 1, k + 1)) + 1 * (model->getPixelValue(j + 1, y - 1, k + 1));
-
-		dy = 1 * (model->getPixelValue(j - 1, y + 1, k - 1)) + 2 * (model->getPixelValue(j, y + 1, k - 1)) + 1 * (model->getPixelValue(j + 1, y + 1, k - 1)) -
-			1 * (model->getPixelValue(j - 1, y - 1, k - 1)) - 2 * (model->getPixelValue(j, y - 1, k - 1)) - 1 * (model->getPixelValue(j + 1, y - 1, k - 1)) +
-
-			2 * (model->getPixelValue(j - 1, y + 1, k)) + 4 * (model->getPixelValue(j, y + 1, k)) + 2 * (model->getPixelValue(j + 1, y + 1, k)) -
-			2 * (model->getPixelValue(j - 1, y - 1, k)) - 4 * (model->getPixelValue(j, y - 1, k)) - 2 * (model->getPixelValue(j + 1, y - 1, k)) +
-
-			1 * (model->getPixelValue(j - 1, y + 1, k + 1)) + 2 * (model->getPixelValue(j, y + 1, k + 1)) + 1 * (model->getPixelValue(j + 1, y + 1, k + 1)) -
-			1 * (model->getPixelValue(j - 1, y - 1, k + 1)) - 2 * (model->getPixelValue(j, y - 1, k + 1)) - 1 * (model->getPixelValue(j + 1, y - 1, k + 1));
-
-		dz = -1 * (model->getPixelValue(j - 1, y + 1, k - 1)) - 2 * (model->getPixelValue(j, y + 1, k - 1)) - 1 * (model->getPixelValue(j + 1, y + 1, k - 1)) -
-			2 * (model->getPixelValue(j - 1, y, k - 1)) - 4 * (model->getPixelValue(j, y, k - 1)) - 2 * (model->getPixelValue(j + 1, y, k - 1)) -
-			1 * (model->getPixelValue(j - 1, y - 1, k - 1)) - 2 * (model->getPixelValue(j, y - 1, k - 1)) - 1 * (model->getPixelValue(j + 1, y - 1, k - 1)) +
-
-			1 * (model->getPixelValue(j - 1, y + 1, k + 1)) + 2 * (model->getPixelValue(j, y + 1, k + 1)) + 1 * (model->getPixelValue(j + 1, y + 1, k + 1)) -
-			2 * (model->getPixelValue(j - 1, y, k + 1)) + 4 * (model->getPixelValue(j, y, k + 1)) + 2 * (model->getPixelValue(j + 1, y, k + 1)) -
-			1 * (model->getPixelValue(j - 1, y - 1, k + 1)) + 2 * (model->getPixelValue(j, y - 1, k + 1)) + 1 * (model->getPixelValue(j + 1, y - 1, k + 1));
-
-
-
-		//we now normalize it
-
-
-		length = sqrt(dx*dx + dy*dy + dz*dz);
-
-		dx = dx / length;
-		dy = dy / length;
-		dz = dz / length;
-
-		model->normals.push_back(dx);
-		model->normals.push_back(dy);
-		model->normals.push_back(dz);
-
-
-		//Vertice 2
-		j = boost::math::iround((vertlist[model->triTable[cubeIndex][i + 1]]).x);
-		y = boost::math::iround((vertlist[model->triTable[cubeIndex][i + 1]]).y);
-		k = boost::math::iround((vertlist[model->triTable[cubeIndex][i + 1]]).z);
-
-		dx = -1 * (model->getPixelValue(j - 1, y + 1, k - 1)) + 1 * (model->getPixelValue(j + 1, y + 1, k - 1)) -
-			2 * (model->getPixelValue(j - 1, y, k - 1)) + 2 * (model->getPixelValue(j + 1, y, k - 1)) -
-			1 * (model->getPixelValue(j - 1, y - 1, k - 1)) + 1 * (model->getPixelValue(j + 1, y - 1, k - 1)) -
-
-			2 * (model->getPixelValue(j - 1, y + 1, k)) + 2 * (model->getPixelValue(j + 1, y + 1, k)) -
-			4 * (model->getPixelValue(j - 1, y, k)) + 2 * (model->getPixelValue(j + 1, y, k)) -
-			2 * (model->getPixelValue(j - 1, y - 1, k)) + 2 * (model->getPixelValue(j + 1, y - 1, k)) -
-
-			1 * (model->getPixelValue(j - 1, y + 1, k + 1)) + 1 * (model->getPixelValue(j + 1, y + 1, k + 1)) -
-			2 * (model->getPixelValue(j - 1, y, k + 1)) + 2 * (model->getPixelValue(j + 1, y, k + 1)) -
-			1 * (model->getPixelValue(j - 1, y - 1, k + 1)) + 1 * (model->getPixelValue(j + 1, y - 1, k + 1));
-
-		dy = 1 * (model->getPixelValue(j - 1, y + 1, k - 1)) + 2 * (model->getPixelValue(j, y + 1, k - 1)) + 1 * (model->getPixelValue(j + 1, y + 1, k - 1)) -
-			1 * (model->getPixelValue(j - 1, y - 1, k - 1)) - 2 * (model->getPixelValue(j, y - 1, k - 1)) - 1 * (model->getPixelValue(j + 1, y - 1, k - 1)) +
-
-			2 * (model->getPixelValue(j - 1, y + 1, k)) + 4 * (model->getPixelValue(j, y + 1, k)) + 2 * (model->getPixelValue(j + 1, y + 1, k)) -
-			2 * (model->getPixelValue(j - 1, y - 1, k)) - 4 * (model->getPixelValue(j, y - 1, k)) - 2 * (model->getPixelValue(j + 1, y - 1, k)) +
-
-			1 * (model->getPixelValue(j - 1, y + 1, k + 1)) + 2 * (model->getPixelValue(j, y + 1, k + 1)) + 1 * (model->getPixelValue(j + 1, y + 1, k + 1)) -
-			1 * (model->getPixelValue(j - 1, y - 1, k + 1)) - 2 * (model->getPixelValue(j, y - 1, k + 1)) - 1 * (model->getPixelValue(j + 1, y - 1, k + 1));
-
-		dz = -1 * (model->getPixelValue(j - 1, y + 1, k - 1)) - 2 * (model->getPixelValue(j, y + 1, k - 1)) - 1 * (model->getPixelValue(j + 1, y + 1, k - 1)) -
-			2 * (model->getPixelValue(j - 1, y, k - 1)) - 4 * (model->getPixelValue(j, y, k - 1)) - 2 * (model->getPixelValue(j + 1, y, k - 1)) -
-			1 * (model->getPixelValue(j - 1, y - 1, k - 1)) - 2 * (model->getPixelValue(j, y - 1, k - 1)) - 1 * (model->getPixelValue(j + 1, y - 1, k - 1)) +
-
-			1 * (model->getPixelValue(j - 1, y + 1, k + 1)) + 2 * (model->getPixelValue(j, y + 1, k + 1)) + 1 * (model->getPixelValue(j + 1, y + 1, k + 1)) -
-			2 * (model->getPixelValue(j - 1, y, k + 1)) + 4 * (model->getPixelValue(j, y, k + 1)) + 2 * (model->getPixelValue(j + 1, y, k + 1)) -
-			1 * (model->getPixelValue(j - 1, y - 1, k + 1)) + 2 * (model->getPixelValue(j, y - 1, k + 1)) + 1 * (model->getPixelValue(j + 1, y - 1, k + 1));
-
-
-
-		//we now normalize it
-
-
-		length = sqrt(dx*dx + dy*dy + dz*dz);
-
-		dx = dx / length;
-		dy = dy / length;
-		dz = dz / length;
-
-		model->normals.push_back(dx);
-		model->normals.push_back(dy);
-		model->normals.push_back(dz);
-
-
-		//vertice 3
-		j = boost::math::iround((vertlist[model->triTable[cubeIndex][i + 2]]).x);
-		y = boost::math::iround((vertlist[model->triTable[cubeIndex][i + 2]]).y);
-		k = boost::math::iround((vertlist[model->triTable[cubeIndex][i + 2]]).z);
-
-		dx = -1 * (model->getPixelValue(j - 1, y + 1, k - 1)) + 1 * (model->getPixelValue(j + 1, y + 1, k - 1)) -
-			2 * (model->getPixelValue(j - 1, y, k - 1)) + 2 * (model->getPixelValue(j + 1, y, k - 1)) -
-			1 * (model->getPixelValue(j - 1, y - 1, k - 1)) + 1 * (model->getPixelValue(j + 1, y - 1, k - 1)) -
-
-			2 * (model->getPixelValue(j - 1, y + 1, k)) + 2 * (model->getPixelValue(j + 1, y + 1, k)) -
-			4 * (model->getPixelValue(j - 1, y, k)) + 2 * (model->getPixelValue(j + 1, y, k)) -
-			2 * (model->getPixelValue(j - 1, y - 1, k)) + 2 * (model->getPixelValue(j + 1, y - 1, k)) -
-
-			1 * (model->getPixelValue(j - 1, y + 1, k + 1)) + 1 * (model->getPixelValue(j + 1, y + 1, k + 1)) -
-			2 * (model->getPixelValue(j - 1, y, k + 1)) + 2 * (model->getPixelValue(j + 1, y, k + 1)) -
-			1 * (model->getPixelValue(j - 1, y - 1, k + 1)) + 1 * (model->getPixelValue(j + 1, y - 1, k + 1));
-
-		dy = 1 * (model->getPixelValue(j - 1, y + 1, k - 1)) + 2 * (model->getPixelValue(j, y + 1, k - 1)) + 1 * (model->getPixelValue(j + 1, y + 1, k - 1)) -
-			1 * (model->getPixelValue(j - 1, y - 1, k - 1)) - 2 * (model->getPixelValue(j, y - 1, k - 1)) - 1 * (model->getPixelValue(j + 1, y - 1, k - 1)) +
-
-			2 * (model->getPixelValue(j - 1, y + 1, k)) + 4 * (model->getPixelValue(j, y + 1, k)) + 2 * (model->getPixelValue(j + 1, y + 1, k)) -
-			2 * (model->getPixelValue(j - 1, y - 1, k)) - 4 * (model->getPixelValue(j, y - 1, k)) - 2 * (model->getPixelValue(j + 1, y - 1, k)) +
-
-			1 * (model->getPixelValue(j - 1, y + 1, k + 1)) + 2 * (model->getPixelValue(j, y + 1, k + 1)) + 1 * (model->getPixelValue(j + 1, y + 1, k + 1)) -
-			1 * (model->getPixelValue(j - 1, y - 1, k + 1)) - 2 * (model->getPixelValue(j, y - 1, k + 1)) - 1 * (model->getPixelValue(j + 1, y - 1, k + 1));
-
-		dz = -1 * (model->getPixelValue(j - 1, y + 1, k - 1)) - 2 * (model->getPixelValue(j, y + 1, k - 1)) - 1 * (model->getPixelValue(j + 1, y + 1, k - 1)) -
-			2 * (model->getPixelValue(j - 1, y, k - 1)) - 4 * (model->getPixelValue(j, y, k - 1)) - 2 * (model->getPixelValue(j + 1, y, k - 1)) -
-			1 * (model->getPixelValue(j - 1, y - 1, k - 1)) - 2 * (model->getPixelValue(j, y - 1, k - 1)) - 1 * (model->getPixelValue(j + 1, y - 1, k - 1)) +
-
-			1 * (model->getPixelValue(j - 1, y + 1, k + 1)) + 2 * (model->getPixelValue(j, y + 1, k + 1)) + 1 * (model->getPixelValue(j + 1, y + 1, k + 1)) -
-			2 * (model->getPixelValue(j - 1, y, k + 1)) + 4 * (model->getPixelValue(j, y, k + 1)) + 2 * (model->getPixelValue(j + 1, y, k + 1)) -
-			1 * (model->getPixelValue(j - 1, y - 1, k + 1)) + 2 * (model->getPixelValue(j, y - 1, k + 1)) + 1 * (model->getPixelValue(j + 1, y - 1, k + 1));
-
-
-
-		//we now normalize it
-
-
-		length = sqrt(dx*dx + dy*dy + dz*dz);
-
-		dx = dx / length;
-		dy = dy / length;
-		dz = dz / length;
-
-		model->normals.push_back(dx);
-		model->normals.push_back(dy);
-		model->normals.push_back(dz);*/
-
-	}
-
-	
-	
-	
-
-
-	return 1;
-
-
-	/*if ( cubeIndex == 255){	//The cube is totally in or out of the surface
-		//cout << "cube is inside" << endl;
-		//cout << "z value is" << cell.position[0].z << endl;
-		model->verts.push_back(cell.position[0].x);
-		model->verts.push_back(cell.position[0].y);
-		model->verts.push_back(cell.position[0].z);
-
-		model->verts.push_back(cell.position[1].x);
-		model->verts.push_back(cell.position[1].y);
-		model->verts.push_back(cell.position[1].z);
-
-		model->verts.push_back(cell.position[2].x);
-		model->verts.push_back(cell.position[2].y);
-		model->verts.push_back(cell.position[2].z);
-
-		model->verts.push_back(cell.position[3].x);
-		model->verts.push_back(cell.position[3].y);
-		model->verts.push_back(cell.position[3].z);
-
-		model->verts.push_back(cell.position[4].x);
-		model->verts.push_back(cell.position[4].y);
-		model->verts.push_back(cell.position[4].z);
-
-		model->verts.push_back(cell.position[7].x);
-		model->verts.push_back(cell.position[7].y);
-		model->verts.push_back(cell.position[7].z);
-		return;
-	}
-	else{
-
-		//cout << "we poly" << endl;
-	}*/
-		
-
-	//cout << "cube index is" << cubeIndex << endl;
-	//Now we have a cube of a certain index. Since we are doing the 2d version, we will just make a case statement for all the 16 cases
-	//In each case we create a vector with the points generated and return that vector
-	/*Model::POINTF point;
-	switch (cubeIndex)
-	{
-	case 1:
-		
-		point = interpolate(isoLevel, cell.position[3], cell.position[0], cell.val[3], cell.val[0]);
-		points.push_back(point);
-		point = interpolate(isoLevel, cell.position[1], cell.position[0], cell.val[1], cell.val[0]);
-		points.push_back(point);
-
-		break;
-	case 2:
-
-		point = interpolate(isoLevel, cell.position[1], cell.position[0], cell.val[1], cell.val[0]);
-		points.push_back(point);
-		point = interpolate(isoLevel, cell.position[2], cell.position[1], cell.val[2], cell.val[1]);
-		points.push_back(point);
-
-		break;
-	case 3:
-		
-
-		point = interpolate(isoLevel, cell.position[3], cell.position[0], cell.val[3], cell.val[0]);
-		points.push_back(point);
-		point = interpolate(isoLevel, cell.position[2], cell.position[1], cell.val[2], cell.val[1]);
-		points.push_back(point);
-
-		break;
-	case 4:
-		
-		point = interpolate(isoLevel, cell.position[2], cell.position[1], cell.val[2], cell.val[1]);
-		points.push_back(point);
-		point = interpolate(isoLevel, cell.position[2], cell.position[3], cell.val[2], cell.val[3]);
-		points.push_back(point);
-		break;
-	case 5:
-		//Ambigous case
-		point = interpolate(isoLevel, cell.position[1], cell.position[0], cell.val[1], cell.val[0]);
-		points.push_back(point);
-		point = interpolate(isoLevel, cell.position[3], cell.position[0], cell.val[3], cell.val[0]);
-		points.push_back(point);
-
-		point = interpolate(isoLevel, cell.position[2], cell.position[1], cell.val[2], cell.val[1]);
-		points.push_back(point);
-		point = interpolate(isoLevel, cell.position[2], cell.position[3], cell.val[2], cell.val[3]);
-		points.push_back(point);
-		//cout << "ambigous case " << endl;
-		break;
-	case 6:
-
-
-		point = interpolate(isoLevel, cell.position[1], cell.position[0], cell.val[1], cell.val[0]);
-		points.push_back(point);
-		point = interpolate(isoLevel, cell.position[2], cell.position[3], cell.val[2], cell.val[3]);
-		points.push_back(point);
-
-		break;
-	case 7:
-		point = interpolate(isoLevel, cell.position[3], cell.position[0], cell.val[3], cell.val[0]);
-		points.push_back(point);
-		point = interpolate(isoLevel, cell.position[2], cell.position[3], cell.val[2], cell.val[3]);
-		points.push_back(point);
-
-		break;
-	case 8:
-		
-		point = interpolate(isoLevel, cell.position[3], cell.position[0], cell.val[3], cell.val[0]);
-		points.push_back(point);
-		point = interpolate(isoLevel, cell.position[2], cell.position[3], cell.val[2], cell.val[3]);
-		points.push_back(point);
-
-		break;
-	case 9:
-		
-		point = interpolate(isoLevel, cell.position[1], cell.position[0], cell.val[1], cell.val[0]);
-		points.push_back(point);
-		point = interpolate(isoLevel, cell.position[2], cell.position[3], cell.val[2], cell.val[3]);
-		points.push_back(point);
-
-		break;
-	case 10:
-		//Ambigous case
-		point = interpolate(isoLevel, cell.position[1], cell.position[0], cell.val[1], cell.val[0]);
-		points.push_back(point);
-		point = interpolate(isoLevel, cell.position[3], cell.position[0], cell.val[3], cell.val[0]);
-		points.push_back(point);
-
-		point = interpolate(isoLevel, cell.position[2], cell.position[1], cell.val[2], cell.val[1]);
-		points.push_back(point);
-		point = interpolate(isoLevel, cell.position[2], cell.position[3], cell.val[2], cell.val[3]);
-		points.push_back(point);
-		//cout << "ambigous case " << endl;
-		break;
-	case 11:
-		
-
-		point = interpolate(isoLevel, cell.position[2], cell.position[1], cell.val[2], cell.val[1]);
-		points.push_back(point);
-		point = interpolate(isoLevel, cell.position[2], cell.position[3], cell.val[2], cell.val[3]);
-		points.push_back(point);
-
-		break;
-	case 12:
-
-		point = interpolate(isoLevel,cell.position[3], cell.position[0],cell.val[3],cell.val[0]);
-		points.push_back(point);
-		point = interpolate(isoLevel, cell.position[2], cell.position[1], cell.val[2], cell.val[1]);
-		points.push_back(point);
-
-		break;
-	case 13:
-
-
-		point = interpolate(isoLevel, cell.position[1], cell.position[0], cell.val[1], cell.val[0]);
-		points.push_back(point);
-		point = interpolate(isoLevel, cell.position[2], cell.position[1], cell.val[2], cell.val[1]);
-		points.push_back(point);
-
-		break;
-	case 14:
-
-		point = interpolate(isoLevel, cell.position[1], cell.position[0], cell.val[1], cell.val[0]);
-		points.push_back(point);
-		point = interpolate(isoLevel, cell.position[3], cell.position[0], cell.val[3], cell.val[0]);
-		points.push_back(point);
-
-		break;
-	default:
-		break;
-	}*/
-
-	return 1; 
-}
 
 
 inline void VolumeRenderer::interpolate(int isoLevel, glm::vec3 point1, glm::vec3 point2, float val1, float val2, glm::vec3& resultPoint, int depth){
@@ -1294,152 +786,10 @@ inline void VolumeRenderer::interpolate(int isoLevel, glm::vec3 point1, glm::vec
 /*void VolumeRenderer::marchingSquares(unsigned char** & pixelData, int numberOfByte, int celllSizeX, int celllSizeY, int celllSizeZ,
 	int pixelDataHeight, int pixelDataWidth, int frames, int isoLevel, std::vector<glm::vec3>& verts, std::vector<glm::vec3>& normals)*/
 
-void VolumeRenderer::marchingSquares(){
-	model->verts.clear();
-	model->normals.clear();
-	std::cout << "marching cubes algorithm" << std::endl;
-	const clock_t begin_time = clock();
-	
-	cout << "frame is " << model->frames << endl;
-
-	//cout << "we march the cubes and write the points in the model" << endl;
-	CELL cell;
-	int cellSizeX, cellSizeY, cellSizeZ,frame;
-	cellSizeX = model->cellSizeX;
-	cellSizeY = model->cellSizeY;
-	cellSizeZ = model->cellSizeZ;
-	frame = model->frame_to_display;
-	unsigned char* dataPointer;
-	int value=0;
-	int pointerOffset=model->numberOfBytes;
-
-	std::ofstream outputFile;
-	outputFile.open("PixelsValues.txt");
-
-	//Now we make a square and march it
-	//i is the y axis and j is the x axis
-	//Since the bitmap is stored in reverse, we shall asign the y position to height-i insted of just i, thus mirroring the position
-	//WE also put - CellsizeY insted of + because we consider the coordinated in the y acis as going from bottom to top insted of top to bottom like usual. Maybe in the dicom files you will change the y position to be only equals to i
-	for (int i = 0; i < model->pixelDataHeight - cellSizeY; i = i + cellSizeY){	//WE make it to be till height -cellsizez because otherwise the last cube will be out of bound
-		
-		if (i%10==0)
-			emit progressValueChangedSignal(i * 100 / model->pixelDataHeight);
-		for (int j = 0; j < model->pixelDataWidth - cellSizeX; j = j + cellSizeX){
-			for (int k = 0; k < model->frames - cellSizeZ; k = k + cellSizeZ){
-
-				//cout << "k is" << k << endl;
-				//if (model->getPixelValue(j, i, k)!=0)
-				//cout << model->getPixelValue(j, i, k) << endl;
 
 
-					
-					/*
-					   7---------6
-					  /			 !
-					 /			 !
-					3---------2	 5
-				    !         !	 
-					!         !
-					0---------1
-					  */
-
-					cell.position[0].x = j;
-					cell.position[0].y = i;
-					cell.position[0].z = k;
-					cell.val[0] = model->getPixelValue(j,i,k);
-
-					cell.position[1].x = j + cellSizeX;
-					cell.position[1].y =  i;
-					cell.position[1].z = k;
-					cell.val[1] = model->getPixelValue(j +cellSizeX, i, k);
-
-					cell.position[2].x = j + cellSizeX;
-					cell.position[2].y =  i + cellSizeY;
-					cell.position[2].z = k;
-					cell.val[2] = model->getPixelValue(j + cellSizeX, i + cellSizeY, k);
-
-					cell.position[3].x = j;
-					cell.position[3].y = i + cellSizeY;
-					cell.position[3].z = k;
-					cell.val[3] = model->getPixelValue(j, i +cellSizeY, k);
-					//////
-					cell.position[4].x = j;
-					cell.position[4].y =  i;
-					cell.position[4].z = k+cellSizeZ;
-					cell.val[4] = model->getPixelValue(j, i , k +cellSizeZ);
-
-					cell.position[5].x = j + cellSizeX;
-					cell.position[5].y =  i;
-					cell.position[5].z = k + cellSizeZ;
-					cell.val[5] = model->getPixelValue(j+ cellSizeX, i, k + cellSizeZ);
-
-					cell.position[6].x = j + cellSizeX;
-					cell.position[6].y =  i + cellSizeY;
-					cell.position[6].z = k + cellSizeZ;
-					cell.val[6] = model->getPixelValue(j + cellSizeX, i + cellSizeY, k + cellSizeZ);
-
-					cell.position[7].x = j;
-					cell.position[7].y =  i + cellSizeY;
-					cell.position[7].z = k + cellSizeZ;
-					cell.val[7] = model->getPixelValue(j, i + cellSizeY, k + cellSizeZ);
-
-					
-
-					//now we have that cell and we have to polygonise it
-					//polygonise(cell, model->isoLevel, model->totalPoints);
-					polygonise(cell, model->verts);
-				
-			}
-		}
-	}
-
-	boost::thread workerThread(boost::bind(&VolumeRenderer::generateNormals, this));
-	//model->generatingMesh = false;
-	outputFile.close();
-
-	//ui.glwidget->setFrame(5);
-	//ui.glwidget->setDataToDisplay(output_pixels, model->totalPoints, width_image, height_image);
-
-	//showPixels(output_pixels,totalPoints);
-	std::cout << "Elapsed Time: "<< float(clock() - begin_time) / CLOCKS_PER_SEC << endl;
-
-	//Now we write to obj file
-	/*long numberOfVertsWritten = 0;
-	ofstream myfile;
-	myfile.open("feetWithSkin.obj");
-	myfile << "Writing this to a file.\n";
-	for (int i = 0; i < model->verts.size()-3; i=i+3){
-		myfile << "v " << model->verts[i] << " " << model->verts[i + 1] << " " << model->verts[i + 2] << "\n";
-		numberOfVertsWritten++;
-		if (numberOfVertsWritten == 3){
-			myfile << "f " << -3 << " " << -2 << " " << -1 << "\n\n";
-			numberOfVertsWritten = 0;
-		}
-	}
-	//for (int i = 0; i < model->verts.size() - 3; i = i + 3){
-	//	myfile << "f " << i+1 << " " << i+2 << " " << i+3 << "\n";
-	//}
-	myfile.close(); */
-}
 
 
-OctreeCube VolumeRenderer::createInitialCube(){
-	OctreeCube cube;
-	cube.origin.x = 0;
-	cube.origin.y = 0;
-	cube.origin.z = 0;
-
-
-	int cubeSize=std::max(std::max(model->pixelDataWidth, model->pixelDataHeight), model->frames - 1);	//WE get the maximum value
-	cubeSize = pow(2, ceil(log(cubeSize) / log(2)));	// we round it up to the neerest power of 2
-
-	cube.sizeX = cubeSize;
-	cube.sizeY = cubeSize;
-	cube.sizeZ = cubeSize;
-
-	model->cubes.push_back(cube);
-	return cube;
-}
 
 
 void VolumeRenderer::crackPatch(OctreeCube* root){
@@ -3735,755 +3085,23 @@ glm::vec3 VolumeRenderer::pointOnLine(glm::vec3 a, glm::vec3 b, glm::vec3& x){
 } //-See more at : http ://www.dietabaiamonte.info/197386.html#sthash.WtI0J8q1.dpuf
 
 
-int VolumeRenderer::adaptiveMarchingCubes(){
-
-	model->verts.clear();
-	model->normals.clear();
-	std::cout << "Starting adaptive marching cubes" << std::endl;
-	//Calculate the gradients
-	//Create the original cube
-	/*
-		7---------6
-	   size Z	
-	  /			  !
-	3---------2	  5
-	!
-	size Y
-	!
-	origin----size X
-	*/
-
-	
-	int cubesSize = 0, depth = 0, maxDepth = model->octreeMaxDepth;
-
-	
-
-	createInitialCube();
-
-
-	if (model->gradient.size()==0 || model->gradient.empty())
-		calculateGradient();
-	cout << "Finished calculating gradients" << endl;
-
-
-	while (1){
-		cubesSize = model->cubes.size();
-		for (int cube = 0; cube < cubesSize; cube++){
-			if (model->cubes[cube].isLeaf && model->cubes[cube].needsChecking){
-
-				if (cubeNeedsSubdivision(model->cubes[cube])){
-					model->cubes[cube].isLeaf = false;
-					model->cubes[cube].subdivide(model->cubes);
-				}
-
-			}
-
-		}
-		depth++;
-		if (depth == maxDepth){
-			depth = 0;
-			break;
-		}
-	}
-	std:cout << "finished creating the octree" << std::endl;
-
-
-	std::cout << "number of cubes is" << model->cubes.size() << std::endl;
-	model->verts.clear();
-	model->normals.clear();
-
-	for (int i = 0; i < model->cubes.size(); i++){
-		if (model->cubes[i].isLeaf){
-			CELL cell;
-
-
-			/*
-			7---------6
-			/			 !
-			/			 !
-			3---------2	 5
-			!         !
-			!         !
-			0---------1
-			*/
-
-			for (int j = 0; j < 8; j++){
-				cell.position[j].x = 0;
-				cell.position[j].x = 0;
-				cell.position[j].x = 0;
-				cell.val[j] = 0;
-			}
-
-			cell.position[0].x = model->cubes[i].origin.x;
-			cell.position[0].y = model->cubes[i].origin.y;
-			cell.position[0].z = model->cubes[i].origin.z;
-			cell.val[0] = model->getPixelValue(model->cubes[i].origin.x, model->cubes[i].origin.y, model->cubes[i].origin.z);
-
-			cell.position[1].x = model->cubes[i].origin.x + model->cubes[i].sizeX;
-			cell.position[1].y = model->cubes[i].origin.y;
-			cell.position[1].z = model->cubes[i].origin.z;
-			cell.val[1] = model->getPixelValue(model->cubes[i].origin.x + model->cubes[i].sizeX, model->cubes[i].origin.y, model->cubes[i].origin.z);
-
-			cell.position[2].x = model->cubes[i].origin.x + model->cubes[i].sizeX;
-			cell.position[2].y = model->cubes[i].origin.y + model->cubes[i].sizeY;
-			cell.position[2].z = model->cubes[i].origin.z;
-			cell.val[2] = model->getPixelValue(model->cubes[i].origin.x + model->cubes[i].sizeX, model->cubes[i].origin.y + model->cubes[i].sizeY, model->cubes[i].origin.z);
-
-			cell.position[3].x = model->cubes[i].origin.x;
-			cell.position[3].y = model->cubes[i].origin.y + model->cubes[i].sizeY;
-			cell.position[3].z = model->cubes[i].origin.z;
-			cell.val[3] = model->getPixelValue(model->cubes[i].origin.x, model->cubes[i].origin.y + model->cubes[i].sizeY, model->cubes[i].origin.z);
-			//////
-			cell.position[4].x = model->cubes[i].origin.x;
-			cell.position[4].y = model->cubes[i].origin.y;
-			cell.position[4].z = model->cubes[i].origin.z + model->cubes[i].sizeZ;
-			cell.val[4] = model->getPixelValue(model->cubes[i].origin.x, model->cubes[i].origin.y, model->cubes[i].origin.z + model->cubes[i].sizeZ);
-
-			cell.position[5].x = model->cubes[i].origin.x + model->cubes[i].sizeX;
-			cell.position[5].y = model->cubes[i].origin.y;
-			cell.position[5].z = model->cubes[i].origin.z + model->cubes[i].sizeZ;
-			cell.val[5] = model->getPixelValue(model->cubes[i].origin.x + model->cubes[i].sizeX, model->cubes[i].origin.y, model->cubes[i].origin.z + model->cubes[i].sizeZ);
-
-			cell.position[6].x = model->cubes[i].origin.x + model->cubes[i].sizeX;
-			cell.position[6].y = model->cubes[i].origin.y + model->cubes[i].sizeY;
-			cell.position[6].z = model->cubes[i].origin.z + model->cubes[i].sizeZ;
-			cell.val[6] = model->getPixelValue(model->cubes[i].origin.x + model->cubes[i].sizeX, model->cubes[i].origin.y + model->cubes[i].sizeY, model->cubes[i].origin.z + model->cubes[i].sizeZ);
-
-			cell.position[7].x = model->cubes[i].origin.x;
-			cell.position[7].y = model->cubes[i].origin.y + model->cubes[i].sizeY;
-			cell.position[7].z = model->cubes[i].origin.z + model->cubes[i].sizeZ;
-			cell.val[7] = model->getPixelValue(model->cubes[i].origin.x, model->cubes[i].origin.y + model->cubes[i].sizeY, model->cubes[i].origin.z + model->cubes[i].sizeZ);
-
-			//std::cout << "cell has values" << cell.val[0] << " " << cell.val[1] << " " << cell.val[2] << " " << cell.val[3] << " " << cell.val[4] << " " << cell.val[5] << " " << cell.val[6] << " " << cell.val[7] << std::endl;
-
-			//now we have that cell and we have to polygonise it
-			//polygonise(cell, model->isoLevel, model->totalPoints);
-			polygonise(cell, model->verts);
-		}
-	}
-
-	/*std::cout << "Printing verts" <<  std::endl;
-	for (int i = 0; i < model->verts.size(); i++){
-		std::cout << "Verts is" << model->verts[i] << std::endl;
-	}*/
-
-
-
-	/*I will now at attempt at making a recurrsive octree generator. When the maximum depth leves or reached or the cube no longer needs subdivision, we polygonise it*/
-
-	//crackPatch();
-	
-	
-	boost::thread workerThread(boost::bind(&VolumeRenderer::generateNormals, this));
-
-	
-	return 0;
-}
-
-int VolumeRenderer::generateOctree(OctreeCube currentCube, int currentDepth){
-	if (currentDepth == model->octreeMaxDepth || !cubeNeedsSubdivision(currentCube)){
-		//WE polyonise this cube
-		CELL cell;
-
-
-		/*
-		7---------6
-		/			 !
-		/			 !
-		3---------2	 5
-		!         !
-		!         !
-		0---------1
-		*/
-
-		for (int j = 0; j < 8; j++){
-			cell.position[j].x = 0;
-			cell.position[j].x = 0;
-			cell.position[j].x = 0;
-			cell.val[j] = 0;
-		}
-
-		cell.position[0].x = currentCube.origin.x;
-		cell.position[0].y = currentCube.origin.y;
-		cell.position[0].z = currentCube.origin.z;
-		cell.val[0] = model->getPixelValue(currentCube.origin.x, currentCube.origin.y, currentCube.origin.z);
-
-		cell.position[1].x = currentCube.origin.x + currentCube.sizeX;
-		cell.position[1].y = currentCube.origin.y;
-		cell.position[1].z = currentCube.origin.z;
-		cell.val[1] = model->getPixelValue(currentCube.origin.x + currentCube.sizeX, currentCube.origin.y, currentCube.origin.z);
-
-		cell.position[2].x = currentCube.origin.x + currentCube.sizeX;
-		cell.position[2].y = currentCube.origin.y + currentCube.sizeY;
-		cell.position[2].z = currentCube.origin.z;
-		cell.val[2] = model->getPixelValue(currentCube.origin.x + currentCube.sizeX, currentCube.origin.y + currentCube.sizeY, currentCube.origin.z);
-
-		cell.position[3].x = currentCube.origin.x;
-		cell.position[3].y = currentCube.origin.y + currentCube.sizeY;
-		cell.position[3].z = currentCube.origin.z;
-		cell.val[3] = model->getPixelValue(currentCube.origin.x, currentCube.origin.y + currentCube.sizeY, currentCube.origin.z);
-		//////
-		cell.position[4].x = currentCube.origin.x;
-		cell.position[4].y = currentCube.origin.y;
-		cell.position[4].z = currentCube.origin.z + currentCube.sizeZ;
-		cell.val[4] = model->getPixelValue(currentCube.origin.x, currentCube.origin.y, currentCube.origin.z + currentCube.sizeZ);
-
-		cell.position[5].x = currentCube.origin.x + currentCube.sizeX;
-		cell.position[5].y = currentCube.origin.y;
-		cell.position[5].z = currentCube.origin.z + currentCube.sizeZ;
-		cell.val[5] = model->getPixelValue(currentCube.origin.x + currentCube.sizeX, currentCube.origin.y, currentCube.origin.z + currentCube.sizeZ);
-
-		cell.position[6].x = currentCube.origin.x + currentCube.sizeX;
-		cell.position[6].y = currentCube.origin.y + currentCube.sizeY;
-		cell.position[6].z = currentCube.origin.z + currentCube.sizeZ;
-		cell.val[6] = model->getPixelValue(currentCube.origin.x + currentCube.sizeX, currentCube.origin.y + currentCube.sizeY, currentCube.origin.z + currentCube.sizeZ);
-
-		cell.position[7].x = currentCube.origin.x;
-		cell.position[7].y = currentCube.origin.y + currentCube.sizeY;
-		cell.position[7].z = currentCube.origin.z + currentCube.sizeZ;
-		cell.val[7] = model->getPixelValue(currentCube.origin.x, currentCube.origin.y + currentCube.sizeY, currentCube.origin.z + currentCube.sizeZ);
-
-		//std::cout << "cell has values" << cell.val[0] << " " << cell.val[1] << " " << cell.val[2] << " " << cell.val[3] << " " << cell.val[4] << " " << cell.val[5] << " " << cell.val[6] << " " << cell.val[7] << std::endl;
-
-		//now we have that cell and we have to polygonise it
-		//polygonise(cell, model->isoLevel, model->totalPoints);
-		polygonise(cell, model->verts);
-		//model->cubes.push_back(currentCube);
-		return 0 ;
-	}
-
 
 
 	
-		OctreeCube subdividedCube;
 
-		subdividedCube.sizeX = currentCube.sizeX / 2;
-		subdividedCube.sizeY = currentCube.sizeY / 2;
-		subdividedCube.sizeZ = currentCube.sizeZ / 2;
-		
-		//Cube 1
-		subdividedCube.origin.x = currentCube.origin.x;
-		subdividedCube.origin.y = currentCube.origin.y + currentCube.sizeY / 2;
-		subdividedCube.origin.z = currentCube.origin.z;
-		generateOctree(subdividedCube, currentDepth+1);
 
 
-		//Cube 2
-		subdividedCube.origin.x = currentCube.origin.x + currentCube.sizeX / 2;
-		subdividedCube.origin.y = currentCube.origin.y + currentCube.sizeY / 2;
-		subdividedCube.origin.z = currentCube.origin.z;
-		generateOctree(subdividedCube, currentDepth + 1);
 
 
-		//Cube 3
-		subdividedCube.origin.x = currentCube.origin.x + currentCube.sizeX / 2;
-		subdividedCube.origin.y = currentCube.origin.y;
-		subdividedCube.origin.z = currentCube.origin.z;
-		generateOctree(subdividedCube, currentDepth + 1);
 
-		//Cube 4
-		subdividedCube.origin.x = currentCube.origin.x;
-		subdividedCube.origin.y = currentCube.origin.y;
-		subdividedCube.origin.z = currentCube.origin.z;
-		generateOctree(subdividedCube, currentDepth + 1);
-
-		//Cube 5
-		subdividedCube.origin.x = currentCube.origin.x;
-		subdividedCube.origin.y = currentCube.origin.y + currentCube.sizeY / 2;
-		subdividedCube.origin.z = currentCube.origin.z + currentCube.sizeZ / 2;
-		generateOctree(subdividedCube, currentDepth + 1);
-
-
-		//Cube 6
-		subdividedCube.origin.x = currentCube.origin.x + currentCube.sizeX / 2;
-		subdividedCube.origin.y = currentCube.origin.y + currentCube.sizeY / 2;
-		subdividedCube.origin.z = currentCube.origin.z + currentCube.sizeZ / 2;
-		generateOctree(subdividedCube, currentDepth + 1);
-
-		//Cube 7
-		subdividedCube.origin.x = currentCube.origin.x + currentCube.sizeX / 2;
-		subdividedCube.origin.y = currentCube.origin.y;
-		subdividedCube.origin.z = currentCube.origin.z + currentCube.sizeZ / 2;
-		generateOctree(subdividedCube, currentDepth + 1);
-
-		//Cube 8
-		subdividedCube.origin.x = currentCube.origin.x;
-		subdividedCube.origin.y = currentCube.origin.y;
-		subdividedCube.origin.z = currentCube.origin.z + currentCube.sizeZ / 2;
-		generateOctree(subdividedCube, currentDepth + 1);
-	
-	
-	return 0;
-}
-
-int VolumeRenderer::adaptiveMarchingCubes2(){
-
-	model->verts.clear();
-	model->normals.clear();
-
-	if (model->gradient.size() == 0 || model->gradient.empty())
-		calculateGradient();
-	cout << "Finished calculating gradients" << endl;
-	cout << "Gradient points has "  << model->gradientPoints.size() << "elements"<< endl;
-
-
-	createInitialCube();
-
-	generateOctree(model->cubes[0]);
-	boost::thread workerThread(boost::bind(&VolumeRenderer::generateNormals, this));
-	return 0;
-}
-
-void VolumeRenderer::calculateGradient(){
-
-
-	//Sobel kernel on page 15 of http://www.diva-portal.se/smash/get/diva2:515510/FULLTEXT01.pdf
-
-	unsigned char* dataPointer;
-	int value = 0;
-	int pointerOffset = model->numberOfBytes;
-	int dx = 0, dy = 0, dz=0, magnitude = 0, left = 0, right = 0, top = 0, bottom = 0, closev=0, farv = 0, center=0;
-	float angle = -1;
-	glm::vec3  gradientAtPoint;
-
-
-	//std::ofstream outputFile;
-	//outputFile.open("GradientAtFrame100.txt");
-
-	/*if (!model->gradient.empty())
-		return;*/
-
-
-	//Create as many gradients frames as the number of frames in the dicom file
-	model->gradient.resize(model->frames);
-	if (model->gradient.size()==0)
-		return;
-
-	
-	
-	
-
-	//Here i is y axis and j is the x axis
-	for (int i = 0; i < model->pixelDataHeight; i = i + 1){
-		if (i % 10 == 0)
-			emit progressValueChangedSignal(i * 100 / model->pixelDataHeight);
-		for (int j = 0; j < model->pixelDataWidth; j = j + 1){
-			for (int k = 0; k < model->frames; k = k + 1){			//You need to check why it doesnt work without the -1 in the frames
-
-				if (i == 0 || i == model->pixelDataHeight-1 || j == 0 || j == model->pixelDataWidth-1 || k==0 || k==model->frames-1){		//If we are in a border we just put it at 0
-					//model->gradient[k].push_back(glm::vec3(-1,-1,-1));
-					//model->gradient[k].insert((j,i), (-1, -1, -1));
-					continue;
-				}
-
-				//std::cout << "values are" << i  << "  "<< j << "  " << k  << std::endl;
-
-
-
-
-				//Now we take the values
-				dataPointer = &(model->pixelData[k][0]);
-				dataPointer = dataPointer + (j + i*model->pixelDataWidth)*pointerOffset;
-				memcpy(&center, dataPointer, pointerOffset);
-
-				/*if (abs(center - model->isoLevel)>500)
-					continue;*/
-
-
-				dataPointer = &(model->pixelData[k][0]);
-				dataPointer = dataPointer + (j - 1 + i*model->pixelDataWidth)*pointerOffset;
-				memcpy(&left, dataPointer, pointerOffset);
-
-				dataPointer = &(model->pixelData[k][0]);
-				dataPointer = dataPointer + (j + 1 + i*model->pixelDataWidth)*pointerOffset;
-				memcpy(&right, dataPointer, pointerOffset);
-
-				dataPointer = &(model->pixelData[k][0]);
-				dataPointer = dataPointer + (j + (i - 1)*model->pixelDataWidth)*pointerOffset;
-				memcpy(&top, dataPointer, pointerOffset);
-
-				dataPointer = &(model->pixelData[k][0]);
-				dataPointer = dataPointer + (j + (i + 1)*model->pixelDataWidth)*pointerOffset;
-				memcpy(&bottom, dataPointer, pointerOffset);
-
-				dataPointer = &(model->pixelData[k-1][0]);
-				dataPointer = dataPointer + (j + i*model->pixelDataWidth)*pointerOffset;
-				memcpy(&closev, dataPointer, pointerOffset);
-
-				dataPointer = &(model->pixelData[k+1][0]);
-				dataPointer = dataPointer + (j + i*model->pixelDataWidth)*pointerOffset;
-				memcpy(&farv, dataPointer, pointerOffset);
-
-				
-				if (center < model->isoLevel && left < model->isoLevel && right < model->isoLevel &&top < model->isoLevel && bottom < model->isoLevel&& farv < model->isoLevel&&closev < model->isoLevel)
-					continue;
-				if (center > model->isoLevel && left > model->isoLevel && right > model->isoLevel &&top > model->isoLevel && bottom > model->isoLevel&& farv > model->isoLevel&&closev > model->isoLevel)
-					continue;
-				/*dy = left - right;
-				dx = top - bottom;
-				dz = closev - farv;*/
-
-				dx = -1 * (model->getPixelValue(j - 1, i + 1, k - 1)) + 1 * (model->getPixelValue(j + 1, i + 1, k - 1)) -
-					2 * (model->getPixelValue(j - 1, i, k - 1)) + 2 * (model->getPixelValue(j + 1, i, k - 1)) -
-					1 * (model->getPixelValue(j - 1, i - 1, k - 1)) + 1 * (model->getPixelValue(j + 1, i - 1, k - 1)) -
-
-					2 * (model->getPixelValue(j - 1, i + 1, k)) + 2 * (model->getPixelValue(j + 1, i + 1, k)) -
-					4 * (model->getPixelValue(j - 1, i, k)) + 2 * (model->getPixelValue(j + 1, i, k)) -
-					2 * (model->getPixelValue(j - 1, i - 1, k)) + 2 * (model->getPixelValue(j + 1, i - 1, k)) -
-
-					1 * (model->getPixelValue(j - 1, i + 1, k + 1)) + 1 * (model->getPixelValue(j + 1, i + 1, k + 1)) -
-					2 * (model->getPixelValue(j - 1, i, k + 1)) + 2 * (model->getPixelValue(j + 1, i, k + 1)) -
-					1 * (model->getPixelValue(j - 1, i - 1, k + 1)) + 1 * (model->getPixelValue(j + 1, i - 1, k + 1));
-
-				dy = 1 * (model->getPixelValue(j - 1, i + 1, k - 1)) + 2 * (model->getPixelValue(j, i + 1, k - 1)) + 1 * (model->getPixelValue(j + 1, i + 1, k - 1)) -
-					1 * (model->getPixelValue(j - 1, i - 1, k - 1)) - 2 * (model->getPixelValue(j, i - 1, k - 1)) - 1 * (model->getPixelValue(j + 1, i - 1, k - 1)) +
-
-					2 * (model->getPixelValue(j - 1, i + 1, k)) + 4 * (model->getPixelValue(j, i + 1, k)) + 2 * (model->getPixelValue(j + 1, i + 1, k)) -
-					2 * (model->getPixelValue(j - 1, i - 1, k)) - 4 * (model->getPixelValue(j, i - 1, k)) - 2 * (model->getPixelValue(j + 1, i - 1, k)) +
-
-					1 * (model->getPixelValue(j - 1, i + 1, k + 1)) + 2 * (model->getPixelValue(j, i + 1, k + 1)) + 1 * (model->getPixelValue(j + 1, i + 1, k + 1)) -
-					1 * (model->getPixelValue(j - 1, i - 1, k + 1)) - 2 * (model->getPixelValue(j, i - 1, k + 1)) - 1 * (model->getPixelValue(j + 1, i - 1, k + 1));
-
-				dz = -1 * (model->getPixelValue(j - 1, i + 1, k - 1)) - 2 * (model->getPixelValue(j, i + 1, k - 1)) - 1 * (model->getPixelValue(j + 1, i + 1, k - 1)) -
-					2 * (model->getPixelValue(j - 1, i, k - 1)) - 4 * (model->getPixelValue(j, i, k - 1)) - 2 * (model->getPixelValue(j + 1, i, k - 1)) -
-					1 * (model->getPixelValue(j - 1, i - 1, k - 1)) - 2 * (model->getPixelValue(j, i - 1, k - 1)) - 1 * (model->getPixelValue(j + 1, i - 1, k - 1)) +
-
-					1 * (model->getPixelValue(j - 1, i + 1, k + 1)) + 2 * (model->getPixelValue(j, i + 1, k + 1)) + 1 * (model->getPixelValue(j + 1, i + 1, k + 1)) -
-					2 * (model->getPixelValue(j - 1, i, k + 1)) + 4 * (model->getPixelValue(j, i, k + 1)) + 2 * (model->getPixelValue(j + 1, i, k + 1)) -
-					1 * (model->getPixelValue(j - 1, i - 1, k + 1)) + 2 * (model->getPixelValue(j, i - 1, k + 1)) + 1 * (model->getPixelValue(j + 1, i - 1, k + 1));
-					
-				
-
-				
-				/*dx = -1 * (model->getSmoothPixelValue(j - 1, i + 1, k - 1)) + 1 * (model->getSmoothPixelValue(j + 1, i + 1, k - 1)) -
-					2 * (model->getSmoothPixelValue(j - 1, i, k - 1)) + 2 * (model->getSmoothPixelValue(j + 1, i, k - 1)) -
-					1 * (model->getSmoothPixelValue(j - 1, i - 1, k - 1)) + 1 * (model->getSmoothPixelValue(j + 1, i - 1, k - 1)) -
-
-					2 * (model->getSmoothPixelValue(j - 1, i + 1, k)) + 2 * (model->getSmoothPixelValue(j + 1, i + 1, k)) -
-					4 * (model->getSmoothPixelValue(j - 1, i, k)) + 2 * (model->getSmoothPixelValue(j + 1, i, k)) -
-					2 * (model->getSmoothPixelValue(j - 1, i - 1, k)) + 2 * (model->getSmoothPixelValue(j + 1, i - 1, k)) -
-
-					1 * (model->getSmoothPixelValue(j - 1, i + 1, k + 1)) + 1 * (model->getSmoothPixelValue(j + 1, i + 1, k + 1)) -
-					2 * (model->getSmoothPixelValue(j - 1, i, k + 1)) + 2 * (model->getSmoothPixelValue(j + 1, i, k + 1)) -
-					1 * (model->getSmoothPixelValue(j - 1, i - 1, k + 1)) + 1 * (model->getSmoothPixelValue(j + 1, i - 1, k + 1));
-
-				dy = 1 * (model->getSmoothPixelValue(j - 1, i + 1, k - 1)) + 2 * (model->getSmoothPixelValue(j, i + 1, k - 1)) + 1 * (model->getSmoothPixelValue(j + 1, i + 1, k - 1)) -
-					1 * (model->getSmoothPixelValue(j - 1, i - 1, k - 1)) - 2 * (model->getSmoothPixelValue(j, i - 1, k - 1)) - 1 * (model->getSmoothPixelValue(j + 1, i - 1, k - 1)) +
-
-					2 * (model->getSmoothPixelValue(j - 1, i + 1, k)) + 4 * (model->getSmoothPixelValue(j, i + 1, k)) + 2 * (model->getSmoothPixelValue(j + 1, i + 1, k)) -
-					2 * (model->getSmoothPixelValue(j - 1, i - 1, k)) - 4 * (model->getSmoothPixelValue(j, i - 1, k)) - 2 * (model->getSmoothPixelValue(j + 1, i - 1, k)) +
-
-					1 * (model->getSmoothPixelValue(j - 1, i + 1, k + 1)) + 2 * (model->getSmoothPixelValue(j, i + 1, k + 1)) + 1 * (model->getSmoothPixelValue(j + 1, i + 1, k + 1)) -
-					1 * (model->getSmoothPixelValue(j - 1, i - 1, k + 1)) - 2 * (model->getSmoothPixelValue(j, i - 1, k + 1)) - 1 * (model->getSmoothPixelValue(j + 1, i - 1, k + 1));
-
-				dz = -1 * (model->getSmoothPixelValue(j - 1, i + 1, k - 1)) - 2 * (model->getSmoothPixelValue(j, i + 1, k - 1)) - 1 * (model->getSmoothPixelValue(j + 1, i + 1, k - 1)) -
-					2 * (model->getSmoothPixelValue(j - 1, i, k - 1)) - 4 * (model->getSmoothPixelValue(j, i, k - 1)) - 2 * (model->getSmoothPixelValue(j + 1, i, k - 1)) -
-					1 * (model->getSmoothPixelValue(j - 1, i - 1, k - 1)) - 2 * (model->getSmoothPixelValue(j, i - 1, k - 1)) - 1 * (model->getSmoothPixelValue(j + 1, i - 1, k - 1)) +
-
-					1 * (model->getSmoothPixelValue(j - 1, i + 1, k + 1)) + 2 * (model->getSmoothPixelValue(j, i + 1, k + 1)) + 1 * (model->getSmoothPixelValue(j + 1, i + 1, k + 1)) -
-					2 * (model->getSmoothPixelValue(j - 1, i, k + 1)) + 4 * (model->getSmoothPixelValue(j, i, k + 1)) + 2 * (model->getSmoothPixelValue(j + 1, i, k + 1)) -
-					1 * (model->getSmoothPixelValue(j - 1, i - 1, k + 1)) + 2 * (model->getSmoothPixelValue(j, i - 1, k + 1)) + 1 * (model->getSmoothPixelValue(j + 1, i - 1, k + 1));
-				*/
-
-				if (dx == 0)
-					dx = 1;
-				if (dy == 0)
-					dy = 1;
-				if (dz == 0)
-					dz = 1;
-
-				/*THe 3 possible axis
-				dx-dy
-				dx-dz
-				dy-dz
-				*/
-
-
-				magnitude = sqrt( pow(dx, 2) + pow(dy, 2) + pow(dz, 2));
-				if (magnitude < 2500)
-					continue;
-				gradientAtPoint.x = atan2(dy, dx) * 180 / PI +180;
-				gradientAtPoint.y = atan2(dx, dz) * 180 / PI +180;
-				gradientAtPoint.z = atan2(dz, dy) * 180 / PI +180;
-
-				/*gradientAtPoint.x = (gradientAtPoint.x > 0.0 ? gradientAtPoint.x : (360.0 + gradientAtPoint.x)); 
-				gradientAtPoint.y = (gradientAtPoint.y > 0.0 ? gradientAtPoint.y : (360.0 + gradientAtPoint.y));
-				gradientAtPoint.z = (gradientAtPoint.z > 0.0 ? gradientAtPoint.z : (360.0 + gradientAtPoint.z));*/
-
-				model->gradient[k][std::make_pair(j, i)] = gradientAtPoint;
-				/*model->gradientPoints.push_back(j);
-				model->gradientPoints.push_back(i);
-				model->gradientPoints.push_back(k);*/
-				//model->m[k].push_back(j,i,gradientAtPoint) ;
-				
-
-
-				/*if (k == 100){
-					outputFile << " Values are "  << "Magnitude "  << magnitude << "Angles " << gradientAtPoint.x << " " << gradientAtPoint.y << " " << gradientAtPoint.z << endl;
-				}*/
-
-
-				
-			}
-
-		}
-	}
-}
-
-inline bool VolumeRenderer::cubeNeedsSubdivision(OctreeCube &cube){
-	
-
-	//return (int)rand % 2;
-
-	//std::ofstream outputFile;
-	//outputFile.open("GradientsFromSubdivision1.txt");
-	
-
-	glm::vec3 firstAngle(-1,-1,-1);
-	int tolerance = model->tolerance;
-	boost::unordered_map< std::pair<int, int>, glm::vec3>::iterator it;
-
-
-
-	//We first check if the cube is totally out of the volume
-	if (cube.origin.x > model->pixelDataWidth || cube.origin.y > model->pixelDataHeight || cube.origin.z > model->frames - 1){
-		cube.needsChecking = false;
-		cube.isLeaf = true;
-		return false;
-	}
-		
-	//Then we check if it is in the border between the actual volume and the initial cube in which case we need to subdivide
-	if (cube.origin.x + cube.sizeX > model->pixelDataWidth || cube.origin.y + cube.sizeY > model->pixelDataHeight || cube.origin.z + cube.sizeZ > model->frames - 1){
-		cube.needsChecking = true;
-		return true;
-	}
-
-	//From now on all the cubes will be totally within the volume
-
-
-	for (int k = cube.origin.z; k < cube.sizeZ + cube.origin.z; k = k + 1){
-		for (int i = cube.origin.y; i < cube.sizeY + cube.origin.y; i = i + 1){
-			for (int j = cube.origin.x; j < cube.sizeX + cube.origin.x; j = j + 1){
-			
-
-
-
-				
-				
-				glm::vec3 actualValue (-1,-1,-1);
-				it = model->gradient[k].find(std::make_pair(j, i));
-				if (it != model->gradient[k].end())
-				{
-					//element found;
-					actualValue = it->second;
-				}
-				//actualValue = model->gradient[k].find(std::make_pair(j,i));
-
-
-				if (firstAngle == glm::vec3(-1, -1, -1) && actualValue != glm::vec3(-1, -1, -1)){
-					firstAngle = actualValue ;
-					
-				}
-
-				/*if (firstAngle.x == -1 && firstAngle.y == -1 && firstAngle.z == -1 && actualValue.x != -1 && actualValue.y != -1 && actualValue.z != -1){
-					firstAngle.x = actualValue.x;
-					firstAngle.y = actualValue.y;
-					firstAngle.z = actualValue.z;
-				}*/
-
-				//std::cout << "i= " << i << " j= " << j << " k= " << k << std::endl;
-				//if (cubesSubdivided < 2 && firstAngleGiven==1)
-				//outputFile << " " << firstAngle.x << " " << firstAngle.y << " " << firstAngle.z << " -- " << actualValue.x << " " << actualValue.y << " " << actualValue.z << std::endl;
-
-
-				
-				//Now I will try to make a different way of seeing diference between angles. This time by looking at all the angles at the same time, and seeing the total magnitude of change in angles
-				int angleDifX = 180 - abs(abs(firstAngle.x - actualValue.x) - 180);
-				int angleDifY = 180 - abs(abs(firstAngle.y - actualValue.y) - 180);
-				int angleDifZ = 180 - abs(abs(firstAngle.z - actualValue.z) - 180);
-
-				int angleMagnitude = sqrt(angleDifX*angleDifX + angleDifY*angleDifY + angleDifZ*angleDifZ);
-				if (angleMagnitude > tolerance && firstAngle != glm::vec3(-1, -1, -1) && actualValue != glm::vec3(-1, -1, -1))
-					return true;
-				
-
-
-
-				/*int angleDif;
-				angleDif = 180 - abs(abs(firstAngle.x - actualValue.x) - 180);
-				
-
-				if (angleDif > tolerance && firstAngle != glm::vec3(-1, -1, -1) && actualValue != glm::vec3(-1, -1, -1)){
-					return true;
-				}
-				angleDif = 180 - abs(abs(firstAngle.y - actualValue.y) - 180);
-				if (angleDif > tolerance && firstAngle != glm::vec3(-1, -1, -1) && actualValue != glm::vec3(-1, -1, -1)){
-					//cout << "Subdivide because Y" << endl;
-					return true;
-				}
-				angleDif = 180 - abs(abs(firstAngle.z - actualValue.z) - 180);
-				if (angleDif > tolerance && firstAngle != glm::vec3(-1, -1, -1) && actualValue != glm::vec3(-1, -1, -1)){
-					//cout << "Subdivide because Z" << endl;
-					return true;
-				}*/
-
-
-				/*if (abs(firstAngle.x - actualValue.x) > tolerance && firstAngle.x != -1 && firstAngle.y != -1 && firstAngle.z != -1){
-					return true;
-				}
-				if (abs(firstAngle.y - actualValue.y) > tolerance && firstAngle.x != -1 && firstAngle.y != -1 && firstAngle.z != -1){
-					return true;
-				}
-				if (abs(firstAngle.y - actualValue.y) > tolerance && firstAngle.x != -1 && firstAngle.y != -1 && firstAngle.z != -1){
-					return true;
-				}*/
-				
-			}
-		}
-	}
-	//outputFile << "cube finished with NO subdivision" << endl;
-	//cube.isLeaf=false;	//If it doesnt need subdivision we just mark it as a non-leaf (as a father of no cubes) just so we don't recheck it later 
-	cube.needsChecking = false;
-	return false;
-}
 
 
 //This version creates an actual tree
-int VolumeRenderer::adaptiveMarchingCubes3(){
-	model->verts.clear();
-	model->normals.clear();
-	std::cout << "Starting adaptive marching cubes 3" << std::endl;
-	//Calculate the gradients
-	//Create the original cube
-	/*
-		7---------6
-	  size Z
-	  /			  !
-	3---------2	  5
-	!
-	size Y
-	!
-	origin----size X
-	*/
-
-
-	int cubesSize = 0, depth = 0, maxDepth = model->octreeMaxDepth;
-
-	if (model->gradient.size() == 0 || model->gradient.empty())
-		calculateGradient();
-	cout << "Finished calculating gradients" << endl;
-
-
-	OctreeCube* initial = new OctreeCube;
-	OctreeCube returnedFromCreateInitial;
-	returnedFromCreateInitial = createInitialCube();
-	initial->origin.x = returnedFromCreateInitial.origin.x;
-	initial->origin.y = returnedFromCreateInitial.origin.y;
-	initial->origin.z = returnedFromCreateInitial.origin.z;
-
-	initial->sizeX = returnedFromCreateInitial.sizeX;
-	initial->sizeY = returnedFromCreateInitial.sizeY;
-	initial->sizeZ = returnedFromCreateInitial.sizeZ;
-
-	model->octreeVector.push_back(initial);
-	std::cout << "starting to generate octree" << std::endl;
-	generateOctree_tree_version(*initial);
-	std::cout << "finished generateing octree" << std::endl;
-
-	correctlyAssignLeafs(initial);
-
-	//Grab each octreebube in our octree and polygonise it
-	//polygoniseOctree(initial);
-	polygoniseOctree2(initial);	//Polygonise octree will polygonise each octree but assign the points to the cube itself an not to the model->verts
-
-
-	std::cout << "starting patch cracks" << std::endl;
-	crackPatch(initial);
-	//crackPatch(initial);
-	//crackPatch(initial);
-	std::cout << "finished patching cracks" << std::endl;
-
-	readPointsFromOctree(initial);
-
-	
-
-	
-
-	boost::thread workerThread(boost::bind(&VolumeRenderer::generateNormals, this));
-	//model->generatingMesh = false;
-
-
-	return 0;
-
-}
-
-void VolumeRenderer::correctlyAssignLeafs(OctreeCube* root){
-	OctreeCube* currentCube;
-	std::queue<OctreeCube*> queue;
-	queue.push(root);
-	while (!queue.empty()){
-		currentCube = queue.front();
-		queue.pop();
-		if (currentCube->children[0] != NULL){
-			queue.push(currentCube->children[0]);
-			queue.push(currentCube->children[1]);
-			queue.push(currentCube->children[2]);
-			queue.push(currentCube->children[3]);
-			queue.push(currentCube->children[4]);
-			queue.push(currentCube->children[5]);
-			queue.push(currentCube->children[6]);
-			queue.push(currentCube->children[7]);
-		}
-
-
-		if (currentCube->children[0] == NULL){
-			currentCube->isLeaf = true;
-		}
-		else{
-			currentCube->isLeaf = false;
-		}
-	}
-
-}
-
-
-int VolumeRenderer::generateOctree_tree_version(OctreeCube& currentCube,int currentDepth){
 
 
 
 
-	//Grab the initial one and see if it needs subdivision and if we are also below the maximum octree depth, if it needs subdiviosn, sundivid it, and also recursivelly call the same function for the children
 
-	if (currentDepth < model->octreeMaxDepth && cubeNeedsSubdivision(currentCube) && currentCube.needsChecking){
-		//std::cout << "The cube doesnt have children now" << std::endl;
-		currentCube.subdivide_tree_version();
-		//std::cout << "The cube should have children now" << std::endl;
-
-		model->octreeVector.push_back(currentCube.children[0]);
-		model->octreeVector.push_back(currentCube.children[1]);
-		model->octreeVector.push_back(currentCube.children[2]);
-		model->octreeVector.push_back(currentCube.children[3]);
-		model->octreeVector.push_back(currentCube.children[4]);
-		model->octreeVector.push_back(currentCube.children[5]);
-		model->octreeVector.push_back(currentCube.children[6]);
-		model->octreeVector.push_back(currentCube.children[7]);
-
-		generateOctree_tree_version(*(currentCube.children[0]), currentDepth + 1);
-		generateOctree_tree_version(*(currentCube.children[1]), currentDepth + 1);
-		generateOctree_tree_version(*(currentCube.children[2]), currentDepth + 1);
-		generateOctree_tree_version(*(currentCube.children[3]), currentDepth + 1);
-		generateOctree_tree_version(*(currentCube.children[4]), currentDepth + 1);
-		generateOctree_tree_version(*(currentCube.children[5]), currentDepth + 1);
-		generateOctree_tree_version(*(currentCube.children[6]), currentDepth + 1);
-		generateOctree_tree_version(*(currentCube.children[7]), currentDepth + 1);
-	}
-	else{
-		currentCube.isLeaf=true;	// we need to check if this value is set correctly
-		currentCube.needsChecking = false;
-		return 0;
-	}
-	return 0;
-}
 
 void VolumeRenderer::generateHypercube(){
 
@@ -4526,326 +3144,13 @@ void VolumeRenderer::generateHypercube(){
 
 
 
-int VolumeRenderer::polygoniseOctree(OctreeCube* currentCube,int currentDepth){
 
-	//Recursive alrogithm, we go to all the children of current cube and if the children is null, we go back in the recursive stack and polygonise the current cube
 
-	if (currentCube != NULL){
-		polygoniseOctree((currentCube->children[0]));
-		if (currentCube->isLeaf  && !currentCube->polygonised == true)  //We check if the current cube is a left (children is null) and has not been polygonised yet
-			octree2CellPolygonise(*currentCube);
-		currentCube->polygonised = true;
-		polygoniseOctree((currentCube->children[1]));
-		if (currentCube->isLeaf  && !currentCube->polygonised == true)
-			octree2CellPolygonise(*currentCube);
-		currentCube->polygonised = true;
-		polygoniseOctree((currentCube->children[2]));
-		if (currentCube->isLeaf  && !currentCube->polygonised == true)
-			octree2CellPolygonise(*currentCube);
-		currentCube->polygonised = true;
-		polygoniseOctree((currentCube->children[3]));
-		if (currentCube->isLeaf  && !currentCube->polygonised == true)
-			octree2CellPolygonise(*currentCube);
-		currentCube->polygonised = true;
-		polygoniseOctree((currentCube->children[4]));
-		if (currentCube->isLeaf  && !currentCube->polygonised == true)
-			octree2CellPolygonise(*currentCube);
-		currentCube->polygonised = true;
-		polygoniseOctree((currentCube->children[5]));
-		if (currentCube->isLeaf  && !currentCube->polygonised == true)
-			octree2CellPolygonise(*currentCube);
-		currentCube->polygonised = true;
-		polygoniseOctree((currentCube->children[6]));
-		if (currentCube->isLeaf  && !currentCube->polygonised == true)
-			octree2CellPolygonise(*currentCube);
-		currentCube->polygonised = true;
-		polygoniseOctree((currentCube->children[7]));
-		if (currentCube->isLeaf  && !currentCube->polygonised == true)
-			octree2CellPolygonise(*currentCube);
-		currentCube->polygonised = true;
-	}
-	else{
-		return 0;
-	}
 
 
-}
 
 
-void VolumeRenderer::octree2CellPolygonise(OctreeCube& currentCube){
-	CELL cell;
 
-
-	/*
-	7---------6
-	/			 !
-	/			 !
-	3---------2	 5
-	!         !
-	!         !
-	0---------1
-	*/
-
-	for (int j = 0; j < 8; j++){
-		cell.position[j].x = 0;
-		cell.position[j].x = 0;
-		cell.position[j].x = 0;
-		cell.val[j] = 0;
-	}
-
-	cell.position[0].x = currentCube.origin.x;
-	cell.position[0].y = currentCube.origin.y;
-	cell.position[0].z = currentCube.origin.z;
-	cell.val[0] = model->getPixelValue(currentCube.origin.x, currentCube.origin.y, currentCube.origin.z);
-
-	cell.position[1].x = currentCube.origin.x + currentCube.sizeX;
-	cell.position[1].y = currentCube.origin.y;
-	cell.position[1].z = currentCube.origin.z;
-	cell.val[1] = model->getPixelValue(currentCube.origin.x + currentCube.sizeX, currentCube.origin.y, currentCube.origin.z);
-
-	cell.position[2].x = currentCube.origin.x + currentCube.sizeX;
-	cell.position[2].y = currentCube.origin.y + currentCube.sizeY;
-	cell.position[2].z = currentCube.origin.z;
-	cell.val[2] = model->getPixelValue(currentCube.origin.x + currentCube.sizeX, currentCube.origin.y + currentCube.sizeY, currentCube.origin.z);
-
-	cell.position[3].x = currentCube.origin.x;
-	cell.position[3].y = currentCube.origin.y + currentCube.sizeY;
-	cell.position[3].z = currentCube.origin.z;
-	cell.val[3] = model->getPixelValue(currentCube.origin.x, currentCube.origin.y + currentCube.sizeY, currentCube.origin.z);
-	//////
-	cell.position[4].x = currentCube.origin.x;
-	cell.position[4].y = currentCube.origin.y;
-	cell.position[4].z = currentCube.origin.z + currentCube.sizeZ;
-	cell.val[4] = model->getPixelValue(currentCube.origin.x, currentCube.origin.y, currentCube.origin.z + currentCube.sizeZ);
-
-	cell.position[5].x = currentCube.origin.x + currentCube.sizeX;
-	cell.position[5].y = currentCube.origin.y;
-	cell.position[5].z = currentCube.origin.z + currentCube.sizeZ;
-	cell.val[5] = model->getPixelValue(currentCube.origin.x + currentCube.sizeX, currentCube.origin.y, currentCube.origin.z + currentCube.sizeZ);
-
-	cell.position[6].x = currentCube.origin.x + currentCube.sizeX;
-	cell.position[6].y = currentCube.origin.y + currentCube.sizeY;
-	cell.position[6].z = currentCube.origin.z + currentCube.sizeZ;
-	cell.val[6] = model->getPixelValue(currentCube.origin.x + currentCube.sizeX, currentCube.origin.y + currentCube.sizeY, currentCube.origin.z + currentCube.sizeZ);
-
-	cell.position[7].x = currentCube.origin.x;
-	cell.position[7].y = currentCube.origin.y + currentCube.sizeY;
-	cell.position[7].z = currentCube.origin.z + currentCube.sizeZ;
-	cell.val[7] = model->getPixelValue(currentCube.origin.x, currentCube.origin.y + currentCube.sizeY, currentCube.origin.z + currentCube.sizeZ);
-
-	//std::cout << "cell has values" << cell.val[0] << " " << cell.val[1] << " " << cell.val[2] << " " << cell.val[3] << " " << cell.val[4] << " " << cell.val[5] << " " << cell.val[6] << " " << cell.val[7] << std::endl;
-
-	//now we have that cell and we have to polygonise it
-	//polygonise(cell, model->isoLevel, model->totalPoints);
-	if (polygonise(cell, model->verts)){
-		currentCube.containsVerts = true;
-	}
-
-
-
-}
-
-
-
-
-int VolumeRenderer::polygoniseOctree2(OctreeCube* root){
-
-	OctreeCube* currentCube;
-	std::queue<OctreeCube*> queue;
-	queue.push(root);
-	while (!queue.empty()){
-		currentCube = queue.front();
-		queue.pop();
-		if (currentCube->children[0] != NULL){
-			queue.push(currentCube->children[0]);
-			queue.push(currentCube->children[1]);
-			queue.push(currentCube->children[2]);
-			queue.push(currentCube->children[3]);
-			queue.push(currentCube->children[4]);
-			queue.push(currentCube->children[5]);
-			queue.push(currentCube->children[6]);
-			queue.push(currentCube->children[7]);
-		}
-
-		//Grab the current cube and polygonise it f it's leaf
-		if (currentCube->isLeaf){
-			polygoniseAssignToCube(currentCube);
-		}
-
-	}
-	return 0;
-}
-
-int VolumeRenderer::polygoniseAssignToCube(OctreeCube* currentCube){
-
-
-
-	//Create the cell
-	CELL cell;
-
-	for (int j = 0; j < 8; j++){
-		cell.position[j].x = 0;
-		cell.position[j].x = 0;
-		cell.position[j].x = 0;
-		cell.val[j] = 0;
-	}
-
-	cell.position[0].x = currentCube->origin.x;
-	cell.position[0].y = currentCube->origin.y;
-	cell.position[0].z = currentCube->origin.z;
-	cell.val[0] = model->getPixelValue(currentCube->origin.x, currentCube->origin.y, currentCube->origin.z);
-
-	cell.position[1].x = currentCube->origin.x + currentCube->sizeX;
-	cell.position[1].y = currentCube->origin.y;
-	cell.position[1].z = currentCube->origin.z;
-	cell.val[1] = model->getPixelValue(currentCube->origin.x + currentCube->sizeX, currentCube->origin.y, currentCube->origin.z);
-
-	cell.position[2].x = currentCube->origin.x + currentCube->sizeX;
-	cell.position[2].y = currentCube->origin.y + currentCube->sizeY;
-	cell.position[2].z = currentCube->origin.z;
-	cell.val[2] = model->getPixelValue(currentCube->origin.x + currentCube->sizeX, currentCube->origin.y + currentCube->sizeY, currentCube->origin.z);
-
-	cell.position[3].x = currentCube->origin.x;
-	cell.position[3].y = currentCube->origin.y + currentCube->sizeY;
-	cell.position[3].z = currentCube->origin.z;
-	cell.val[3] = model->getPixelValue(currentCube->origin.x, currentCube->origin.y + currentCube->sizeY, currentCube->origin.z);
-	//////
-	cell.position[4].x = currentCube->origin.x;
-	cell.position[4].y = currentCube->origin.y;
-	cell.position[4].z = currentCube->origin.z + currentCube->sizeZ;
-	cell.val[4] = model->getPixelValue(currentCube->origin.x, currentCube->origin.y, currentCube->origin.z + currentCube->sizeZ);
-
-	cell.position[5].x = currentCube->origin.x + currentCube->sizeX;
-	cell.position[5].y = currentCube->origin.y;
-	cell.position[5].z = currentCube->origin.z + currentCube->sizeZ;
-	cell.val[5] = model->getPixelValue(currentCube->origin.x + currentCube->sizeX, currentCube->origin.y, currentCube->origin.z + currentCube->sizeZ);
-
-	cell.position[6].x = currentCube->origin.x + currentCube->sizeX;
-	cell.position[6].y = currentCube->origin.y + currentCube->sizeY;
-	cell.position[6].z = currentCube->origin.z + currentCube->sizeZ;
-	cell.val[6] = model->getPixelValue(currentCube->origin.x + currentCube->sizeX, currentCube->origin.y + currentCube->sizeY, currentCube->origin.z + currentCube->sizeZ);
-
-	cell.position[7].x = currentCube->origin.x;
-	cell.position[7].y = currentCube->origin.y + currentCube->sizeY;
-	cell.position[7].z = currentCube->origin.z + currentCube->sizeZ;
-	cell.val[7] = model->getPixelValue(currentCube->origin.x, currentCube->origin.y + currentCube->sizeY, currentCube->origin.z + currentCube->sizeZ);
-
-
-	//Now we have the cell for the cube created, so we polygonise it
-
-
-	glm::vec3 vertlist[12];
-
-	int isoLevel = model->isoLevel;
-
-	int cubeIndex = 0;
-
-	if (cell.val[0] > isoLevel) cubeIndex += 1;
-	if (cell.val[1] > isoLevel) cubeIndex += 2;
-	if (cell.val[2] > isoLevel) cubeIndex += 4;
-	if (cell.val[3] > isoLevel) cubeIndex += 8;
-	if (cell.val[4] > isoLevel) cubeIndex += 16;
-	if (cell.val[5] > isoLevel) cubeIndex += 32;
-	if (cell.val[6] > isoLevel) cubeIndex += 64;
-	if (cell.val[7] > isoLevel) cubeIndex += 128;
-
-
-	if (cubeIndex == 255 || cubeIndex == 0){
-		return 0;	//REturn a 0 to indicate that the cell doesnt contain any vertices
-	}
-
-	glm::vec3 point;
-
-	/* Find the vertices where the surface intersects the cube */
-	if (model->edgeTable[cubeIndex] & 1) {
-		interpolate(model->isoLevel, cell.position[0], cell.position[1], cell.val[0], cell.val[1], point);
-		vertlist[0] = point;
-	}
-	if (model->edgeTable[cubeIndex] & 2) {
-		interpolate(model->isoLevel, cell.position[1], cell.position[2], cell.val[1], cell.val[2], point);
-		vertlist[1] = point;
-	}
-	if (model->edgeTable[cubeIndex] & 4) {
-		interpolate(model->isoLevel, cell.position[2], cell.position[3], cell.val[2], cell.val[3], point);
-		vertlist[2] = point;
-	}
-	if (model->edgeTable[cubeIndex] & 8) {
-		interpolate(model->isoLevel, cell.position[3], cell.position[0], cell.val[3], cell.val[0], point);
-		vertlist[3] = point;
-
-	}
-	if (model->edgeTable[cubeIndex] & 16) {
-		interpolate(model->isoLevel, cell.position[4], cell.position[5], cell.val[4], cell.val[5], point);
-		vertlist[4] = point;
-	}
-	if (model->edgeTable[cubeIndex] & 32) {
-		interpolate(model->isoLevel, cell.position[5], cell.position[6], cell.val[5], cell.val[6], point);
-		vertlist[5] = point;
-	}
-	if (model->edgeTable[cubeIndex] & 64) {
-		interpolate(model->isoLevel, cell.position[6], cell.position[7], cell.val[6], cell.val[7], point);
-		vertlist[6] = point;
-	}
-	if (model->edgeTable[cubeIndex] & 128) {
-		interpolate(model->isoLevel, cell.position[7], cell.position[4], cell.val[7], cell.val[4], point);
-		vertlist[7] = point;
-	}
-	if (model->edgeTable[cubeIndex] & 256) {
-		interpolate(model->isoLevel, cell.position[0], cell.position[4], cell.val[0], cell.val[4], point);
-		vertlist[8] = point;
-	}
-	if (model->edgeTable[cubeIndex] & 512) {
-		interpolate(model->isoLevel, cell.position[1], cell.position[5], cell.val[1], cell.val[5], point);
-		vertlist[9] = point;
-	}
-	if (model->edgeTable[cubeIndex] & 1024) {
-		interpolate(model->isoLevel, cell.position[2], cell.position[6], cell.val[2], cell.val[6], point);
-		vertlist[10] = point;
-	}
-	if (model->edgeTable[cubeIndex] & 2048) {
-		interpolate(model->isoLevel, cell.position[3], cell.position[7], cell.val[3], cell.val[7], point);
-		vertlist[11] = point;
-	}
-
-
-	glm::vec3 normal;
-	unsigned char* dataPointer;
-	int pointerOffset = model->numberOfBytes;
-	int value1 = 0, value2 = 0;
-
-	/* Create the triangles */
-
-	//WE create a vector with the points and we assignt it to the cube
-	vector<glm::vec3> *points = new vector<glm::vec3>;
-
-	glm::vec3 point1, point2, point3;
-	for (int i = 0; model->triTable[cubeIndex][i] != -1; i += 3) {
-
-		point1.x = (vertlist[model->triTable[cubeIndex][i]]).x;
-		point1.y = (vertlist[model->triTable[cubeIndex][i]]).y;
-		point1.z = (vertlist[model->triTable[cubeIndex][i]]).z;
-
-		point2.x = (vertlist[model->triTable[cubeIndex][i + 1]]).x;
-		point2.y = (vertlist[model->triTable[cubeIndex][i + 1]]).y;
-		point2.z = (vertlist[model->triTable[cubeIndex][i + 1]]).z;
-
-		point3.x = (vertlist[model->triTable[cubeIndex][i + 2]]).x;
-		point3.y = (vertlist[model->triTable[cubeIndex][i + 2]]).y;
-		point3.z = (vertlist[model->triTable[cubeIndex][i + 2]]).z;
-
-		points->push_back(point1);
-		points->push_back(point2);
-		points->push_back(point3);
-
-		/*verts.push_back(point1);
-		verts.push_back(point2);
-		verts.push_back(point3);*/
-	}
-
-	currentCube->points = points;
-	currentCube->containsVerts = true;
-
-}
 
 //Go through each cube and write the points info to the model->verts
 int VolumeRenderer::readPointsFromOctree(OctreeCube* root){
@@ -4880,7 +3185,7 @@ int VolumeRenderer::readPointsFromOctree(OctreeCube* root){
  
 void VolumeRenderer::ballPivot(){
 	std::cout << "creating mesh with ball pivot algorithm" << std::endl;
-	calculateGradient();	//I should actually make it so tht it calculates gradients only when it gradients are empty. And also make it so that when we load a new dicom file we clear the previous gradients
+	//calculateGradient();	//I should actually make it so tht it calculates gradients only when it gradients are empty. And also make it so that when we load a new dicom file we clear the previous gradients
 
 	//grab a point from the gradients. Since gradients is still a map we convert it to two vector of positons and normals
 	//Create another vector of sortedPoints which are sorted by the distance from the onw we picked
@@ -4891,7 +3196,7 @@ void VolumeRenderer::ballPivot(){
 	std::vector<glm::vec3> normals;
 
 	if (positions.empty()){
-		for (int k = 0; k < model->frames; k++){
+		for (int k = 0; k < model->pixelData->frames; k++){
 			for (auto kv : model->gradient[k]) {
 				glm::vec3 positionKey;
 				positionKey.x = kv.first.first;
@@ -4976,10 +3281,10 @@ int VolumeRenderer::loadDICOMPixelData(const char* file){
 		frames = 1;
 	}
 	cout << "bitsAlocated=" << bitsAllocated << " bitsStored=" << bitsStored << " pixelRepresentation=" << pixelRepresentation << " frames=" << frames << " height=" << height << endl;
-	model->pixelDataHeight = height;
-	model->pixelDataWidth = width;
-	model->frames = frames;
-	model->numberOfBytes = bitsAllocated/8;
+	model->pixelData->height = height;
+	model->pixelData->width = width;
+	model->pixelData->frames = frames;
+	model->pixelData->numberOfBytes = bitsAllocated/8;
 	ui.frameSlider->setMaximum(frames-1);
 	if (bitsAllocated==8)
 		ui.isoLevelSlider->setMaximum(255);
@@ -4989,13 +3294,13 @@ int VolumeRenderer::loadDICOMPixelData(const char* file){
 		ui.isoLevelSlider->setMaximum(4294967296);
 	
 	
-	model->pixelData = (unsigned char**)malloc(frames*sizeof(unsigned char*));
+	model->pixelData->data = (unsigned char**)malloc(frames*sizeof(unsigned char*));
 	for (int i = 0; i < frames; i++){
 		//Allocate data for the pixeldata from each frame, read data dn then store it in another free space in model->pixelData
 		img = new DicomImage(data, data->getOriginalXfer(), CIF_UsePartialAccessToPixelData, i, 1);	//Get the img
 		img->setMinMaxWindow();
 		//(boost::get<unsigned char**>(model->pixelData))[i] = (unsigned char*)img->getOutputData(bitsAllocated, 0, 0);
-		(model->pixelData)[i] = (unsigned char*)img->getOutputData(bitsAllocated, 0, 0);
+		(model->pixelData->data)[i] = (unsigned char*)img->getOutputData(bitsAllocated, 0, 0);
 	}
 
 	return 1;
@@ -5011,10 +3316,10 @@ int VolumeRenderer::loadDICOMPixelData(QStringList fileNames){
 		frames = 1;
 	}
 	cout << "bitsAlocated=" << bitsAllocated << " bitsStored=" << bitsStored << " pixelRepresentation=" << pixelRepresentation << " frames=" << frames << " height=" << height << endl;
-	model->pixelDataHeight = height;
-	model->pixelDataWidth = width;
-	model->frames = fileNames.size();
-	model->numberOfBytes = bitsAllocated / 8;
+	model->pixelData->height = height;
+	model->pixelData->width = width;
+	model->pixelData->frames = fileNames.size();
+	model->pixelData->numberOfBytes = bitsAllocated / 8;
 	ui.frameSlider->setMaximum(fileNames.size()-1);
 	if (bitsAllocated == 8)
 		ui.isoLevelSlider->setMaximum(255);
@@ -5024,7 +3329,7 @@ int VolumeRenderer::loadDICOMPixelData(QStringList fileNames){
 		ui.isoLevelSlider->setMaximum(4294967296);
 
 
-	model->pixelData = (unsigned char**)malloc(fileNames.size()*sizeof(unsigned char*));
+	model->pixelData->data = (unsigned char**)malloc(fileNames.size()*sizeof(unsigned char*));
 	for (int i = 0; i < fileNames.size(); i++){
 		
 		cout << "reading file" << fileNames[i].toStdString() <<endl;
@@ -5045,9 +3350,9 @@ int VolumeRenderer::loadDICOMPixelData(QStringList fileNames){
 		unsigned char* outputPointer=NULL;
 		//(model->pixelData)[i] = (unsigned char*)img->getOutputData(bitsAllocated, 0, 0);		//WatchOut you are asinging pixel data to the output of that image which is made on the stack. when the function terminates, the data may not exist anymore
 		outputPointer = (unsigned char*)img->getOutputData(bitsAllocated, 0, 0);
-		(model->pixelData)[i] = (unsigned char*)malloc(model->pixelDataWidth*model->pixelDataHeight*bitsAllocated / 8);
-		for (int j = 0; j < model->pixelDataWidth*model->pixelDataHeight*bitsAllocated/8; j++){
-			(model->pixelData)[i][j] = outputPointer[j];
+		(model->pixelData->data)[i] = (unsigned char*)malloc(model->pixelData->width*model->pixelData->height*bitsAllocated / 8);
+		for (int j = 0; j < model->pixelData->width*model->pixelData->height*bitsAllocated / 8; j++){
+			(model->pixelData->data)[i][j] = outputPointer[j];
 		}
 		
 		img->deleteOutputData();
@@ -5077,8 +3382,8 @@ void VolumeRenderer::on_loadTestImageButton_clicked(){
 	wipeBitmap();
 	wipePoints();
 	//load_image_data("E:\\Universidad\\Hecho por mi\\Volume Renderer\\TFG\\VolumeRenderer\\Win32\\Debug\\test.bmp");
-	load_image_data("test7.bmp");
-	marchingSquares();
+	//load_image_data("test7.bmp");
+	//marchingSquares();
 	ui.dicomviewer2dgl->setFrame(0);
 	
 	
@@ -5088,7 +3393,7 @@ void VolumeRenderer::on_loadTestImage2Button_clicked(){
 	wipeBitmap();
 	wipePoints();
 	load_image_data("E:\\Universidad\\Hecho por mi\\Volume Renderer\\TFG\\VolumeRenderer\\Win32\\Debug\\angkor-grey.bmp");
-	marchingSquares();
+	//marchingSquares();
 }
 void VolumeRenderer::on_loadDICOMButton_clicked(){
 	cout << "Load the dicom image" << endl;
@@ -5099,7 +3404,7 @@ void VolumeRenderer::on_loadDICOMButton_clicked(){
 	//loadDICOMPixelData("E:\\Universidad\\Hecho por mi\\Volume Renderer\\Examples\\US-MONO2-8-8x-execho\\US-MONO2-8-8x-execho");
 	//loadDICOMPixelData("E:\\Universidad\\Hecho por mi\\Volume Renderer\\Examples\\NBIA\\Head-Neck Cetuximab-Demo\\0522c0017\\1.3.6.1.4.1.14519.5.2.1.5099.8010.301891355591695382542416006021\\1.3.6.1.4.1.14519.5.2.1.5099.8010.406309334041021679085400200182\\000050.dcm");
 	loadDICOMPixelData("E:\\Universidad\\Hecho por mi\\Volume Renderer\\Examples\\NBIA\\Head-Neck Cetuximab-Demo\\0522c0017\\1.3.6.1.4.1.14519.5.2.1.5099.8010.211172929770388792425820374442\\1.3.6.1.4.1.14519.5.2.1.5099.8010.256809656670264137422504899725\\000090.dcm");
-	marchingSquares();
+	//marchingSquares();
 
 	cout << "loaded" << endl;
 	//cout << "value is" << model->pixelData[250][250] << endl;
@@ -5138,7 +3443,7 @@ void VolumeRenderer::on_loadDICOMFromFile_clicked(){
 	loadDICOMPixelData(fileNames);
 
 	generateMesh();
-	ui.dicomviewer2dgl->setFrame(model->frames / 2);
+	ui.dicomviewer2dgl->setFrame(model->pixelData->frames / 2);
 	ui.glwidget->sendDataToGL();
 	ui.glwidget->update();
 	emit dataFinishedReading();
@@ -5351,7 +3656,7 @@ void VolumeRenderer::generateMesh(int force){
 	if (model->algorithmChosen == 1){
 		//boost::thread workerThread(boost::bind(&VolumeRenderer::marchingSquares, this));
 
-		MarchingCuber* mc = new MarchingCuber(&(model->pixelData), &(model->verts), &(model->normals), model->isoLevel, model->frames, model->pixelDataHeight, model->pixelDataWidth, model->cellSizeX, model->cellSizeY, model->cellSizeZ, model->numberOfBytes, model->interpolateDepth, model->linearInterpolation);
+		MarchingCuber* mc = new MarchingCuber((model->pixelData), &(model->verts), &(model->normals), model->isoLevel, model->cellSizeX, model->cellSizeY, model->cellSizeZ, model->interpolateDepth);
 		mc->run();
 		generateNormals();
 
@@ -5360,12 +3665,12 @@ void VolumeRenderer::generateMesh(int force){
 	}
 		
 	if (model->algorithmChosen == 2)
-		adaptiveMarchingCubes();
+		return;
 	if (model->algorithmChosen == 3)
-		adaptiveMarchingCubes2();
+		return;
 	if (model->algorithmChosen == 4){
 		//adaptiveMarchingCubes3();
-		AdaptiveCuber* amc = new AdaptiveCuber(&(model->pixelData), &(model->verts), &(model->normals), model->isoLevel, model->frames, model->pixelDataHeight, model->pixelDataWidth, model->cellSizeX, model->cellSizeY, model->cellSizeZ, model->numberOfBytes, model->interpolateDepth, model->linearInterpolation,model->octreeMaxDepth,&(model->gradient),model->tolerance);
+		AdaptiveCuber* amc = new AdaptiveCuber((model->pixelData), &(model->verts), &(model->normals), model->isoLevel,  model->cellSizeX, model->cellSizeY, model->cellSizeZ,  model->interpolateDepth, model->octreeMaxDepth,&(model->gradient),model->tolerance);
 		amc->run();
 		generateNormals();
 	}
@@ -5480,34 +3785,34 @@ void VolumeRenderer::generateNormals(){
 
 			//getSmoothPixelValue
 
-			dx = -1 * (model->getPixelValue(j - 1, y + 1, k - 1)) + 1 * (model->getPixelValue(j + 1, y + 1, k - 1)) -
-				2 * (model->getPixelValue(j - 1, y, k - 1)) + 2 * (model->getPixelValue(j + 1, y, k - 1)) -
-				1 * (model->getPixelValue(j - 1, y - 1, k - 1)) + 1 * (model->getPixelValue(j + 1, y - 1, k - 1)) -
+			dx = -1 * (model->pixelData->getPixelValue(j - 1, y + 1, k - 1)) + 1 * (model->pixelData->getPixelValue(j + 1, y + 1, k - 1)) -
+				2 * (model->pixelData->getPixelValue(j - 1, y, k - 1)) + 2 * (model->pixelData->getPixelValue(j + 1, y, k - 1)) -
+				1 * (model->pixelData->getPixelValue(j - 1, y - 1, k - 1)) + 1 * (model->pixelData->getPixelValue(j + 1, y - 1, k - 1)) -
 
-				2 * (model->getPixelValue(j - 1, y + 1, k)) + 2 * (model->getPixelValue(j + 1, y + 1, k)) -
-				4 * (model->getPixelValue(j - 1, y, k)) + 2 * (model->getPixelValue(j + 1, y, k)) -
-				2 * (model->getPixelValue(j - 1, y - 1, k)) + 2 * (model->getPixelValue(j + 1, y - 1, k)) -
+				2 * (model->pixelData->getPixelValue(j - 1, y + 1, k)) + 2 * (model->pixelData->getPixelValue(j + 1, y + 1, k)) -
+				4 * (model->pixelData->getPixelValue(j - 1, y, k)) + 2 * (model->pixelData->getPixelValue(j + 1, y, k)) -
+				2 * (model->pixelData->getPixelValue(j - 1, y - 1, k)) + 2 * (model->pixelData->getPixelValue(j + 1, y - 1, k)) -
 
-				1 * (model->getPixelValue(j - 1, y + 1, k + 1)) + 1 * (model->getPixelValue(j + 1, y + 1, k + 1)) -
-				2 * (model->getPixelValue(j - 1, y, k + 1)) + 2 * (model->getPixelValue(j + 1, y, k + 1)) -
-				1 * (model->getPixelValue(j - 1, y - 1, k + 1)) + 1 * (model->getPixelValue(j + 1, y - 1, k + 1));
+				1 * (model->pixelData->getPixelValue(j - 1, y + 1, k + 1)) + 1 * (model->pixelData->getPixelValue(j + 1, y + 1, k + 1)) -
+				2 * (model->pixelData->getPixelValue(j - 1, y, k + 1)) + 2 * (model->pixelData->getPixelValue(j + 1, y, k + 1)) -
+				1 * (model->pixelData->getPixelValue(j - 1, y - 1, k + 1)) + 1 * (model->pixelData->getPixelValue(j + 1, y - 1, k + 1));
 
-			dy = 1 * (model->getPixelValue(j - 1, y + 1, k - 1)) + 2 * (model->getPixelValue(j, y + 1, k - 1)) + 1 * (model->getPixelValue(j + 1, y + 1, k - 1)) -
-				1 * (model->getPixelValue(j - 1, y - 1, k - 1)) - 2 * (model->getPixelValue(j, y - 1, k - 1)) - 1 * (model->getPixelValue(j + 1, y - 1, k - 1)) +
+			dy = 1 * (model->pixelData->getPixelValue(j - 1, y + 1, k - 1)) + 2 * (model->pixelData->getPixelValue(j, y + 1, k - 1)) + 1 * (model->pixelData->getPixelValue(j + 1, y + 1, k - 1)) -
+				1 * (model->pixelData->getPixelValue(j - 1, y - 1, k - 1)) - 2 * (model->pixelData->getPixelValue(j, y - 1, k - 1)) - 1 * (model->pixelData->getPixelValue(j + 1, y - 1, k - 1)) +
 
-				2 * (model->getPixelValue(j - 1, y + 1, k)) + 4 * (model->getPixelValue(j, y + 1, k)) + 2 * (model->getPixelValue(j + 1, y + 1, k)) -
-				2 * (model->getPixelValue(j - 1, y - 1, k)) - 4 * (model->getPixelValue(j, y - 1, k)) - 2 * (model->getPixelValue(j + 1, y - 1, k)) +
+				2 * (model->pixelData->getPixelValue(j - 1, y + 1, k)) + 4 * (model->pixelData->getPixelValue(j, y + 1, k)) + 2 * (model->pixelData->getPixelValue(j + 1, y + 1, k)) -
+				2 * (model->pixelData->getPixelValue(j - 1, y - 1, k)) - 4 * (model->pixelData->getPixelValue(j, y - 1, k)) - 2 * (model->pixelData->getPixelValue(j + 1, y - 1, k)) +
 
-				1 * (model->getPixelValue(j - 1, y + 1, k + 1)) + 2 * (model->getPixelValue(j, y + 1, k + 1)) + 1 * (model->getPixelValue(j + 1, y + 1, k + 1)) -
-				1 * (model->getPixelValue(j - 1, y - 1, k + 1)) - 2 * (model->getPixelValue(j, y - 1, k + 1)) - 1 * (model->getPixelValue(j + 1, y - 1, k + 1));
+				1 * (model->pixelData->getPixelValue(j - 1, y + 1, k + 1)) + 2 * (model->pixelData->getPixelValue(j, y + 1, k + 1)) + 1 * (model->pixelData->getPixelValue(j + 1, y + 1, k + 1)) -
+				1 * (model->pixelData->getPixelValue(j - 1, y - 1, k + 1)) - 2 * (model->pixelData->getPixelValue(j, y - 1, k + 1)) - 1 * (model->pixelData->getPixelValue(j + 1, y - 1, k + 1));
 
-			dz = -1 * (model->getPixelValue(j - 1, y + 1, k - 1)) - 2 * (model->getPixelValue(j, y + 1, k - 1)) - 1 * (model->getPixelValue(j + 1, y + 1, k - 1)) -
-				2 * (model->getPixelValue(j - 1, y, k - 1)) - 4 * (model->getPixelValue(j, y, k - 1)) - 2 * (model->getPixelValue(j + 1, y, k - 1)) -
-				1 * (model->getPixelValue(j - 1, y - 1, k - 1)) - 2 * (model->getPixelValue(j, y - 1, k - 1)) - 1 * (model->getPixelValue(j + 1, y - 1, k - 1)) +
+			dz = -1 * (model->pixelData->getPixelValue(j - 1, y + 1, k - 1)) - 2 * (model->pixelData->getPixelValue(j, y + 1, k - 1)) - 1 * (model->pixelData->getPixelValue(j + 1, y + 1, k - 1)) -
+				2 * (model->pixelData->getPixelValue(j - 1, y, k - 1)) - 4 * (model->pixelData->getPixelValue(j, y, k - 1)) - 2 * (model->pixelData->getPixelValue(j + 1, y, k - 1)) -
+				1 * (model->pixelData->getPixelValue(j - 1, y - 1, k - 1)) - 2 * (model->pixelData->getPixelValue(j, y - 1, k - 1)) - 1 * (model->pixelData->getPixelValue(j + 1, y - 1, k - 1)) +
 
-				1 * (model->getPixelValue(j - 1, y + 1, k + 1)) + 2 * (model->getPixelValue(j, y + 1, k + 1)) + 1 * (model->getPixelValue(j + 1, y + 1, k + 1)) -
-				2 * (model->getPixelValue(j - 1, y, k + 1)) + 4 * (model->getPixelValue(j, y, k + 1)) + 2 * (model->getPixelValue(j + 1, y, k + 1)) -
-				1 * (model->getPixelValue(j - 1, y - 1, k + 1)) + 2 * (model->getPixelValue(j, y - 1, k + 1)) + 1 * (model->getPixelValue(j + 1, y - 1, k + 1));
+				1 * (model->pixelData->getPixelValue(j - 1, y + 1, k + 1)) + 2 * (model->pixelData->getPixelValue(j, y + 1, k + 1)) + 1 * (model->pixelData->getPixelValue(j + 1, y + 1, k + 1)) -
+				2 * (model->pixelData->getPixelValue(j - 1, y, k + 1)) + 4 * (model->pixelData->getPixelValue(j, y, k + 1)) + 2 * (model->pixelData->getPixelValue(j + 1, y, k + 1)) -
+				1 * (model->pixelData->getPixelValue(j - 1, y - 1, k + 1)) + 2 * (model->pixelData->getPixelValue(j, y - 1, k + 1)) + 1 * (model->pixelData->getPixelValue(j + 1, y - 1, k + 1));
 
 			///Smooth one
 
@@ -5590,11 +3895,11 @@ void VolumeRenderer::wipePoints(){
 //************************************
 void VolumeRenderer::wipePixelData(){
 	int numberOfFrees=0;
-	for (int i = 0; i < model->frames; i++){
-		free(model->pixelData[i]);
+	for (int i = 0; i < model->pixelData->frames; i++){
+		free(model->pixelData->data[i]);
 		numberOfFrees++;
 	}
-	free(model->pixelData);
+	free(model->pixelData->data);
 	
 	ui.glwidget->xMove = 0; //Now we reset the position so that the new model will be centered
 	ui.glwidget->yMove = 0;
@@ -5660,7 +3965,6 @@ void VolumeRenderer::on_generateMeshButton_clicked(){
 void VolumeRenderer::on_interactiveButton_clicked(){
 	if (ui.interactiveButton->isChecked()){
 		interactive = true;
-		generateMesh();
 	}
 	else{
 		interactive = false;

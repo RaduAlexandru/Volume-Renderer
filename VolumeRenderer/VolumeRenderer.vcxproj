@@ -189,6 +189,7 @@
     <ClCompile Include="MarchingCuber.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="OctreeCube.cpp" />
+    <ClCompile Include="PixelData.cpp" />
     <ClCompile Include="volumerenderer.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -235,6 +236,7 @@
     <ClInclude Include="AdaptiveCuber.h" />
     <ClInclude Include="MarchingCuber.h" />
     <ClInclude Include="OctreeCube.h" />
+    <ClInclude Include="PixelData.h" />
     <CustomBuild Include="dicomviewer2dgl.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing dicomviewer2dgl.h...</Message>

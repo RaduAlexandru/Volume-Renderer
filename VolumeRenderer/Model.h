@@ -3,6 +3,7 @@
 #include <list>
 #include <glm/glm.hpp>
 #include "OctreeCube.h"
+#include "PixelData.h"
 //#include <boost/variant.hpp>
 //#include <boost/any.hpp>
 #include <boost/numeric/ublas/matrix_sparse.hpp>
@@ -73,7 +74,8 @@ public:
 	int cellSizeX;
 	int cellSizeY;
 	int cellSizeZ;	
-	unsigned char** pixelData;
+	//unsigned char** pixelData;
+	PixelData* pixelData;
 
 	std::vector<std::vector<std::vector<std::vector<OctreeCube*> > > > array4D;
 	std::vector<OctreeCube*>  octreeVector;
@@ -110,9 +112,9 @@ public:
 	//boost::variant< unsigned char**, unsigned short**, unsigned long** >  pixelData;
 	//boost::any **  pixelData;
 	//void**  pixelData;
-	int frames;
+	//int frames;
 	int frame_to_display;
-	int numberOfBytes;
+	//int numberOfBytes;
 
 	bool linearInterpolation;
 	bool pointFlag;
@@ -124,8 +126,8 @@ public:
 	bool showCubes;
 
 	unsigned char *bitmapPixels;
-	int pixelDataWidth;
-	int pixelDataHeight;
+	//int pixelDataWidth;
+	//int pixelDataHeight;
 	int bitmapImageSize;
 	int bitmapNumberOfPixels;
 	char signature[2];

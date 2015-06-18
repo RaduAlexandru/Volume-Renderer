@@ -41,13 +41,13 @@ void DicomViewer2DGL::paintGL()
 	glLoadIdentity();
 	//glOrtho(-ratio, ratio, -1.f, 1.f, 1.f, -1.f);
 	//glOrtho(0.0f, model->pixelDataWidth, model->pixelDataHeight, 0.0f, 1.0f, 0.0f);	//When you do the 3d one you will need to change the last parameter to be the depth of the image (number of frames)
-	glOrtho(0.0f, model->pixelDataWidth, 0.0f, model->pixelDataHeight,  0.0f, 1.0f);
+	glOrtho(0.0f, model->pixelData->width, 0.0f, model->pixelData->height,  0.0f, 1.0f);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
 
 	
-	glPixelZoom((float)this->width() / (float)model->pixelDataWidth, (float)this->height() / (float)model->pixelDataHeight);  //used to scale the image down if the image is to big to fit in the window. 
+	glPixelZoom((float)this->width() / (float)model->pixelData->width, (float)this->height() / (float)model->pixelData->height);  //used to scale the image down if the image is to big to fit in the window. 
 	//glPixelStorei(GL_UNPACK_ALIGNMENT, 2); //In case the size of the image is not a power of 2
 
 	displayFrame();
@@ -76,7 +76,7 @@ void DicomViewer2DGL::resizeGL(int w, int h)
 
 
 void DicomViewer2DGL::displayFrame(){
-	if (model->pixelDataHeight != 0){
+	if (model->pixelData->height != 0){
 
 		int orientation = model->orientation;
 		//Copy the data fo that frame in a new local frame. Depending on the orientation, z, x or y. We copy on orientation of the frame or another Z=1, x=2;y=3
@@ -97,15 +97,15 @@ void DicomViewer2DGL::displayFrame(){
 
 		if (!localFrame.empty()){
 			if (orientation == 1)
-				glDrawPixels(model->pixelDataWidth, model->pixelDataHeight, GL_LUMINANCE, GL_UNSIGNED_INT, localFrame.data());
+				glDrawPixels(model->pixelData->width, model->pixelData->height, GL_LUMINANCE, GL_UNSIGNED_INT, localFrame.data());
 			//if (!gradient.empty())
 			//glDrawPixels(model->pixelDataWidth, model->pixelDataHeight, GL_LUMINANCE, GL_UNSIGNED_INT, gradient.data());
 			if (orientation == 2)
-				glDrawPixels(model->pixelDataHeight, model->frames, GL_LUMINANCE, GL_UNSIGNED_INT, localFrame.data());
+				glDrawPixels(model->pixelData->height, model->pixelData->frames, GL_LUMINANCE, GL_UNSIGNED_INT, localFrame.data());
 			//if (!gradient.empty())
 			//glDrawPixels(model->pixelDataWidth, model->pixelDataHeight, GL_LUMINANCE, GL_UNSIGNED_INT, gradient.data());
 			if (orientation == 3)
-				glDrawPixels(model->pixelDataWidth, model->frames, GL_LUMINANCE, GL_UNSIGNED_INT, localFrame.data());
+				glDrawPixels(model->pixelData->width, model->pixelData->frames, GL_LUMINANCE, GL_UNSIGNED_INT, localFrame.data());
 		}
 
 	}
@@ -122,8 +122,8 @@ void DicomViewer2DGL::displayGradient(){
 	int orientation = model->orientation;
 
 	if (orientation == 1){
-		for (int i = 0; i < model->pixelDataHeight; i++){
-			for (int j = 0; j < model->pixelDataWidth; j++){
+		for (int i = 0; i < model->pixelData->height; i++){
+			for (int j = 0; j < model->pixelData->width; j++){
 
 				//Look for a gradient with values (j,i) If we found it display the line from (j,i) to the x,y of that gradient
 				
@@ -158,16 +158,16 @@ void DicomViewer2DGL::setFrame(int frame)
 
 	//The value we have goes from o to pow(2,numberOfBytes*8). So in the case of the VHF which has 2 bytes per pixel. it goes from 0 to pow(2,16)=65536
 	//WE have to scale it up to 4 bytes (unsigned int) Which max value would be pow(2,4*8). The multiplier would thus be 
-	int multiplier = pow(2, 4 * 8) / pow(2,model->numberOfBytes * 8);	
+	int multiplier = pow(2, 4 * 8) / pow(2,model->pixelData->numberOfBytes * 8);	
 	if (orientation == 1){
 		//localFrame.reserve(model->pixelDataWidth*model->pixelDataHeight);
-		for (int i = 0; i < model->pixelDataHeight; i++){
-			for (int j = 0; j < model->pixelDataWidth; j++){
+		for (int i = 0; i < model->pixelData->height; i++){
+			for (int j = 0; j < model->pixelData->width; j++){
 
 
-				dataPointer = &(model->pixelData[frame][0]);
-				dataPointer = dataPointer + (j + i*model->pixelDataWidth)*model->numberOfBytes;
-				memcpy(&value, dataPointer, model->numberOfBytes);
+				dataPointer = &(model->pixelData->data[frame][0]);
+				dataPointer = dataPointer + (j + i*model->pixelData->width)*model->pixelData->numberOfBytes;
+				memcpy(&value, dataPointer, model->pixelData->numberOfBytes);
 
 
 				localFrame.push_back(value*multiplier);
@@ -176,24 +176,24 @@ void DicomViewer2DGL::setFrame(int frame)
 	}
 
 	if (orientation == 2){
-		for (int i = 0; i < model->pixelDataHeight; i++){
-			for (int j = 0; j < model->pixelDataWidth; j++){
+		for (int i = 0; i < model->pixelData->height; i++){
+			for (int j = 0; j < model->pixelData->width; j++){
 
 				/*dataPointer = &(model->pixelData[i][0]);
 				dataPointer = dataPointer + (frame + j*model->pixelDataWidth)*model->numberOfBytes;
 				memcpy(&value, dataPointer, model->numberOfBytes);*/
 
 
-				localFrame.push_back(model->getPixelValue(frame, j, i)*multiplier);
+				localFrame.push_back(model->pixelData->getPixelValue(frame, j, i)*multiplier);
 			}
 		}
 	}
 
 
 	if (orientation == 3){
-		for (int i = 0; i < model->pixelDataHeight; i++){
-			for (int j = 0; j < model->pixelDataWidth; j++){
-				localFrame.push_back(model->getPixelValue(j, frame, i)*multiplier);
+		for (int i = 0; i < model->pixelData->height; i++){
+			for (int j = 0; j < model->pixelData->width; j++){
+				localFrame.push_back(model->pixelData->getPixelValue(j, frame, i)*multiplier);
 			}
 		}
 	}
@@ -513,7 +513,7 @@ void DicomViewer2DGL::setFrame(int frame)
 void DicomViewer2DGL::setTolerance(int toleranceReceived){
 	tolerance = toleranceReceived;
 	//std::cout << "model pixel data"
-	if (model->pixelDataWidth == 500 || model->pixelDataWidth==256 || model->pixelDataWidth==512)
+	if (model->pixelData->width == 500 || model->pixelData->width==256 || model->pixelData->width==512)
 		setFrame(0);
 	
 }

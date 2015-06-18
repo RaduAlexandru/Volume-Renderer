@@ -14,8 +14,8 @@ AdaptiveCuber::~AdaptiveCuber()
 {
 }
 
-AdaptiveCuber::AdaptiveCuber(unsigned char*** pixelData, std::vector<glm::vec3>* verts, std::vector<glm::vec3>* normals, int isoLevel, int frames, int pixelDataHeight, int pixelDataWidth, int cellSizeX, int cellSizeY, int cellSizeZ, int pointerOffset, int interpolateDepth, bool linearInterpolation, int octreeMaxDepth, std::vector< boost::unordered_map< std::pair<int, int>, glm::vec3> >* gradient, int tolerance):
-MarchingCuber(pixelData,  verts, normals,  isoLevel, frames,  pixelDataHeight,  pixelDataWidth,  cellSizeX,  cellSizeY,  cellSizeZ, pointerOffset, interpolateDepth, linearInterpolation) {
+AdaptiveCuber::AdaptiveCuber(PixelData* pixelData, std::vector<glm::vec3>* verts, std::vector<glm::vec3>* normals, int isoLevel, int cellSizeX, int cellSizeY, int cellSizeZ,  int interpolateDepth, int octreeMaxDepth, std::vector< boost::unordered_map< std::pair<int, int>, glm::vec3> >* gradient, int tolerance):
+MarchingCuber(pixelData,  verts, normals,  isoLevel,  cellSizeX,  cellSizeY,  cellSizeZ,  interpolateDepth) {
 
 	this->octreeMaxDepth = octreeMaxDepth;
 	this->gradient = gradient;
@@ -141,7 +141,7 @@ void AdaptiveCuber::calculateGradient(){
 
 
 				//Now we take the values
-				dataPointer = &((*pixelData)[k][0]);
+				dataPointer = &((pixelData->data)[k][0]);
 				dataPointer = dataPointer + (j + i*pixelDataWidth)*pointerOffset;
 				memcpy(&center, dataPointer, pointerOffset);
 
@@ -149,27 +149,27 @@ void AdaptiveCuber::calculateGradient(){
 				continue;*/
 
 
-				dataPointer = &((*pixelData)[k][0]);
+				dataPointer = &((pixelData->data)[k][0]);
 				dataPointer = dataPointer + (j - 1 + i*pixelDataWidth)*pointerOffset;
 				memcpy(&left, dataPointer, pointerOffset);
 
-				dataPointer = &((*pixelData)[k][0]);
+				dataPointer = &((pixelData->data)[k][0]);
 				dataPointer = dataPointer + (j + 1 + i*pixelDataWidth)*pointerOffset;
 				memcpy(&right, dataPointer, pointerOffset);
 
-				dataPointer = &((*pixelData)[k][0]);
+				dataPointer = &((pixelData->data)[k][0]);
 				dataPointer = dataPointer + (j + (i - 1)*pixelDataWidth)*pointerOffset;
 				memcpy(&top, dataPointer, pointerOffset);
 
-				dataPointer = &((*pixelData)[k][0]);
+				dataPointer = &((pixelData->data)[k][0]);
 				dataPointer = dataPointer + (j + (i + 1)*pixelDataWidth)*pointerOffset;
 				memcpy(&bottom, dataPointer, pointerOffset);
 
-				dataPointer = &((*pixelData)[k - 1][0]);
+				dataPointer = &((pixelData->data)[k - 1][0]);
 				dataPointer = dataPointer + (j + i*pixelDataWidth)*pointerOffset;
 				memcpy(&closev, dataPointer, pointerOffset);
 
-				dataPointer = &((*pixelData)[k + 1][0]);
+				dataPointer = &((pixelData->data)[k + 1][0]);
 				dataPointer = dataPointer + (j + i*pixelDataWidth)*pointerOffset;
 				memcpy(&farv, dataPointer, pointerOffset);
 
@@ -182,34 +182,34 @@ void AdaptiveCuber::calculateGradient(){
 				dx = top - bottom;
 				dz = closev - farv;*/
 
-				dx = -1 * (getPixelValue(j - 1, i + 1, k - 1)) + 1 * (getPixelValue(j + 1, i + 1, k - 1)) -
-					2 * (getPixelValue(j - 1, i, k - 1)) + 2 * (getPixelValue(j + 1, i, k - 1)) -
-					1 * (getPixelValue(j - 1, i - 1, k - 1)) + 1 * (getPixelValue(j + 1, i - 1, k - 1)) -
+				dx = -1 * (pixelData->getPixelValue(j - 1, i + 1, k - 1)) + 1 * (pixelData->getPixelValue(j + 1, i + 1, k - 1)) -
+					2 * (pixelData->getPixelValue(j - 1, i, k - 1)) + 2 * (pixelData->getPixelValue(j + 1, i, k - 1)) -
+					1 * (pixelData->getPixelValue(j - 1, i - 1, k - 1)) + 1 * (pixelData->getPixelValue(j + 1, i - 1, k - 1)) -
 
-					2 * (getPixelValue(j - 1, i + 1, k)) + 2 * (getPixelValue(j + 1, i + 1, k)) -
-					4 * (getPixelValue(j - 1, i, k)) + 2 * (getPixelValue(j + 1, i, k)) -
-					2 * (getPixelValue(j - 1, i - 1, k)) + 2 * (getPixelValue(j + 1, i - 1, k)) -
+					2 * (pixelData->getPixelValue(j - 1, i + 1, k)) + 2 * (pixelData->getPixelValue(j + 1, i + 1, k)) -
+					4 * (pixelData->getPixelValue(j - 1, i, k)) + 2 * (pixelData->getPixelValue(j + 1, i, k)) -
+					2 * (pixelData->getPixelValue(j - 1, i - 1, k)) + 2 * (pixelData->getPixelValue(j + 1, i - 1, k)) -
 
-					1 * (getPixelValue(j - 1, i + 1, k + 1)) + 1 * (getPixelValue(j + 1, i + 1, k + 1)) -
-					2 * (getPixelValue(j - 1, i, k + 1)) + 2 * (getPixelValue(j + 1, i, k + 1)) -
-					1 * (getPixelValue(j - 1, i - 1, k + 1)) + 1 * (getPixelValue(j + 1, i - 1, k + 1));
+					1 * (pixelData->getPixelValue(j - 1, i + 1, k + 1)) + 1 * (pixelData->getPixelValue(j + 1, i + 1, k + 1)) -
+					2 * (pixelData->getPixelValue(j - 1, i, k + 1)) + 2 * (pixelData->getPixelValue(j + 1, i, k + 1)) -
+					1 * (pixelData->getPixelValue(j - 1, i - 1, k + 1)) + 1 * (pixelData->getPixelValue(j + 1, i - 1, k + 1));
 
-				dy = 1 * (getPixelValue(j - 1, i + 1, k - 1)) + 2 * (getPixelValue(j, i + 1, k - 1)) + 1 * (getPixelValue(j + 1, i + 1, k - 1)) -
-					1 * (getPixelValue(j - 1, i - 1, k - 1)) - 2 * (getPixelValue(j, i - 1, k - 1)) - 1 * (getPixelValue(j + 1, i - 1, k - 1)) +
+				dy = 1 * (pixelData->getPixelValue(j - 1, i + 1, k - 1)) + 2 * (pixelData->getPixelValue(j, i + 1, k - 1)) + 1 * (pixelData->getPixelValue(j + 1, i + 1, k - 1)) -
+					1 * (pixelData->getPixelValue(j - 1, i - 1, k - 1)) - 2 * (pixelData->getPixelValue(j, i - 1, k - 1)) - 1 * (pixelData->getPixelValue(j + 1, i - 1, k - 1)) +
 
-					2 * (getPixelValue(j - 1, i + 1, k)) + 4 * (getPixelValue(j, i + 1, k)) + 2 * (getPixelValue(j + 1, i + 1, k)) -
-					2 * (getPixelValue(j - 1, i - 1, k)) - 4 * (getPixelValue(j, i - 1, k)) - 2 * (getPixelValue(j + 1, i - 1, k)) +
+					2 * (pixelData->getPixelValue(j - 1, i + 1, k)) + 4 * (pixelData->getPixelValue(j, i + 1, k)) + 2 * (pixelData->getPixelValue(j + 1, i + 1, k)) -
+					2 * (pixelData->getPixelValue(j - 1, i - 1, k)) - 4 * (pixelData->getPixelValue(j, i - 1, k)) - 2 * (pixelData->getPixelValue(j + 1, i - 1, k)) +
 
-					1 * (getPixelValue(j - 1, i + 1, k + 1)) + 2 * (getPixelValue(j, i + 1, k + 1)) + 1 * (getPixelValue(j + 1, i + 1, k + 1)) -
-					1 * (getPixelValue(j - 1, i - 1, k + 1)) - 2 * (getPixelValue(j, i - 1, k + 1)) - 1 * (getPixelValue(j + 1, i - 1, k + 1));
+					1 * (pixelData->getPixelValue(j - 1, i + 1, k + 1)) + 2 * (pixelData->getPixelValue(j, i + 1, k + 1)) + 1 * (pixelData->getPixelValue(j + 1, i + 1, k + 1)) -
+					1 * (pixelData->getPixelValue(j - 1, i - 1, k + 1)) - 2 * (pixelData->getPixelValue(j, i - 1, k + 1)) - 1 * (pixelData->getPixelValue(j + 1, i - 1, k + 1));
 
-				dz = -1 * (getPixelValue(j - 1, i + 1, k - 1)) - 2 * (getPixelValue(j, i + 1, k - 1)) - 1 * (getPixelValue(j + 1, i + 1, k - 1)) -
-					2 * (getPixelValue(j - 1, i, k - 1)) - 4 * (getPixelValue(j, i, k - 1)) - 2 * (getPixelValue(j + 1, i, k - 1)) -
-					1 * (getPixelValue(j - 1, i - 1, k - 1)) - 2 * (getPixelValue(j, i - 1, k - 1)) - 1 * (getPixelValue(j + 1, i - 1, k - 1)) +
+				dz = -1 * (pixelData->getPixelValue(j - 1, i + 1, k - 1)) - 2 * (pixelData->getPixelValue(j, i + 1, k - 1)) - 1 * (pixelData->getPixelValue(j + 1, i + 1, k - 1)) -
+					2 * (pixelData->getPixelValue(j - 1, i, k - 1)) - 4 * (pixelData->getPixelValue(j, i, k - 1)) - 2 * (pixelData->getPixelValue(j + 1, i, k - 1)) -
+					1 * (pixelData->getPixelValue(j - 1, i - 1, k - 1)) - 2 * (pixelData->getPixelValue(j, i - 1, k - 1)) - 1 * (pixelData->getPixelValue(j + 1, i - 1, k - 1)) +
 
-					1 * (getPixelValue(j - 1, i + 1, k + 1)) + 2 * (getPixelValue(j, i + 1, k + 1)) + 1 * (getPixelValue(j + 1, i + 1, k + 1)) -
-					2 * (getPixelValue(j - 1, i, k + 1)) + 4 * (getPixelValue(j, i, k + 1)) + 2 * (getPixelValue(j + 1, i, k + 1)) -
-					1 * (getPixelValue(j - 1, i - 1, k + 1)) + 2 * (getPixelValue(j, i - 1, k + 1)) + 1 * (getPixelValue(j + 1, i - 1, k + 1));
+					1 * (pixelData->getPixelValue(j - 1, i + 1, k + 1)) + 2 * (pixelData->getPixelValue(j, i + 1, k + 1)) + 1 * (pixelData->getPixelValue(j + 1, i + 1, k + 1)) -
+					2 * (pixelData->getPixelValue(j - 1, i, k + 1)) + 4 * (pixelData->getPixelValue(j, i, k + 1)) + 2 * (pixelData->getPixelValue(j + 1, i, k + 1)) -
+					1 * (pixelData->getPixelValue(j - 1, i - 1, k + 1)) + 2 * (pixelData->getPixelValue(j, i - 1, k + 1)) + 1 * (pixelData->getPixelValue(j + 1, i - 1, k + 1));
 
 
 
@@ -494,6 +494,53 @@ void AdaptiveCuber::correctlyAssignLeafs(OctreeCube* root){
 
 }
 
+/*Not being used*/
+int AdaptiveCuber::polygoniseOctree(OctreeCube* currentCube, int currentDepth){
+
+	//Recursive alrogithm, we go to all the children of current cube and if the children is null, we go back in the recursive stack and polygonise the current cube
+	/*
+	if (currentCube != NULL){
+		polygoniseOctree((currentCube->children[0]));
+		if (currentCube->isLeaf  && !currentCube->polygonised == true)  //We check if the current cube is a left (children is null) and has not been polygonised yet
+			octree2CellPolygonise(*currentCube);
+		currentCube->polygonised = true;
+		polygoniseOctree((currentCube->children[1]));
+		if (currentCube->isLeaf  && !currentCube->polygonised == true)
+			octree2CellPolygonise(*currentCube);
+		currentCube->polygonised = true;
+		polygoniseOctree((currentCube->children[2]));
+		if (currentCube->isLeaf  && !currentCube->polygonised == true)
+			octree2CellPolygonise(*currentCube);
+		currentCube->polygonised = true;
+		polygoniseOctree((currentCube->children[3]));
+		if (currentCube->isLeaf  && !currentCube->polygonised == true)
+			octree2CellPolygonise(*currentCube);
+		currentCube->polygonised = true;
+		polygoniseOctree((currentCube->children[4]));
+		if (currentCube->isLeaf  && !currentCube->polygonised == true)
+			octree2CellPolygonise(*currentCube);
+		currentCube->polygonised = true;
+		polygoniseOctree((currentCube->children[5]));
+		if (currentCube->isLeaf  && !currentCube->polygonised == true)
+			octree2CellPolygonise(*currentCube);
+		currentCube->polygonised = true;
+		polygoniseOctree((currentCube->children[6]));
+		if (currentCube->isLeaf  && !currentCube->polygonised == true)
+			octree2CellPolygonise(*currentCube);
+		currentCube->polygonised = true;
+		polygoniseOctree((currentCube->children[7]));
+		if (currentCube->isLeaf  && !currentCube->polygonised == true)
+			octree2CellPolygonise(*currentCube);
+		currentCube->polygonised = true;
+	}
+	else{
+		return 0;
+	}
+	*/
+
+	return 0;
+
+}
 
 
 
@@ -543,42 +590,42 @@ int AdaptiveCuber::polygoniseAssignToCube(OctreeCube* currentCube){
 	cell.position[0].x = currentCube->origin.x;
 	cell.position[0].y = currentCube->origin.y;
 	cell.position[0].z = currentCube->origin.z;
-	cell.val[0] = getPixelValue(currentCube->origin.x, currentCube->origin.y, currentCube->origin.z);
+	cell.val[0] = pixelData->getPixelValue(currentCube->origin.x, currentCube->origin.y, currentCube->origin.z);
 
 	cell.position[1].x = currentCube->origin.x + currentCube->sizeX;
 	cell.position[1].y = currentCube->origin.y;
 	cell.position[1].z = currentCube->origin.z;
-	cell.val[1] =getPixelValue(currentCube->origin.x + currentCube->sizeX, currentCube->origin.y, currentCube->origin.z);
+	cell.val[1] = pixelData->getPixelValue(currentCube->origin.x + currentCube->sizeX, currentCube->origin.y, currentCube->origin.z);
 
 	cell.position[2].x = currentCube->origin.x + currentCube->sizeX;
 	cell.position[2].y = currentCube->origin.y + currentCube->sizeY;
 	cell.position[2].z = currentCube->origin.z;
-	cell.val[2] = getPixelValue(currentCube->origin.x + currentCube->sizeX, currentCube->origin.y + currentCube->sizeY, currentCube->origin.z);
+	cell.val[2] = pixelData->getPixelValue(currentCube->origin.x + currentCube->sizeX, currentCube->origin.y + currentCube->sizeY, currentCube->origin.z);
 
 	cell.position[3].x = currentCube->origin.x;
 	cell.position[3].y = currentCube->origin.y + currentCube->sizeY;
 	cell.position[3].z = currentCube->origin.z;
-	cell.val[3] = getPixelValue(currentCube->origin.x, currentCube->origin.y + currentCube->sizeY, currentCube->origin.z);
+	cell.val[3] = pixelData->getPixelValue(currentCube->origin.x, currentCube->origin.y + currentCube->sizeY, currentCube->origin.z);
 	//////
 	cell.position[4].x = currentCube->origin.x;
 	cell.position[4].y = currentCube->origin.y;
 	cell.position[4].z = currentCube->origin.z + currentCube->sizeZ;
-	cell.val[4] = getPixelValue(currentCube->origin.x, currentCube->origin.y, currentCube->origin.z + currentCube->sizeZ);
+	cell.val[4] = pixelData->getPixelValue(currentCube->origin.x, currentCube->origin.y, currentCube->origin.z + currentCube->sizeZ);
 
 	cell.position[5].x = currentCube->origin.x + currentCube->sizeX;
 	cell.position[5].y = currentCube->origin.y;
 	cell.position[5].z = currentCube->origin.z + currentCube->sizeZ;
-	cell.val[5] = getPixelValue(currentCube->origin.x + currentCube->sizeX, currentCube->origin.y, currentCube->origin.z + currentCube->sizeZ);
+	cell.val[5] = pixelData->getPixelValue(currentCube->origin.x + currentCube->sizeX, currentCube->origin.y, currentCube->origin.z + currentCube->sizeZ);
 
 	cell.position[6].x = currentCube->origin.x + currentCube->sizeX;
 	cell.position[6].y = currentCube->origin.y + currentCube->sizeY;
 	cell.position[6].z = currentCube->origin.z + currentCube->sizeZ;
-	cell.val[6] = getPixelValue(currentCube->origin.x + currentCube->sizeX, currentCube->origin.y + currentCube->sizeY, currentCube->origin.z + currentCube->sizeZ);
+	cell.val[6] = pixelData->getPixelValue(currentCube->origin.x + currentCube->sizeX, currentCube->origin.y + currentCube->sizeY, currentCube->origin.z + currentCube->sizeZ);
 
 	cell.position[7].x = currentCube->origin.x;
 	cell.position[7].y = currentCube->origin.y + currentCube->sizeY;
 	cell.position[7].z = currentCube->origin.z + currentCube->sizeZ;
-	cell.val[7] = getPixelValue(currentCube->origin.x, currentCube->origin.y + currentCube->sizeY, currentCube->origin.z + currentCube->sizeZ);
+	cell.val[7] = pixelData->getPixelValue(currentCube->origin.x, currentCube->origin.y + currentCube->sizeY, currentCube->origin.z + currentCube->sizeZ);
 
 
 	//Now we have the cell for the cube created, so we polygonise it

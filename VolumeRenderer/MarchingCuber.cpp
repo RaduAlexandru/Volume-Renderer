@@ -17,7 +17,7 @@ MarchingCuber::MarchingCuber()
 }
 
 
-MarchingCuber::MarchingCuber(unsigned char*** pixelData, std::vector<glm::vec3>* verts, std::vector<glm::vec3>* normals, int isoLevel, int frames, int pixelDataHeight, int pixelDataWidth, int cellSizeX, int cellSizeY, int cellSizeZ, int pointerOffset, int interpolateDepth, bool linearInterpolation)
+MarchingCuber::MarchingCuber(PixelData* pixelData, std::vector<glm::vec3>* verts, std::vector<glm::vec3>* normals, int isoLevel, int cellSizeX, int cellSizeY, int cellSizeZ, int interpolateDepth)
 {
 	int v;
 
@@ -44,13 +44,13 @@ MarchingCuber::MarchingCuber(unsigned char*** pixelData, std::vector<glm::vec3>*
 	this->normals=normals;
 
 	this->isoLevel=isoLevel;
-	this->frames=frames;
-	this->pixelDataHeight=pixelDataHeight;
-	this->pixelDataWidth=pixelDataWidth;
+	this->frames=pixelData->frames;
+	this->pixelDataHeight = pixelData->height;
+	this->pixelDataWidth = pixelData->width;
 	this->cellSizeX=cellSizeX;
 	this->cellSizeY=cellSizeY;
 	this->cellSizeZ=cellSizeZ;
-	this->pointerOffset=pointerOffset;
+	this->pointerOffset = pixelData->numberOfBytes;
 	this->interpolateDepth=interpolateDepth;
 	this->linearInterpolation=linearInterpolation;
 
@@ -115,42 +115,42 @@ void MarchingCuber::run(){
 				cell.position[0].x = j;
 				cell.position[0].y = i;
 				cell.position[0].z = k;
-				cell.val[0] = getPixelValue(j, i, k);
+				cell.val[0] = pixelData->getPixelValue(j, i, k);
 
 				cell.position[1].x = j + cellSizeX;
 				cell.position[1].y = i;
 				cell.position[1].z = k;
-				cell.val[1] = getPixelValue(j + cellSizeX, i, k);
+				cell.val[1] = pixelData->getPixelValue(j + cellSizeX, i, k);
 
 				cell.position[2].x = j + cellSizeX;
 				cell.position[2].y = i + cellSizeY;
 				cell.position[2].z = k;
-				cell.val[2] = getPixelValue(j + cellSizeX, i + cellSizeY, k);
+				cell.val[2] = pixelData->getPixelValue(j + cellSizeX, i + cellSizeY, k);
 
 				cell.position[3].x = j;
 				cell.position[3].y = i + cellSizeY;
 				cell.position[3].z = k;
-				cell.val[3] = getPixelValue(j, i + cellSizeY, k);
+				cell.val[3] = pixelData->getPixelValue(j, i + cellSizeY, k);
 				//////
 				cell.position[4].x = j;
 				cell.position[4].y = i;
 				cell.position[4].z = k + cellSizeZ;
-				cell.val[4] = getPixelValue(j, i, k + cellSizeZ);
+				cell.val[4] = pixelData->getPixelValue(j, i, k + cellSizeZ);
 
 				cell.position[5].x = j + cellSizeX;
 				cell.position[5].y = i;
 				cell.position[5].z = k + cellSizeZ;
-				cell.val[5] = getPixelValue(j + cellSizeX, i, k + cellSizeZ);
+				cell.val[5] = pixelData->getPixelValue(j + cellSizeX, i, k + cellSizeZ);
 
 				cell.position[6].x = j + cellSizeX;
 				cell.position[6].y = i + cellSizeY;
 				cell.position[6].z = k + cellSizeZ;
-				cell.val[6] = getPixelValue(j + cellSizeX, i + cellSizeY, k + cellSizeZ);
+				cell.val[6] = pixelData->getPixelValue(j + cellSizeX, i + cellSizeY, k + cellSizeZ);
 
 				cell.position[7].x = j;
 				cell.position[7].y = i + cellSizeY;
 				cell.position[7].z = k + cellSizeZ;
-				cell.val[7] = getPixelValue(j, i + cellSizeY, k + cellSizeZ);
+				cell.val[7] = pixelData->getPixelValue(j, i + cellSizeY, k + cellSizeZ);
 
 
 
@@ -193,20 +193,7 @@ void MarchingCuber::run(){
 
 
 
-int MarchingCuber::getPixelValue(int x, int y, int z){
 
-	if (x<0 || x>pixelDataWidth || y<0 || y>pixelDataHeight || z < 0 || z >= frames)
-		return 1;
-
-
-	unsigned char* dataPointer;
-	int value = 0;
-
-	dataPointer = &((*pixelData)[z][0]);
-	dataPointer = dataPointer + (x + y*pixelDataWidth)*pointerOffset;
-	memcpy(&value, dataPointer, pointerOffset);
-	return value;
-}
 
 
 int MarchingCuber::polygonise(CELL & cell){
@@ -328,7 +315,11 @@ int MarchingCuber::polygonise(CELL & cell){
 
 
 
-
+/*! \brief Brief description.
+Interpolate es un algoritmo recursivo que recibe como parametro la posicion de los dos puntos que definen una arista 
+y sus respectivos valores y devuelve la posicion del punto que mas se aproxima a la superficie. Si el valor de la interpolacion está puesto a 0,
+no se realzia ningun calculo y se devuelve el punto que esta en medio de la arista. De esta manera produce resultados rapidos pero no supone una buena aproximacion de la superficie del volumen
+*/
 inline void MarchingCuber::interpolate(int isoLevel, glm::vec3 point1, glm::vec3 point2, float val1, float val2, glm::vec3& resultPoint, int depth){
 
 
@@ -367,7 +358,7 @@ inline void MarchingCuber::interpolate(int isoLevel, glm::vec3 point1, glm::vec3
 		//We dedice witch one is the highest between point 1 and point2
 
 		//The resulting point is inside the surface
-		long valueOfResultingPoint = getPixelValue(boost::math::iround(resultPoint.x), boost::math::iround(resultPoint.y), boost::math::iround(resultPoint.z));
+		long valueOfResultingPoint = pixelData->getPixelValue(boost::math::iround(resultPoint.x), boost::math::iround(resultPoint.y), boost::math::iround(resultPoint.z));
 		if (valueOfResultingPoint > isoLevel){
 			//We chose the lowest point and we use that to interpolate
 			if (val1 < val2)
