@@ -65,7 +65,7 @@ private:
 	void generateHypercube();
 	void correctlyAssignLeafs(OctreeCube*);
 
-	void generateMesh();
+	void generateMesh(int force=0);
 	void generateNormals();
 	OctreeCube createInitialCube();
 	void ballPivot();
@@ -77,12 +77,13 @@ private:
 	void wipePoints();
 	void wipePixelData();
 
-	
+	bool interactive;
 
 
 signals:
 	void progressValueChangedSignal(int newValue);
 	void generatingFinishedSignal();
+	void dataFinishedReading();
 
 private slots:
 	void on_test_clicked();
@@ -94,7 +95,7 @@ private slots:
 	void on_loadMFDICOMButton_clicked();
 	void on_loadDICOMFromFile_clicked();
 	void on_resolutionSlider_valueChanged();
-	void on_linearInterpolationButton_clicked();
+	void on_linearInterpolationSlider_valueChanged();
 	void on_pointFlagButton_clicked();
 	void on_borderFlagButton_clicked();
 	void on_frameSlider_valueChanged();
@@ -108,7 +109,6 @@ private slots:
 	void on_perspectiveButton_clicked();
 	void on_normalsPerTriangleButton_clicked();
 	void on_normalsPerVerticeButton_clicked();
-	void on_interpolateDepthText_editingFinished();
 	void on_showMeshButton_clicked();
 	void on_showGradientButton_clicked();
 	void on_orientationZButton_clicked();
@@ -118,6 +118,9 @@ private slots:
 	void on_xPosText_editingFinished();
 	void on_yPosText_editingFinished();
 	void on_zPosText_editingFinished();
+	void on_generateMeshButton_clicked();
+	void on_interactiveButton_clicked();
+	void on_octreeDepthSlider_valueChanged();
 
 	void progressValueChangedSlot(int newValue);
 	void generatingFinishedSlot();

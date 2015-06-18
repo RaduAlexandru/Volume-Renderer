@@ -354,8 +354,17 @@ VolumeRenderer::VolumeRenderer(QWidget *parent)
 	model = new Model();
 	ui.glwidget->model = model;
 	ui.dicomviewer2dgl->model = model;
+	interactive = true;
 	connect(this, SIGNAL(progressValueChangedSignal(int)), this, SLOT(progressValueChangedSlot(int)));
 	connect(this, SIGNAL(generatingFinishedSignal()), this, SLOT(generatingFinishedSlot()));
+	connect(this, SIGNAL(dataFinishedReading()), ui.glwidget, SLOT(dataFinishedReading()));
+
+
+	QFile File("stylesheet.qss");
+	File.open(QFile::ReadOnly);
+	QString StyleSheet = QLatin1String(File.readAll());
+
+	qApp->setStyleSheet(StyleSheet);
 	
 
 }
@@ -5055,7 +5064,7 @@ void VolumeRenderer::on_isoLevelSlider_valueChanged(){
 	cout << "isolevel changed" << endl;
 	model->isoLevel=ui.isoLevelSlider->value();
 	//Now we should march all the cubes again, and refresh the openglwidget
-	wipePoints();
+	//wipePoints();
 	generateMesh();
 	ui.glwidget->dataSended = 0;
 	ui.glwidget->update();
@@ -5131,8 +5140,8 @@ void VolumeRenderer::on_loadDICOMFromFile_clicked(){
 	generateMesh();
 	ui.dicomviewer2dgl->setFrame(model->frames / 2);
 	ui.glwidget->sendDataToGL();
-	//ui.glwidget->dataSended = 0;
 	ui.glwidget->update();
+	emit dataFinishedReading();
 
 }
 
@@ -5142,27 +5151,16 @@ void VolumeRenderer::on_resolutionSlider_valueChanged(){
 	model->cellSizeY = ui.resolutionSlider->value();
 	model->cellSizeZ = ui.resolutionSlider->value();
 
-	wipePoints();
+	//wipePoints();
 	generateMesh();
 	ui.glwidget->dataSended = 0;
 	ui.glwidget->update();
 }
 
-void VolumeRenderer::on_linearInterpolationButton_clicked(){
-	cout << "change linear interpolation" << endl;
-	if (ui.linearInterpolationButton->isChecked()){
-		model->linearInterpolation = true;
-	}
-	else{
-		model->linearInterpolation = false;
-	}
-	wipePoints();
-	generateMesh();
-	ui.glwidget->update();
-}
+
 
 void VolumeRenderer::on_pointFlagButton_clicked(){
-	if (ui.pointFlagButton->isChecked()){
+/*	if (ui.pointFlagButton->isChecked()){
 		model->pointFlag = true;
 		ui.borderFlagButton->setEnabled(false);
 	}
@@ -5171,10 +5169,10 @@ void VolumeRenderer::on_pointFlagButton_clicked(){
 		ui.borderFlagButton->setEnabled(true);
 	}
 	wipePoints();
-	generateMesh();
+	generateMesh();*/
 }
 void VolumeRenderer::on_borderFlagButton_clicked(){
-	if (ui.borderFlagButton->isChecked()){
+	/*if (ui.borderFlagButton->isChecked()){
 		model->borderFlag = true;
 		ui.pointFlagButton->setEnabled(false);
 	}
@@ -5183,7 +5181,7 @@ void VolumeRenderer::on_borderFlagButton_clicked(){
 		ui.pointFlagButton->setEnabled(true);
 	}
 	wipePoints();
-	generateMesh();
+	generateMesh();*/
 }
 
 void VolumeRenderer::on_frameSlider_valueChanged(){
@@ -5209,14 +5207,15 @@ void VolumeRenderer::on_toleranceSlider_valueChanged(){
 	model->tolerance = ui.toleranceSlider->value();
 	cout << "tolerance set to " << model->tolerance;
 	model->cubes.clear();
-	wipePoints();
+	//wipePoints();
 	//adaptiveMarchingCubes();
+	generateMesh();
 }
 
 void VolumeRenderer::on_marchingCubesButton_clicked(){
 	if (ui.marchingCubesButton->isChecked()){
 		model->algorithmChosen = 1;
-		wipePoints();
+		//wipePoints();
 		generateMesh();
 	}
 }
@@ -5224,28 +5223,28 @@ void VolumeRenderer::on_marchingCubesButton_clicked(){
 void VolumeRenderer::on_adaptiveMarchingCubesButton_clicked(){
 	if (ui.adaptiveMarchingCubesButton->isChecked()){
 		model->algorithmChosen = 2;
-		wipePoints();
+		//wipePoints();
 		generateMesh();
 	}
 }
 void VolumeRenderer::on_adaptiveMarchingCubes2Button_clicked(){
 	if (ui.adaptiveMarchingCubes2Button->isChecked()){
 		model->algorithmChosen = 3;
-		wipePoints();
+		//wipePoints();
 		generateMesh();
 	}
 }
 void VolumeRenderer::on_adaptiveMarchingCubes3Button_clicked(){
 	if (ui.adaptiveMarchingCubes3Button->isChecked()){
 		model->algorithmChosen = 4;
-		wipePoints();
+		//wipePoints();
 		generateMesh();
 	}
 }
 void VolumeRenderer::on_ballPivotButton_clicked(){
 	if (ui.ballPivotButton->isChecked()){
 		model->algorithmChosen = 4;
-		wipePoints();
+		//wipePoints();
 		generateMesh();
 	}
 }
@@ -5262,6 +5261,8 @@ void VolumeRenderer::on_normalsPerTriangleButton_clicked(){
 	if (ui.normalsPerTriangleButton->isChecked()){
 		model->normalsAlgChosen = 1;
 	}
+	if (!interactive)
+		return;
 	model->normals.clear();
 	model->generatingMesh = true;
 	boost::thread workerThread(boost::bind(&VolumeRenderer::generateNormals, this));
@@ -5272,6 +5273,8 @@ void VolumeRenderer::on_normalsPerVerticeButton_clicked(){
 	if (ui.normalsPerVerticeButton->isChecked()){
 		model->normalsAlgChosen = 2;
 	}
+	if (!interactive)
+		return;
 	model->normals.clear();
 	model->generatingMesh = true;
 	boost::thread workerThread(boost::bind(&VolumeRenderer::generateNormals, this));
@@ -5279,14 +5282,6 @@ void VolumeRenderer::on_normalsPerVerticeButton_clicked(){
 	
 }
 
-void VolumeRenderer::on_interpolateDepthText_editingFinished(){
-	//std::cout << "the text is" << ui.interpolateDepthText->text().toUtf8().constData() << std::endl;
-	if (ui.interpolateDepthText->text().toInt() < 1 || model->interpolateDepth == ui.interpolateDepthText->text().toInt())
-		return;
-	model->interpolateDepth=ui.interpolateDepthText->text().toInt();
-	wipePoints();
-	generateMesh();
-}
 
 void VolumeRenderer::on_showMeshButton_clicked(){
 	if (ui.showMeshButton ->isChecked()){
@@ -5340,7 +5335,15 @@ void VolumeRenderer::on_showCubesButton_clicked(){
 // Returns:   void
 // Qualifier:
 //************************************
-void VolumeRenderer::generateMesh(){
+void VolumeRenderer::generateMesh(int force){
+
+
+	if (!force){			
+		if (!interactive)
+			return;
+	}
+
+	wipePoints();
 
 	std::cout << "generating mesh with" << model->algorithmChosen << std::endl;
 
@@ -5577,6 +5580,7 @@ void VolumeRenderer::wipeBitmap(){
 //************************************
 void VolumeRenderer::wipePoints(){
 	
+	model->cubes.clear();
 	model->verts.clear();
 	model->normals.clear();
 	model->octreeVector.clear();
@@ -5637,4 +5641,37 @@ void VolumeRenderer::on_zPosText_editingFinished(){
 	std::cout << "setting z to " << model->zPosPoint << std::endl;
 	//wipePoints();
 	//generateMesh();
+}
+
+void VolumeRenderer::on_linearInterpolationSlider_valueChanged(){
+	model->interpolateDepth = ui.linearInterpolationSlider->value();
+	cout << "interpolate set to " << model->interpolateDepth;
+	model->cubes.clear();
+	//wipePoints();
+	//adaptiveMarchingCubes();
+	generateMesh();
+}
+
+
+void VolumeRenderer::on_generateMeshButton_clicked(){
+	//std::cout << "clicked on generate mesh" << std::endl;
+	generateMesh(1);	//We force the generation of a mesh by passing it 1
+}
+void VolumeRenderer::on_interactiveButton_clicked(){
+	if (ui.interactiveButton->isChecked()){
+		interactive = true;
+		generateMesh();
+	}
+	else{
+		interactive = false;
+	}
+}
+
+void  VolumeRenderer::on_octreeDepthSlider_valueChanged(){
+	model->octreeMaxDepth = ui.octreeDepthSlider->value();
+	cout << "octree depth set to " << model->octreeMaxDepth;
+	//model->cubes.clear();
+	//wipePoints();
+	//adaptiveMarchingCubes();
+	generateMesh();
 }

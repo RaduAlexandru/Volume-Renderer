@@ -297,6 +297,9 @@
   <ItemGroup>
     <CudaCompile Include="kernel.cu" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="stylesheet.qss" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 6.5.targets" />

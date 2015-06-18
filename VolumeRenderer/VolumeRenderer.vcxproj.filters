@@ -120,4 +120,7 @@
       <Filter>Source Files</Filter>
     </CudaCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="stylesheet.qss" />
+  </ItemGroup>
 </Project>

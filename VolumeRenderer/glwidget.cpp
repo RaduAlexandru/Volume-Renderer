@@ -19,7 +19,7 @@ GLWidget::GLWidget(QWidget *parent)
 	/*angle = 0.0f;
 	connect(&timer, SIGNAL(timeout()), this, SLOT(rotate()));
 	timer.start(16);*/
-	xRot = 0;
+	xRot = -90;
 	yRot = 0;
 	mouseSpeed = 0.5;
 	xMove = 0;
@@ -91,8 +91,8 @@ void GLWidget::initializeGL()
 	glEnable(GL_DEPTH_TEST);
 	dataSended = 0;
 	//sendDataToGL();
-
-
+	
+	
 
 	glEnable(GL_LIGHTING);
 
@@ -135,6 +135,8 @@ void GLWidget::initializeGL()
 
 	readBackgroundImage();
 	glShadeModel(GL_SMOOTH);
+
+	
 	
 }
 
@@ -148,6 +150,7 @@ void GLWidget::paintGL()
 		glEnableVertexAttribArray(0);//0 is the positional attribute
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 		dataSended = 1;
+		//xRot = -90;
 	}
 
 	
@@ -190,7 +193,9 @@ void GLWidget::paintGL()
 	glRotatef(yRot, 0, 0, 1);	//We put it to minus so that the rotation is reversed
 	glTranslatef(-(model->pixelDataWidth / 2 + xMove), -(model->pixelDataHeight / 2 + yMove), 0.0f - (model->frames/2 + zMove));*/
 
-	
+
+	//std::cout << "xrot is" << xRot << std::endl;
+
 	glTranslatef((model->pixelDataWidth / 2), (model->pixelDataHeight / 2 - yMove), -(510.0f) + zMove);
 	//glScalef(scale, scale, scale);
 	glRotatef(xRot, 1, 0, 0);
@@ -779,7 +784,7 @@ void GLWidget::setMatrices(){
 
 	if (model->perspectiveActivated){
 		//glFrustum(0.0f, 1, 0.0f,1, 1.0f, 1024.0f);	//Also works but it would need some tweaking and also probably commenting the GlulookAt
-		gluPerspective(60.0, width() / height(), 1.0, -1024.0); // Set perspective
+		gluPerspective(60.0, (float)width() / height(), 1.0, -1024.0); // Set perspective
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		//Now we position the camera in the middle of the screen (width/2 and heidth /2 ) and looking at the negative z axis
@@ -788,9 +793,24 @@ void GLWidget::setMatrices(){
 			0.0, 1.0, 0.0);
 	}
 	else{
-		glOrtho(0.0f, model->pixelDataWidth, 0.0f,  model->pixelDataHeight, -1024.0f, 1024.0f);	//When you do the 3d one you will need to change the last parameter to be the depth of the image (number of frames)
+		//glOrtho(0.0f, model->pixelDataWidth, 0.0f,  model->pixelDataHeight, -1024.0f, 1024.0f);	//When you do the 3d one you will need to change the last parameter to be the depth of the image (number of frames)
+		//glMatrixMode(GL_MODELVIEW);
+		//glLoadIdentity();
+
+
+
+		float aspectRatio = (GLfloat)width() / (GLfloat)height();
+		if (width() <= height())
+			glOrtho(0.0f, model->pixelDataWidth, 0.0f - (model->pixelDataHeight* (aspectRatio - 1)), model->pixelDataHeight / aspectRatio, -1024.0f, 1024.0f);
+		if (width() > height())
+			glOrtho(0.0f - (model->pixelDataWidth* (aspectRatio-1)), model->pixelDataWidth*aspectRatio, 0.0f, model->pixelDataHeight, -1024.0f, 1024.0f);
+		else
+			glOrtho(0.0f, model->pixelDataWidth, 0.0f, model->pixelDataHeight, -1024.0f, 1024.0f);
+
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
+
+
 	}
 }
 
@@ -839,6 +859,8 @@ void GLWidget::mouseMoveEvent(QMouseEvent * event){
 		xRot -= 360;
 	}
 	
+	//std::cout << "xrot is " << xRot << " yrot is " << yRot << std::endl;
+
 	mouseXPosEntered = xpos;
 	mouseYPosEntered = ypos;
 	update();
@@ -869,4 +891,9 @@ void GLWidget::keyReleaseEvent(QKeyEvent *keyEvent)
 		shiftPressed = false;
 	if (keyEvent->key() == CTRL)
 		ctrlPressed = false;
+}
+
+void  GLWidget::dataFinishedReading(){
+	std::cout << "received the signal that all the data was read" << std::endl;
+	xRot = -90;
 }

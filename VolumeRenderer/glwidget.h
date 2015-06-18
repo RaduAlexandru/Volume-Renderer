@@ -63,6 +63,7 @@ private:
 	
 public slots:
 	void setFrame(int frame);
+	void dataFinishedReading();
 	
 };
 

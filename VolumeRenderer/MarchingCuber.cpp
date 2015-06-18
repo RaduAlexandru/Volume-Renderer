@@ -332,14 +332,14 @@ int MarchingCuber::polygonise(CELL & cell){
 inline void MarchingCuber::interpolate(int isoLevel, glm::vec3 point1, glm::vec3 point2, float val1, float val2, glm::vec3& resultPoint, int depth){
 
 
-	if (depth == interpolateDepth){
+	if (depth == interpolateDepth && depth!=0){
 		return;
 	}
 
 	//Model::POINTF point;
 	//std::cout << "depth is " << depth << std::endl;
 
-	if (linearInterpolation == false){
+	if (interpolateDepth ==0){
 
 		resultPoint.x = (point1.x + point2.x) / 2.0;
 		resultPoint.y = (point1.y + point2.y) / 2.0;
