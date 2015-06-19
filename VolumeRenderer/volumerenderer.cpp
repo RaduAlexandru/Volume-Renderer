@@ -1039,6 +1039,31 @@ void VolumeRenderer::on_orientationZButton_clicked(){
 		model->orientation = 1;
 		model->frame_to_display = 0;
 		ui.frameSlider->setValue(0);
+		ui.frameSlider->setMaximum(model->pixelData->frames);
+
+		ui.borderYTopSlider->setValue(model->pixelData->borderYTop);
+		ui.borderYTopSlider->setMaximum(model->pixelData->height);
+
+		ui.borderYBottomSlider->setValue(model->pixelData->borderYBottom);
+		ui.borderYBottomSlider->setMaximum(model->pixelData->height);
+		//ui.borderYTopSlider->resize()
+
+
+		//Leave everything as original because in the z direction there cannot be any distorsion
+		QRect rect;
+
+		rect = ui.borderYTopSlider->geometry();
+		rect.setBottom(360 + 231);
+		rect.setTop(360);
+		ui.borderYTopSlider->setGeometry(rect);
+		rect = ui.borderYBottomSlider->geometry();
+		rect.setBottom(360 + 231);
+		rect.setTop(360);
+		ui.borderYBottomSlider->setGeometry(rect);
+
+		
+
+
 	}
 	
 }
@@ -1047,6 +1072,46 @@ void VolumeRenderer::on_orientationXButton_clicked(){
 		model->orientation = 2;
 		model->frame_to_display = 0;
 		ui.frameSlider->setValue(0);
+		ui.frameSlider->setMaximum(model->pixelData->width);
+
+		ui.borderYTopSlider->setValue(model->pixelData->borderZFurther);
+		ui.borderYTopSlider->setMaximum(model->pixelData->frames);
+
+		ui.borderYBottomSlider->setValue(model->pixelData->borderZCloser);
+		ui.borderYBottomSlider->setMaximum(model->pixelData->frames);
+
+		if (model->pixelData->frames < model->pixelData->width){
+			double ratio = (float)model->pixelData->frames / (float)model->pixelData->width;
+
+			QRect rect;
+	
+			rect = ui.borderYTopSlider->geometry();
+			rect.setBottom(360 + 231);
+			rect.setTop(360 + (231 - 231 * ratio));
+			ui.borderYTopSlider->setGeometry(rect);
+			rect = ui.borderYBottomSlider->geometry();
+			rect.setBottom(360 + 231);
+			rect.setTop(360 + (231 - 231 * ratio));
+			ui.borderYBottomSlider->setGeometry(rect);
+		}
+		else{
+			QRect rect;
+
+			rect = ui.borderYTopSlider->geometry();
+			rect.setBottom(360 + 231);
+			rect.setTop(360);
+			ui.borderYTopSlider->setGeometry(rect);
+
+			rect = ui.borderYBottomSlider->geometry();
+			rect.setBottom(360 + 231);
+			rect.setTop(360);
+			ui.borderYBottomSlider->setGeometry(rect);
+			//modify X
+
+		}
+
+
+
 	}
 }
 void VolumeRenderer::on_orientationYButton_clicked(){
@@ -1054,11 +1119,55 @@ void VolumeRenderer::on_orientationYButton_clicked(){
 		model->orientation = 3;
 		model->frame_to_display = 0;
 		ui.frameSlider->setValue(0);
+		ui.frameSlider->setMaximum(model->pixelData->height);
+
+		//std::cout << "pixels have border closer " << model->pixelData->borderZCloser << " and border further " << model->pixelData->borderZFurther << std::endl;
+
+
+		ui.borderYTopSlider->setValue(model->pixelData->borderZFurther);
+		ui.borderYTopSlider->setMaximum(model->pixelData->frames);
+
+		ui.borderYBottomSlider->setValue(model->pixelData->borderZCloser);
+		ui.borderYBottomSlider->setMaximum(model->pixelData->frames);
+
+		if (model->pixelData->frames < model->pixelData->height){ //The image will be squashed down so we need to move the Border Y sliders to coincide
+			
+			double ratio = (float)model->pixelData->frames / (float)model->pixelData->height;
+
+			QRect rect;
+			//360 is the slider y position got from the designer, and the 231 it the slider height
+			rect = ui.borderYTopSlider->geometry();
+			rect.setBottom(360 + 231);
+			rect.setTop(360 +  (231-231 * ratio));
+			ui.borderYTopSlider->setGeometry(rect);
+			rect = ui.borderYBottomSlider->geometry();
+			rect.setBottom(360 + 231);
+			rect.setTop(360 + (231 - 231 * ratio));
+			ui.borderYBottomSlider->setGeometry(rect);
+
+		}
+		else{ //In this case we need to change the border X slider to coincide and leave the Y to their original values;
+
+			//Leve the y as original
+			QRect rect;
+
+			rect = ui.borderYTopSlider->geometry();
+			rect.setBottom(360 + 231);
+			rect.setTop(360);
+			ui.borderYTopSlider->setGeometry(rect);
+
+			rect = ui.borderYBottomSlider->geometry();
+			rect.setBottom(360 + 231);
+			rect.setTop(360);
+			ui.borderYBottomSlider->setGeometry(rect);
+			//Modify x
+		}
+		
 	}
 }
 void VolumeRenderer::on_showCubesButton_clicked(){
 	if (ui.showCubesButton->isChecked()){
-		model->showCubes = true;;
+		model->showCubes = true;
 	}
 }
 
@@ -1298,4 +1407,36 @@ void  VolumeRenderer::on_octreeDepthSlider_valueChanged(){
 	//wipePoints();
 	//adaptiveMarchingCubes();
 	generateMesh();
+}
+
+
+
+
+
+void VolumeRenderer::on_borderYBottomSlider_valueChanged(){
+
+	if (model->orientation == 1){
+		model->pixelData->borderYBottom = ui.borderYBottomSlider->value();
+	}
+	if (model->orientation == 2){
+		model->pixelData->borderZCloser = ui.borderYBottomSlider->value();
+	}
+	if (model->orientation == 3){
+		model->pixelData->borderZCloser = ui.borderYBottomSlider->value();
+	}
+	generateMesh();
+}
+void VolumeRenderer::on_borderYTopSlider_valueChanged(){
+	if (model->orientation == 1){
+		model->pixelData->borderYTop = ui.borderYTopSlider->value();
+	}
+	if (model->orientation == 2){
+		model->pixelData->borderZFurther = ui.borderYTopSlider->value();
+	}
+	if (model->orientation == 3){
+		model->pixelData->borderZFurther = ui.borderYTopSlider->value();
+	}
+	
+	generateMesh();
+
 }

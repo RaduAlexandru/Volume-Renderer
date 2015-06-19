@@ -18,8 +18,8 @@ PixelData::PixelData()
 	borderXLeft = 0;
 	borderZCloser = 0;
 	borderZFurther = 0;
-	borderYTop = 200; 
-	borderYBottom = 0;
+	borderYTop = 0; 
+	borderYBottom = 200;
 
 }
 

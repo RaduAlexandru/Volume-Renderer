@@ -23,7 +23,7 @@
       <x>0</x>
       <y>10</y>
       <width>1361</width>
-      <height>651</height>
+      <height>281</height>
      </rect>
     </property>
     <widget class="QLabel" name="numberOfTrianglesLabel">
@@ -62,8 +62,8 @@
    <widget class="QSlider" name="frameSlider">
     <property name="geometry">
      <rect>
-      <x>1020</x>
-      <y>600</y>
+      <x>1170</x>
+      <y>300</y>
       <width>121</width>
       <height>22</height>
      </rect>
@@ -75,8 +75,8 @@
    <widget class="QLabel" name="label_2">
     <property name="geometry">
      <rect>
-      <x>970</x>
-      <y>600</y>
+      <x>1120</x>
+      <y>300</y>
       <width>47</width>
       <height>13</height>
      </rect>
@@ -88,8 +88,8 @@
    <widget class="QLabel" name="label_6">
     <property name="geometry">
      <rect>
-      <x>1150</x>
-      <y>610</y>
+      <x>1300</x>
+      <y>300</y>
       <width>47</width>
       <height>13</height>
      </rect>
@@ -724,6 +724,85 @@
     </property>
     <property name="text">
      <string>10</string>
+    </property>
+   </widget>
+   <widget class="QSlider" name="borderYBottomSlider">
+    <property name="geometry">
+     <rect>
+      <x>1070</x>
+      <y>360</y>
+      <width>22</width>
+      <height>231</height>
+     </rect>
+    </property>
+    <property name="maximum">
+     <number>512</number>
+    </property>
+    <property name="value">
+     <number>100</number>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Vertical</enum>
+    </property>
+    <property name="invertedAppearance">
+     <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QSlider" name="borderYTopSlider">
+    <property name="geometry">
+     <rect>
+      <x>1050</x>
+      <y>360</y>
+      <width>20</width>
+      <height>231</height>
+     </rect>
+    </property>
+    <property name="layoutDirection">
+     <enum>Qt::LeftToRight</enum>
+    </property>
+    <property name="maximum">
+     <number>512</number>
+    </property>
+    <property name="value">
+     <number>100</number>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Vertical</enum>
+    </property>
+    <property name="invertedAppearance">
+     <bool>true</bool>
+    </property>
+    <property name="invertedControls">
+     <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QSlider" name="horizontalSlider">
+    <property name="geometry">
+     <rect>
+      <x>1100</x>
+      <y>600</y>
+      <width>231</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
+   <widget class="QSlider" name="horizontalSlider_2">
+    <property name="geometry">
+     <rect>
+      <x>1100</x>
+      <y>620</y>
+      <width>231</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+    <property name="invertedAppearance">
+     <bool>true</bool>
     </property>
    </widget>
   </widget>

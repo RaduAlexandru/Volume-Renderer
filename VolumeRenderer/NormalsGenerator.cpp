@@ -18,8 +18,10 @@ void NormalsGenerator::normalsPerTriangle(PixelData* pixelData, std::vector<glm:
 
 	normals.clear();
 
-	if (verts.empty())
+	if (verts.empty()){
+		emit finishedNormalsSignal();
 		return;
+	}
 
 	glm::vec3 u, v, n;
 
@@ -65,8 +67,10 @@ void NormalsGenerator::normalsPerVertex(PixelData* pixelData, std::vector<glm::v
 
 	normals.clear();
 
-	if (verts.empty())
+	if (verts.empty()){
+		emit finishedNormalsSignal();
 		return;
+	}
 
 	glm::vec3 u, v, n;
 

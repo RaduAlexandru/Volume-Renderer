@@ -25,7 +25,7 @@ DicomViewer2DGL::~DicomViewer2DGL()
 void DicomViewer2DGL::initializeGL()
 {
 	initializeOpenGLFunctions();
-	glClearColor(0.8, 0.8, 0.8, 0);
+	glClearColor(0.0, 0.0, 0.0, 0);
 	//glEnable(GL_DEPTH_TEST);
 	//sendDataToGL();
 }
@@ -33,7 +33,7 @@ void DicomViewer2DGL::initializeGL()
 void DicomViewer2DGL::paintGL()
 {
 
-	
+	glClearColor(0.0, 0.0, 0.0, 0);
 	glViewport(0.0, 0.0, width(), height());
 	glClear(GL_COLOR_BUFFER_BIT);
 	//glClear(GL_DEPTH_BUFFER_BIT);
@@ -41,7 +41,16 @@ void DicomViewer2DGL::paintGL()
 	glLoadIdentity();
 	//glOrtho(-ratio, ratio, -1.f, 1.f, 1.f, -1.f);
 	//glOrtho(0.0f, model->pixelDataWidth, model->pixelDataHeight, 0.0f, 1.0f, 0.0f);	//When you do the 3d one you will need to change the last parameter to be the depth of the image (number of frames)
-	glOrtho(0.0f, model->pixelData->width, 0.0f, model->pixelData->height,  0.0f, 1.0f);
+	
+	int orientation = model->orientation;
+	
+	if (orientation == 1)
+		glOrtho(0.0f, model->pixelData->width, 0.0f, model->pixelData->height,  0.0f, 1.0f);
+	if (orientation == 2)
+		glOrtho(0.0f, model->pixelData->height, 0.0f, model->pixelData->frames, 0.0f, 1.0f);
+	if (orientation == 3)
+		glOrtho(0.0f, model->pixelData->width, 0.0f, model->pixelData->frames, 0.0f, 1.0f);
+
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
@@ -96,15 +105,15 @@ void DicomViewer2DGL::displayFrame(){
 			glDrawPixels(model->pixelDataWidth, model->pixelDataHeight, GL_LUMINANCE, GL_UNSIGNED_INT, ((model->pixelData))[frame_to_display]);*/
 
 		if (!localFrame.empty()){
-			if (orientation == 1)
+			if (orientation == 1)	//Normal z orientation
 				glDrawPixels(model->pixelData->width, model->pixelData->height, GL_LUMINANCE, GL_UNSIGNED_INT, localFrame.data());
 			//if (!gradient.empty())
 			//glDrawPixels(model->pixelDataWidth, model->pixelDataHeight, GL_LUMINANCE, GL_UNSIGNED_INT, gradient.data());
-			if (orientation == 2)
+			if (orientation == 2)	//X direction
 				glDrawPixels(model->pixelData->height, model->pixelData->frames, GL_LUMINANCE, GL_UNSIGNED_INT, localFrame.data());
 			//if (!gradient.empty())
 			//glDrawPixels(model->pixelDataWidth, model->pixelDataHeight, GL_LUMINANCE, GL_UNSIGNED_INT, gradient.data());
-			if (orientation == 3)
+			if (orientation == 3)	//y direction
 				glDrawPixels(model->pixelData->width, model->pixelData->frames, GL_LUMINANCE, GL_UNSIGNED_INT, localFrame.data());
 		}
 
@@ -165,12 +174,14 @@ void DicomViewer2DGL::setFrame(int frame)
 			for (int j = 0; j < model->pixelData->width; j++){
 
 
-				dataPointer = &(model->pixelData->data[frame][0]);
+				/*dataPointer = &(model->pixelData->data[frame][0]);
 				dataPointer = dataPointer + (j + i*model->pixelData->width)*model->pixelData->numberOfBytes;
 				memcpy(&value, dataPointer, model->pixelData->numberOfBytes);
 
 
-				localFrame.push_back(value*multiplier);
+				localFrame.push_back(value*multiplier);*/
+
+				localFrame.push_back(model->pixelData->getPixelValue(j, i, frame)*multiplier);
 			}
 		}
 	}

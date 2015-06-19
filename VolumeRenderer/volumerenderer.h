@@ -139,6 +139,8 @@ private slots:
 	void on_generateMeshButton_clicked();
 	void on_interactiveButton_clicked();
 	void on_octreeDepthSlider_valueChanged();
+	void on_borderYBottomSlider_valueChanged();
+	void on_borderYTopSlider_valueChanged();
 
 	void progressValueChangedSlot(int newValue);
 	void finishedMeshSlot();
