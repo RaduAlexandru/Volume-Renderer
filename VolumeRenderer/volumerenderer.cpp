@@ -362,8 +362,9 @@ VolumeRenderer::VolumeRenderer(QWidget *parent)
 	interactive = true;
 	generatingMesh = false;
 
-	establishConnections();
-
+	//establishConnections();
+	connect(this, SIGNAL(generatingStartedSignal()), ui.glwidget, SLOT(generatingStartedSlot()));
+	connect(this, SIGNAL(generatingFinishedSignal()), ui.glwidget, SLOT(generatingFinishedSlot()));
 
 	QFile File("stylesheet.qss");
 	File.open(QFile::ReadOnly);
@@ -397,20 +398,27 @@ In that case the widget can look in the model and see the height and width and e
 */
 
 
-void VolumeRenderer::establishConnections(){
+
+void VolumeRenderer::establishConnectionsMC(){
 	connect(mc, SIGNAL(progressValueChangedSignal(int)), this, SLOT(progressValueChangedSlot(int)));
-	connect(amc, SIGNAL(progressValueChangedSignal(int)), this, SLOT(progressValueChangedSlot(int)));
-	connect(ng, SIGNAL(progressValueChangedSignal(int)), this, SLOT(progressValueChangedSlot(int)));
-	connect(reader, SIGNAL(progressValueChangedSignal(int)), this, SLOT(progressValueChangedSlot(int)));
-
-
 	connect(mc, SIGNAL(finishedMeshSignal()), this, SLOT(finishedMeshSlot()));
-	connect(amc, SIGNAL(finishedMeshSignal()), this, SLOT(finishedMeshSlot()));
-	connect(ng, SIGNAL(finishedNormalsSignal()), this, SLOT(finishedNormalsSlot()));
-	connect(reader, SIGNAL(dataFinishedReadingSignal()), ui.glwidget, SLOT(dataFinishedReadingSlot()));
+}
 
-	connect(this, SIGNAL(generatingStartedSignal()), ui.glwidget, SLOT(generatingStartedSlot()));
-	connect(this, SIGNAL(generatingFinishedSignal()), ui.glwidget, SLOT(generatingFinishedSlot()));
+
+void VolumeRenderer::establishConnectionsAMC(){
+	connect(amc, SIGNAL(progressValueChangedSignal(int)), this, SLOT(progressValueChangedSlot(int)));
+	connect(amc, SIGNAL(finishedMeshSignal()), this, SLOT(finishedMeshSlot()));
+}
+
+void VolumeRenderer::establishConnectionsNG(){
+	connect(ng, SIGNAL(progressValueChangedSignal(int)), this, SLOT(progressValueChangedSlot(int)));
+	connect(ng, SIGNAL(finishedNormalsSignal()), this, SLOT(finishedNormalsSlot()));
+}
+
+
+void VolumeRenderer::establishConnectionsREADER(){
+	connect(reader, SIGNAL(progressValueChangedSignal(int)), this, SLOT(progressValueChangedSlot(int)));
+	connect(reader, SIGNAL(dataFinishedReadingSignal()), ui.glwidget, SLOT(dataFinishedReadingSlot()));
 
 }
 
@@ -851,7 +859,7 @@ void VolumeRenderer::on_loadDICOMFromFile_clicked(){
 
 
 	reader = new FileReader;
-	establishConnections();
+	establishConnectionsREADER();
 	reader->loadDICOMPixelData(fileNames, model->pixelData);
 	//loadDICOMPixelData(fileNames);
 
@@ -991,9 +999,9 @@ void VolumeRenderer::on_normalsPerTriangleButton_clicked(){
 	if (!interactive)
 		return;
 	model->normals.clear();
-	model->generatingMesh = true;
-	boost::thread workerThread(boost::bind(&VolumeRenderer::generateNormals, this));
-	//generateNormals();
+	emit generatingStartedSignal();
+	generatingMesh = true;
+	generateNormals();
 	
 }
 void VolumeRenderer::on_normalsPerVerticeButton_clicked(){
@@ -1003,9 +1011,9 @@ void VolumeRenderer::on_normalsPerVerticeButton_clicked(){
 	if (!interactive)
 		return;
 	model->normals.clear();
-	model->generatingMesh = true;
-	boost::thread workerThread(boost::bind(&VolumeRenderer::generateNormals, this));
-	//generateNormals();
+	emit generatingStartedSignal();
+	generatingMesh = true;
+	generateNormals();
 	
 }
 
@@ -1083,7 +1091,7 @@ void VolumeRenderer::generateMesh(int force){
 		//boost::thread workerThread(boost::bind(&VolumeRenderer::marchingSquares, this));
 
 		mc = new MarchingCuber((model->pixelData), &(model->verts), &(model->normals), model->isoLevel, model->cellSizeX, model->cellSizeY, model->cellSizeZ, model->interpolateDepth);
-		establishConnections();
+		establishConnectionsMC();
 		//mc->run();
 		boost::thread workerThread(boost::bind(&MarchingCuber::run, mc));
 		
@@ -1101,7 +1109,7 @@ void VolumeRenderer::generateMesh(int force){
 	if (model->algorithmChosen == 4){
 		//adaptiveMarchingCubes3();
 		AdaptiveCuber* amc = new AdaptiveCuber((model->pixelData), &(model->verts), &(model->normals), model->isoLevel,  model->cellSizeX, model->cellSizeY, model->cellSizeZ,  model->interpolateDepth, model->octreeMaxDepth,&(model->gradient),model->tolerance);
-		establishConnections();
+		establishConnectionsAMC();
 		amc->run();
 		generateNormals();
 	}
@@ -1161,11 +1169,14 @@ void VolumeRenderer::finishedNormalsSlot(){
 //After the triangles are created we generate the normals for them, either one per triangle or one per vertice
 //************************************
 void VolumeRenderer::generateNormals(){
+
 	
+
+	model->normals.clear();
 	if (model->normalsAlgChosen == 1){
 
 		ng = new NormalsGenerator();
-		establishConnections();
+		establishConnectionsNG();
 		//ng->normalsPerTriangle(model->pixelData, model->verts, model->normals);
 		boost::thread workerThread(boost::bind(&NormalsGenerator::normalsPerTriangle, ng, model->pixelData, boost::ref(model->verts), boost::ref(model->normals)));
 	}
@@ -1173,8 +1184,9 @@ void VolumeRenderer::generateNormals(){
 	if (model->normalsAlgChosen == 2){
 
 		ng = new NormalsGenerator();
-		establishConnections();
-		ng->normalsPerVertex(model->pixelData, model->verts, model->normals);
+		establishConnectionsNG();
+		//ng->normalsPerVertex(model->pixelData, model->verts, model->normals);
+		boost::thread workerThread(boost::bind(&NormalsGenerator::normalsPerVertex, ng, model->pixelData, boost::ref(model->verts), boost::ref(model->normals)));
 	}
 
 	//model->generatingMesh = false;

@@ -13,6 +13,8 @@ public:
 	int height;
 	int frames;
 	int numberOfBytes;
+
+	int borderXRight, borderXLeft, borderZCloser, borderZFurther, borderYTop, borderYBottom;
 };
 
 

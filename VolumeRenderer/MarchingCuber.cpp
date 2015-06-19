@@ -94,13 +94,13 @@ void MarchingCuber::run(){
 	//i is the y axis and j is the x axis
 	//Since the bitmap is stored in reverse, we shall asign the y position to height-i insted of just i, thus mirroring the position
 	//WE also put - CellsizeY insted of + because we consider the coordinated in the y acis as going from bottom to top insted of top to bottom like usual. Maybe in the dicom files you will change the y position to be only equals to i
-	for (int i = 0; i < pixelDataHeight - cellSizeY; i = i + cellSizeY){	//WE make it to be till height -cellsizez because otherwise the last cube will be out of bound
+	for (int i = 0 + pixelData->borderYBottom; i < pixelDataHeight - cellSizeY -pixelData->borderYTop; i = i + cellSizeY){	//WE make it to be till height -cellsizez because otherwise the last cube will be out of bound
 
 		
 		if (i % (pixelDataHeight/10) == 0)
 			emit progressValueChangedSignal(i * 100 / pixelDataHeight);
-		for (int j = 0; j < pixelDataWidth - cellSizeX; j = j + cellSizeX){
-			for (int k = 0; k < frames - cellSizeZ; k = k + cellSizeZ){
+		for (int j = 0 + pixelData->borderXLeft; j < pixelDataWidth - cellSizeX - pixelData->borderXRight; j = j + cellSizeX){
+			for (int k = 0 + pixelData->borderZCloser; k < frames - cellSizeZ - pixelData->borderZFurther; k = k + cellSizeZ){
 
 				//cout << "k is" << k << endl;
 				//if (model->getPixelValue(j, i, k)!=0)

@@ -480,6 +480,9 @@ void GLWidget::drawMesh(){
 	glBegin(GL_TRIANGLES);
 	for (int i = 0; i < model->verts.size() - 3; i = i + 3){
 
+		if (i >= model->normals.size())
+			break;
+
 		glNormal3f(model->normals[i].x, model->normals[i].y, model->normals[i].z);
 		glVertex3f(model->verts[i].x, model->verts[i].y, model->verts[i].z);
 
@@ -905,7 +908,7 @@ void  GLWidget::dataFinishedReadingSlot(){
 }
 
 void GLWidget::generatingFinishedSlot(){
-	std::cout << "generating finished slot in the gl window" << std::endl;
+	//std::cout << "generating finished slot in the gl window" << std::endl;
 	generatingMesh = false;
 }
 

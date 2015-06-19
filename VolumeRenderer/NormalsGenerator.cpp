@@ -69,22 +69,38 @@ void NormalsGenerator::normalsPerVertex(PixelData* pixelData, std::vector<glm::v
 		return;
 
 	glm::vec3 u, v, n;
+
+	n.x = 0.0;
+	n.y = 0.0;
+	n.z = 0.0;
 	//I will now try to do the same normal but with the sobel operator///
 	///////////////////////////////////////////////////////////////////
 
 	double dx = 0.0, dy = 0.0, dz = 0.0;
-	int j, y, k;
-	double length;
+	int j=0, y=0, k=0;
+	double length=0.0;
 
 	int steps = verts.size() / 10 - 1;
 
 	for (int i = 0; i < verts.size(); i = i + 1){
 
+
+		//normals.push_back(n);
+		//continue;
+
 		//if (i% steps == 0)
-			//emit progressValueChangedSignal(i * 100 / model->verts.size());
+		//emit progressValueChangedSignal(i * 100 / model->verts.size());
 		j = boost::math::iround(verts[i].x);
 		y = boost::math::iround(verts[i].y);
 		k = boost::math::iround(verts[i].z);
+
+		/*if (y>pixelData->height-200-50){
+			n.x = 0.0;
+			n.y = 0.0;
+			n.z = 0.0;
+			normals.push_back(n);
+			continue;
+		}*/
 
 		//getSmoothPixelValue
 
@@ -154,9 +170,10 @@ void NormalsGenerator::normalsPerVertex(PixelData* pixelData, std::vector<glm::v
 
 		length = sqrt(dx*dx + dy*dy + dz*dz);
 
-		dx = dx / length;
-		dy = dy / length;
-		dz = dz / length;
+			dx = dx / length;
+			dy = dy / length;
+			dz = dz / length;
+		
 
 		n.x = dx;
 		n.y = dy;

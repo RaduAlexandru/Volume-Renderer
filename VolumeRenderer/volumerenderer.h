@@ -49,7 +49,12 @@ private:
 	NormalsGenerator* ng;
 
 
-	void establishConnections();
+
+	void establishConnectionsMC();
+	void establishConnectionsAMC();
+	void establishConnectionsNG();
+	void establishConnectionsREADER();
+
 	int readPixelData(QString, void*&, int, int);
 	int getRepresentation(QString , int& , int& , int& , int& ,int&, int&, int&);
 	//void showPixels(void* pixelData, std::vector<Model::POINTF>);

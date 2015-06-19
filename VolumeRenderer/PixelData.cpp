@@ -13,6 +13,14 @@ PixelData::PixelData()
 	height=0;
 	frames=0;
 	numberOfBytes=0;
+
+	borderXRight = 0;
+	borderXLeft = 0;
+	borderZCloser = 0;
+	borderZFurther = 0;
+	borderYTop = 200; 
+	borderYBottom = 0;
+
 }
 
 
