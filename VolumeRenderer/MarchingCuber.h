@@ -14,12 +14,15 @@
 #include <unordered_map>
 #include <boost/functional/hash.hpp>
 #include <boost/unordered_map.hpp>
+#include <QtWidgets/QApplication>
+#include <QObject>
 
-
-class MarchingCuber
+class MarchingCuber : public QObject
 {
+	Q_OBJECT
 public:
 	MarchingCuber();
+	MarchingCuber(QObject *_parent);
 	MarchingCuber(PixelData* pixelData, std::vector<glm::vec3>* verts, std::vector<glm::vec3>* normals, int isoLevel ,  int cellSizeX, int cellSizeY, int cellSizeZ, int interpolateDepth );
 	~MarchingCuber();
 
@@ -57,7 +60,9 @@ public:
 	int interpolateDepth;
 	bool linearInterpolation;
 
-	
+signals:
+	void finishedMeshSignal();
+	void progressValueChangedSignal(int);
 
 
 };

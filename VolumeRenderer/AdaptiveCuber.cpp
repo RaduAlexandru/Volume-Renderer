@@ -1988,7 +1988,7 @@ glm::vec3 AdaptiveCuber::pointOnLine(glm::vec3 a, glm::vec3 b, glm::vec3& x){
 	projection.z = b.z + a_bDiv.z;
 
 	return projection;
-}
+}//-See more at : http ://www.dietabaiamonte.info/197386.html#sthash.WtI0J8q1.dpuf
 
 
 int AdaptiveCuber::readPointsFromOctree(OctreeCube* root){

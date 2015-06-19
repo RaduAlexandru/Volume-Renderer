@@ -17,6 +17,11 @@ MarchingCuber::MarchingCuber()
 }
 
 
+
+MarchingCuber::MarchingCuber(QObject *_parent)
+{
+}
+
 MarchingCuber::MarchingCuber(PixelData* pixelData, std::vector<glm::vec3>* verts, std::vector<glm::vec3>* normals, int isoLevel, int cellSizeX, int cellSizeY, int cellSizeZ, int interpolateDepth)
 {
 	int v;
@@ -91,8 +96,9 @@ void MarchingCuber::run(){
 	//WE also put - CellsizeY insted of + because we consider the coordinated in the y acis as going from bottom to top insted of top to bottom like usual. Maybe in the dicom files you will change the y position to be only equals to i
 	for (int i = 0; i < pixelDataHeight - cellSizeY; i = i + cellSizeY){	//WE make it to be till height -cellsizez because otherwise the last cube will be out of bound
 
-		//if (i % 10 == 0)
-			//emit progressValueChangedSignal(i * 100 / pixelDataHeight);
+		
+		if (i % (pixelDataHeight/10) == 0)
+			emit progressValueChangedSignal(i * 100 / pixelDataHeight);
 		for (int j = 0; j < pixelDataWidth - cellSizeX; j = j + cellSizeX){
 			for (int k = 0; k < frames - cellSizeZ; k = k + cellSizeZ){
 
@@ -172,6 +178,7 @@ void MarchingCuber::run(){
 	//showPixels(output_pixels,totalPoints);
 	std::cout << "Elapsed Time: " << float(clock() - begin_time) / CLOCKS_PER_SEC << endl;
 
+	emit finishedMeshSignal();
 	//Now we write to obj file
 	/*long numberOfVertsWritten = 0;
 	ofstream myfile;

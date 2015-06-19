@@ -46,6 +46,8 @@ public:
 	double mouseSpeed = 0.5;
 	double xMove, yMove, zMove;
 
+	bool generatingMesh;
+
 
 private:
 	int frame_to_display;
@@ -63,7 +65,9 @@ private:
 	
 public slots:
 	void setFrame(int frame);
-	void dataFinishedReading();
+	void dataFinishedReadingSlot();
+	void generatingFinishedSlot();
+	void generatingStartedSlot();
 	
 };
 

@@ -19,8 +19,8 @@
 
 QT_BEGIN_MOC_NAMESPACE
 struct qt_meta_stringdata_VolumeRenderer_t {
-    QByteArrayData data[43];
-    char stringdata[1213];
+    QByteArrayData data[40];
+    char stringdata[1107];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -34,55 +34,47 @@ QT_MOC_LITERAL(1, 15, 26), // "progressValueChangedSignal"
 QT_MOC_LITERAL(2, 42, 0), // ""
 QT_MOC_LITERAL(3, 43, 8), // "newValue"
 QT_MOC_LITERAL(4, 52, 24), // "generatingFinishedSignal"
-QT_MOC_LITERAL(5, 77, 19), // "dataFinishedReading"
-QT_MOC_LITERAL(6, 97, 15), // "on_test_clicked"
-QT_MOC_LITERAL(7, 113, 24), // "on_addDICOMFiles_clicked"
-QT_MOC_LITERAL(8, 138, 30), // "on_isoLevelSlider_valueChanged"
-QT_MOC_LITERAL(9, 169, 30), // "on_loadTestImageButton_clicked"
-QT_MOC_LITERAL(10, 200, 31), // "on_loadTestImage2Button_clicked"
-QT_MOC_LITERAL(11, 232, 26), // "on_loadDICOMButton_clicked"
-QT_MOC_LITERAL(12, 259, 28), // "on_loadMFDICOMButton_clicked"
-QT_MOC_LITERAL(13, 288, 28), // "on_loadDICOMFromFile_clicked"
-QT_MOC_LITERAL(14, 317, 32), // "on_resolutionSlider_valueChanged"
-QT_MOC_LITERAL(15, 350, 41), // "on_linearInterpolationSlider_..."
-QT_MOC_LITERAL(16, 392, 26), // "on_pointFlagButton_clicked"
-QT_MOC_LITERAL(17, 419, 27), // "on_borderFlagButton_clicked"
-QT_MOC_LITERAL(18, 447, 27), // "on_frameSlider_valueChanged"
-QT_MOC_LITERAL(19, 475, 30), // "on_showWireframeButton_clicked"
-QT_MOC_LITERAL(20, 506, 31), // "on_toleranceSlider_valueChanged"
-QT_MOC_LITERAL(21, 538, 30), // "on_marchingCubesButton_clicked"
-QT_MOC_LITERAL(22, 569, 38), // "on_adaptiveMarchingCubesButto..."
-QT_MOC_LITERAL(23, 608, 39), // "on_adaptiveMarchingCubes2Butt..."
-QT_MOC_LITERAL(24, 648, 39), // "on_adaptiveMarchingCubes3Butt..."
-QT_MOC_LITERAL(25, 688, 26), // "on_ballPivotButton_clicked"
-QT_MOC_LITERAL(26, 715, 28), // "on_perspectiveButton_clicked"
-QT_MOC_LITERAL(27, 744, 35), // "on_normalsPerTriangleButton_c..."
-QT_MOC_LITERAL(28, 780, 34), // "on_normalsPerVerticeButton_cl..."
-QT_MOC_LITERAL(29, 815, 25), // "on_showMeshButton_clicked"
-QT_MOC_LITERAL(30, 841, 29), // "on_showGradientButton_clicked"
-QT_MOC_LITERAL(31, 871, 29), // "on_orientationZButton_clicked"
-QT_MOC_LITERAL(32, 901, 29), // "on_orientationXButton_clicked"
-QT_MOC_LITERAL(33, 931, 29), // "on_orientationYButton_clicked"
-QT_MOC_LITERAL(34, 961, 26), // "on_showCubesButton_clicked"
-QT_MOC_LITERAL(35, 988, 27), // "on_xPosText_editingFinished"
-QT_MOC_LITERAL(36, 1016, 27), // "on_yPosText_editingFinished"
-QT_MOC_LITERAL(37, 1044, 27), // "on_zPosText_editingFinished"
-QT_MOC_LITERAL(38, 1072, 29), // "on_generateMeshButton_clicked"
-QT_MOC_LITERAL(39, 1102, 28), // "on_interactiveButton_clicked"
-QT_MOC_LITERAL(40, 1131, 33), // "on_octreeDepthSlider_valueCha..."
-QT_MOC_LITERAL(41, 1165, 24), // "progressValueChangedSlot"
-QT_MOC_LITERAL(42, 1190, 22) // "generatingFinishedSlot"
+QT_MOC_LITERAL(5, 77, 23), // "generatingStartedSignal"
+QT_MOC_LITERAL(6, 101, 19), // "dataFinishedReading"
+QT_MOC_LITERAL(7, 121, 15), // "on_test_clicked"
+QT_MOC_LITERAL(8, 137, 30), // "on_isoLevelSlider_valueChanged"
+QT_MOC_LITERAL(9, 168, 28), // "on_loadDICOMFromFile_clicked"
+QT_MOC_LITERAL(10, 197, 32), // "on_resolutionSlider_valueChanged"
+QT_MOC_LITERAL(11, 230, 41), // "on_linearInterpolationSlider_..."
+QT_MOC_LITERAL(12, 272, 26), // "on_pointFlagButton_clicked"
+QT_MOC_LITERAL(13, 299, 27), // "on_borderFlagButton_clicked"
+QT_MOC_LITERAL(14, 327, 27), // "on_frameSlider_valueChanged"
+QT_MOC_LITERAL(15, 355, 30), // "on_showWireframeButton_clicked"
+QT_MOC_LITERAL(16, 386, 31), // "on_toleranceSlider_valueChanged"
+QT_MOC_LITERAL(17, 418, 30), // "on_marchingCubesButton_clicked"
+QT_MOC_LITERAL(18, 449, 38), // "on_adaptiveMarchingCubesButto..."
+QT_MOC_LITERAL(19, 488, 39), // "on_adaptiveMarchingCubes2Butt..."
+QT_MOC_LITERAL(20, 528, 39), // "on_adaptiveMarchingCubes3Butt..."
+QT_MOC_LITERAL(21, 568, 26), // "on_ballPivotButton_clicked"
+QT_MOC_LITERAL(22, 595, 28), // "on_perspectiveButton_clicked"
+QT_MOC_LITERAL(23, 624, 35), // "on_normalsPerTriangleButton_c..."
+QT_MOC_LITERAL(24, 660, 34), // "on_normalsPerVerticeButton_cl..."
+QT_MOC_LITERAL(25, 695, 25), // "on_showMeshButton_clicked"
+QT_MOC_LITERAL(26, 721, 29), // "on_showGradientButton_clicked"
+QT_MOC_LITERAL(27, 751, 29), // "on_orientationZButton_clicked"
+QT_MOC_LITERAL(28, 781, 29), // "on_orientationXButton_clicked"
+QT_MOC_LITERAL(29, 811, 29), // "on_orientationYButton_clicked"
+QT_MOC_LITERAL(30, 841, 26), // "on_showCubesButton_clicked"
+QT_MOC_LITERAL(31, 868, 27), // "on_xPosText_editingFinished"
+QT_MOC_LITERAL(32, 896, 27), // "on_yPosText_editingFinished"
+QT_MOC_LITERAL(33, 924, 27), // "on_zPosText_editingFinished"
+QT_MOC_LITERAL(34, 952, 29), // "on_generateMeshButton_clicked"
+QT_MOC_LITERAL(35, 982, 28), // "on_interactiveButton_clicked"
+QT_MOC_LITERAL(36, 1011, 33), // "on_octreeDepthSlider_valueCha..."
+QT_MOC_LITERAL(37, 1045, 24), // "progressValueChangedSlot"
+QT_MOC_LITERAL(38, 1070, 16), // "finishedMeshSlot"
+QT_MOC_LITERAL(39, 1087, 19) // "finishedNormalsSlot"
 
     },
     "VolumeRenderer\0progressValueChangedSignal\0"
     "\0newValue\0generatingFinishedSignal\0"
-    "dataFinishedReading\0on_test_clicked\0"
-    "on_addDICOMFiles_clicked\0"
-    "on_isoLevelSlider_valueChanged\0"
-    "on_loadTestImageButton_clicked\0"
-    "on_loadTestImage2Button_clicked\0"
-    "on_loadDICOMButton_clicked\0"
-    "on_loadMFDICOMButton_clicked\0"
+    "generatingStartedSignal\0dataFinishedReading\0"
+    "on_test_clicked\0on_isoLevelSlider_valueChanged\0"
     "on_loadDICOMFromFile_clicked\0"
     "on_resolutionSlider_valueChanged\0"
     "on_linearInterpolationSlider_valueChanged\0"
@@ -111,8 +103,8 @@ QT_MOC_LITERAL(42, 1190, 22) // "generatingFinishedSlot"
     "on_generateMeshButton_clicked\0"
     "on_interactiveButton_clicked\0"
     "on_octreeDepthSlider_valueChanged\0"
-    "progressValueChangedSlot\0"
-    "generatingFinishedSlot"
+    "progressValueChangedSlot\0finishedMeshSlot\0"
+    "finishedNormalsSlot"
 };
 #undef QT_MOC_LITERAL
 
@@ -122,59 +114,57 @@ static const uint qt_meta_data_VolumeRenderer[] = {
        7,       // revision
        0,       // classname
        0,    0, // classinfo
-      40,   14, // methods
+      37,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
        0,       // flags
-       3,       // signalCount
+       4,       // signalCount
 
  // signals: name, argc, parameters, tag, flags
-       1,    1,  214,    2, 0x06 /* Public */,
-       4,    0,  217,    2, 0x06 /* Public */,
-       5,    0,  218,    2, 0x06 /* Public */,
+       1,    1,  199,    2, 0x06 /* Public */,
+       4,    0,  202,    2, 0x06 /* Public */,
+       5,    0,  203,    2, 0x06 /* Public */,
+       6,    0,  204,    2, 0x06 /* Public */,
 
  // slots: name, argc, parameters, tag, flags
-       6,    0,  219,    2, 0x08 /* Private */,
-       7,    0,  220,    2, 0x08 /* Private */,
-       8,    0,  221,    2, 0x08 /* Private */,
-       9,    0,  222,    2, 0x08 /* Private */,
-      10,    0,  223,    2, 0x08 /* Private */,
-      11,    0,  224,    2, 0x08 /* Private */,
-      12,    0,  225,    2, 0x08 /* Private */,
-      13,    0,  226,    2, 0x08 /* Private */,
-      14,    0,  227,    2, 0x08 /* Private */,
-      15,    0,  228,    2, 0x08 /* Private */,
-      16,    0,  229,    2, 0x08 /* Private */,
-      17,    0,  230,    2, 0x08 /* Private */,
-      18,    0,  231,    2, 0x08 /* Private */,
-      19,    0,  232,    2, 0x08 /* Private */,
-      20,    0,  233,    2, 0x08 /* Private */,
-      21,    0,  234,    2, 0x08 /* Private */,
-      22,    0,  235,    2, 0x08 /* Private */,
-      23,    0,  236,    2, 0x08 /* Private */,
-      24,    0,  237,    2, 0x08 /* Private */,
-      25,    0,  238,    2, 0x08 /* Private */,
-      26,    0,  239,    2, 0x08 /* Private */,
-      27,    0,  240,    2, 0x08 /* Private */,
-      28,    0,  241,    2, 0x08 /* Private */,
-      29,    0,  242,    2, 0x08 /* Private */,
-      30,    0,  243,    2, 0x08 /* Private */,
-      31,    0,  244,    2, 0x08 /* Private */,
-      32,    0,  245,    2, 0x08 /* Private */,
-      33,    0,  246,    2, 0x08 /* Private */,
-      34,    0,  247,    2, 0x08 /* Private */,
-      35,    0,  248,    2, 0x08 /* Private */,
-      36,    0,  249,    2, 0x08 /* Private */,
-      37,    0,  250,    2, 0x08 /* Private */,
-      38,    0,  251,    2, 0x08 /* Private */,
-      39,    0,  252,    2, 0x08 /* Private */,
-      40,    0,  253,    2, 0x08 /* Private */,
-      41,    1,  254,    2, 0x08 /* Private */,
-      42,    0,  257,    2, 0x08 /* Private */,
+       7,    0,  205,    2, 0x08 /* Private */,
+       8,    0,  206,    2, 0x08 /* Private */,
+       9,    0,  207,    2, 0x08 /* Private */,
+      10,    0,  208,    2, 0x08 /* Private */,
+      11,    0,  209,    2, 0x08 /* Private */,
+      12,    0,  210,    2, 0x08 /* Private */,
+      13,    0,  211,    2, 0x08 /* Private */,
+      14,    0,  212,    2, 0x08 /* Private */,
+      15,    0,  213,    2, 0x08 /* Private */,
+      16,    0,  214,    2, 0x08 /* Private */,
+      17,    0,  215,    2, 0x08 /* Private */,
+      18,    0,  216,    2, 0x08 /* Private */,
+      19,    0,  217,    2, 0x08 /* Private */,
+      20,    0,  218,    2, 0x08 /* Private */,
+      21,    0,  219,    2, 0x08 /* Private */,
+      22,    0,  220,    2, 0x08 /* Private */,
+      23,    0,  221,    2, 0x08 /* Private */,
+      24,    0,  222,    2, 0x08 /* Private */,
+      25,    0,  223,    2, 0x08 /* Private */,
+      26,    0,  224,    2, 0x08 /* Private */,
+      27,    0,  225,    2, 0x08 /* Private */,
+      28,    0,  226,    2, 0x08 /* Private */,
+      29,    0,  227,    2, 0x08 /* Private */,
+      30,    0,  228,    2, 0x08 /* Private */,
+      31,    0,  229,    2, 0x08 /* Private */,
+      32,    0,  230,    2, 0x08 /* Private */,
+      33,    0,  231,    2, 0x08 /* Private */,
+      34,    0,  232,    2, 0x08 /* Private */,
+      35,    0,  233,    2, 0x08 /* Private */,
+      36,    0,  234,    2, 0x08 /* Private */,
+      37,    1,  235,    2, 0x08 /* Private */,
+      38,    0,  238,    2, 0x08 /* Private */,
+      39,    0,  239,    2, 0x08 /* Private */,
 
  // signals: parameters
     QMetaType::Void, QMetaType::Int,    3,
+    QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
 
@@ -209,12 +199,8 @@ static const uint qt_meta_data_VolumeRenderer[] = {
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
-    QMetaType::Void,
-    QMetaType::Void,
-    QMetaType::Void,
-    QMetaType::Void,
-    QMetaType::Void,
     QMetaType::Void, QMetaType::Int,    3,
+    QMetaType::Void,
     QMetaType::Void,
 
        0        // eod
@@ -227,44 +213,41 @@ void VolumeRenderer::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _
         switch (_id) {
         case 0: _t->progressValueChangedSignal((*reinterpret_cast< int(*)>(_a[1]))); break;
         case 1: _t->generatingFinishedSignal(); break;
-        case 2: _t->dataFinishedReading(); break;
-        case 3: _t->on_test_clicked(); break;
-        case 4: _t->on_addDICOMFiles_clicked(); break;
+        case 2: _t->generatingStartedSignal(); break;
+        case 3: _t->dataFinishedReading(); break;
+        case 4: _t->on_test_clicked(); break;
         case 5: _t->on_isoLevelSlider_valueChanged(); break;
-        case 6: _t->on_loadTestImageButton_clicked(); break;
-        case 7: _t->on_loadTestImage2Button_clicked(); break;
-        case 8: _t->on_loadDICOMButton_clicked(); break;
-        case 9: _t->on_loadMFDICOMButton_clicked(); break;
-        case 10: _t->on_loadDICOMFromFile_clicked(); break;
-        case 11: _t->on_resolutionSlider_valueChanged(); break;
-        case 12: _t->on_linearInterpolationSlider_valueChanged(); break;
-        case 13: _t->on_pointFlagButton_clicked(); break;
-        case 14: _t->on_borderFlagButton_clicked(); break;
-        case 15: _t->on_frameSlider_valueChanged(); break;
-        case 16: _t->on_showWireframeButton_clicked(); break;
-        case 17: _t->on_toleranceSlider_valueChanged(); break;
-        case 18: _t->on_marchingCubesButton_clicked(); break;
-        case 19: _t->on_adaptiveMarchingCubesButton_clicked(); break;
-        case 20: _t->on_adaptiveMarchingCubes2Button_clicked(); break;
-        case 21: _t->on_adaptiveMarchingCubes3Button_clicked(); break;
-        case 22: _t->on_ballPivotButton_clicked(); break;
-        case 23: _t->on_perspectiveButton_clicked(); break;
-        case 24: _t->on_normalsPerTriangleButton_clicked(); break;
-        case 25: _t->on_normalsPerVerticeButton_clicked(); break;
-        case 26: _t->on_showMeshButton_clicked(); break;
-        case 27: _t->on_showGradientButton_clicked(); break;
-        case 28: _t->on_orientationZButton_clicked(); break;
-        case 29: _t->on_orientationXButton_clicked(); break;
-        case 30: _t->on_orientationYButton_clicked(); break;
-        case 31: _t->on_showCubesButton_clicked(); break;
-        case 32: _t->on_xPosText_editingFinished(); break;
-        case 33: _t->on_yPosText_editingFinished(); break;
-        case 34: _t->on_zPosText_editingFinished(); break;
-        case 35: _t->on_generateMeshButton_clicked(); break;
-        case 36: _t->on_interactiveButton_clicked(); break;
-        case 37: _t->on_octreeDepthSlider_valueChanged(); break;
-        case 38: _t->progressValueChangedSlot((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 39: _t->generatingFinishedSlot(); break;
+        case 6: _t->on_loadDICOMFromFile_clicked(); break;
+        case 7: _t->on_resolutionSlider_valueChanged(); break;
+        case 8: _t->on_linearInterpolationSlider_valueChanged(); break;
+        case 9: _t->on_pointFlagButton_clicked(); break;
+        case 10: _t->on_borderFlagButton_clicked(); break;
+        case 11: _t->on_frameSlider_valueChanged(); break;
+        case 12: _t->on_showWireframeButton_clicked(); break;
+        case 13: _t->on_toleranceSlider_valueChanged(); break;
+        case 14: _t->on_marchingCubesButton_clicked(); break;
+        case 15: _t->on_adaptiveMarchingCubesButton_clicked(); break;
+        case 16: _t->on_adaptiveMarchingCubes2Button_clicked(); break;
+        case 17: _t->on_adaptiveMarchingCubes3Button_clicked(); break;
+        case 18: _t->on_ballPivotButton_clicked(); break;
+        case 19: _t->on_perspectiveButton_clicked(); break;
+        case 20: _t->on_normalsPerTriangleButton_clicked(); break;
+        case 21: _t->on_normalsPerVerticeButton_clicked(); break;
+        case 22: _t->on_showMeshButton_clicked(); break;
+        case 23: _t->on_showGradientButton_clicked(); break;
+        case 24: _t->on_orientationZButton_clicked(); break;
+        case 25: _t->on_orientationXButton_clicked(); break;
+        case 26: _t->on_orientationYButton_clicked(); break;
+        case 27: _t->on_showCubesButton_clicked(); break;
+        case 28: _t->on_xPosText_editingFinished(); break;
+        case 29: _t->on_yPosText_editingFinished(); break;
+        case 30: _t->on_zPosText_editingFinished(); break;
+        case 31: _t->on_generateMeshButton_clicked(); break;
+        case 32: _t->on_interactiveButton_clicked(); break;
+        case 33: _t->on_octreeDepthSlider_valueChanged(); break;
+        case 34: _t->progressValueChangedSlot((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 35: _t->finishedMeshSlot(); break;
+        case 36: _t->finishedNormalsSlot(); break;
         default: ;
         }
     } else if (_c == QMetaObject::IndexOfMethod) {
@@ -284,8 +267,14 @@ void VolumeRenderer::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _
         }
         {
             typedef void (VolumeRenderer::*_t)();
-            if (*reinterpret_cast<_t *>(func) == static_cast<_t>(&VolumeRenderer::dataFinishedReading)) {
+            if (*reinterpret_cast<_t *>(func) == static_cast<_t>(&VolumeRenderer::generatingStartedSignal)) {
                 *result = 2;
+            }
+        }
+        {
+            typedef void (VolumeRenderer::*_t)();
+            if (*reinterpret_cast<_t *>(func) == static_cast<_t>(&VolumeRenderer::dataFinishedReading)) {
+                *result = 3;
             }
         }
     }
@@ -316,13 +305,13 @@ int VolumeRenderer::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 40)
+        if (_id < 37)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 40;
+        _id -= 37;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 40)
+        if (_id < 37)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 40;
+        _id -= 37;
     }
     return _id;
 }
@@ -341,8 +330,14 @@ void VolumeRenderer::generatingFinishedSignal()
 }
 
 // SIGNAL 2
-void VolumeRenderer::dataFinishedReading()
+void VolumeRenderer::generatingStartedSignal()
 {
     QMetaObject::activate(this, &staticMetaObject, 2, Q_NULLPTR);
+}
+
+// SIGNAL 3
+void VolumeRenderer::dataFinishedReading()
+{
+    QMetaObject::activate(this, &staticMetaObject, 3, Q_NULLPTR);
 }
 QT_END_MOC_NAMESPACE

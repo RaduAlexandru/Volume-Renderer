@@ -7,7 +7,12 @@
 
 #include "glwidget.h"
 #include "Model.h"
+#include "MarchingCuber.h"
+#include "AdaptiveCuber.h"
+#include "FileReader.h"
+#include "NormalsGenerator.h"
 #include <glm/glm.hpp>
+
 
 
 class VolumeRenderer : public QMainWindow
@@ -38,7 +43,13 @@ private:
 	Ui::VolumeRendererClass ui;
 
 	Model* model;
+	MarchingCuber* mc;
+	AdaptiveCuber* amc;
+	FileReader* reader;
+	NormalsGenerator* ng;
 
+
+	void establishConnections();
 	int readPixelData(QString, void*&, int, int);
 	int getRepresentation(QString , int& , int& , int& , int& ,int&, int&, int&);
 	//void showPixels(void* pixelData, std::vector<Model::POINTF>);
@@ -59,7 +70,7 @@ private:
 	int polygoniseOctree2(OctreeCube* );
 	int polygoniseAssignToCube(OctreeCube* );
 	int readPointsFromOctree(OctreeCube*);
-	glm::vec3 pointOnLine(glm::vec3 , glm::vec3 , glm::vec3& );
+	//glm::vec3 pointOnLine(glm::vec3 , glm::vec3 , glm::vec3& );
 
 	void octree2CellPolygonise(OctreeCube&);
 	void generateHypercube();
@@ -69,8 +80,8 @@ private:
 	void generateNormals();
 	OctreeCube createInitialCube();
 	void ballPivot();
-	void crackPatch(OctreeCube*);
-	void crackPatch2(OctreeCube*);
+	//void crackPatch(OctreeCube*);
+	//void crackPatch2(OctreeCube*);
 	
 	void marchingSquares();
 	void wipeBitmap();
@@ -78,21 +89,23 @@ private:
 	void wipePixelData();
 
 	bool interactive;
+	bool generatingMesh; //We need this to know if there the mesh is being generated, that means that there is already a thread working, in which case the generateMesh function doesnt do anything
 
 
 signals:
 	void progressValueChangedSignal(int newValue);
 	void generatingFinishedSignal();
+	void generatingStartedSignal();
 	void dataFinishedReading();
 
 private slots:
 	void on_test_clicked();
-	void on_addDICOMFiles_clicked();
+	//void on_addDICOMFiles_clicked();
 	void on_isoLevelSlider_valueChanged();
-	void on_loadTestImageButton_clicked();
-	void on_loadTestImage2Button_clicked();
-	void on_loadDICOMButton_clicked();
-	void on_loadMFDICOMButton_clicked();
+	//void on_loadTestImageButton_clicked();
+	//void on_loadTestImage2Button_clicked();
+	//void on_loadDICOMButton_clicked();
+	//void on_loadMFDICOMButton_clicked();
 	void on_loadDICOMFromFile_clicked();
 	void on_resolutionSlider_valueChanged();
 	void on_linearInterpolationSlider_valueChanged();
@@ -123,7 +136,8 @@ private slots:
 	void on_octreeDepthSlider_valueChanged();
 
 	void progressValueChangedSlot(int newValue);
-	void generatingFinishedSlot();
+	void finishedMeshSlot();
+	void finishedNormalsSlot();
 
 	
 };

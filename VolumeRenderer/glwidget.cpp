@@ -136,7 +136,7 @@ void GLWidget::initializeGL()
 	readBackgroundImage();
 	glShadeModel(GL_SMOOTH);
 
-	
+	generatingMesh = false;
 	
 }
 
@@ -152,6 +152,9 @@ void GLWidget::paintGL()
 		dataSended = 1;
 		//xRot = -90;
 	}
+
+	if (generatingMesh)
+		return;
 
 	
 	glViewport(0.0, 0.0, width(), height());
@@ -469,7 +472,7 @@ void GLWidget::drawMesh(){
 
 
 	//std::cout << "gneralting mesh is " << model->generatingMesh << std::endl;
-	if (model->generatingMesh == true)
+	if (generatingMesh == true)
 		return;
 
 	int normalIndex = 0;
@@ -646,6 +649,9 @@ void GLWidget::drawCubes2(){
 	}
 	glEnd();
 }
+
+
+
 
 
 
@@ -893,7 +899,16 @@ void GLWidget::keyReleaseEvent(QKeyEvent *keyEvent)
 		ctrlPressed = false;
 }
 
-void  GLWidget::dataFinishedReading(){
-	std::cout << "received the signal that all the data was read" << std::endl;
+void  GLWidget::dataFinishedReadingSlot(){
+	std::cout << "received the signal that all the data was read so we set the rotation to xrot-90" << std::endl;
 	xRot = -90;
+}
+
+void GLWidget::generatingFinishedSlot(){
+	std::cout << "generating finished slot in the gl window" << std::endl;
+	generatingMesh = false;
+}
+
+void GLWidget::generatingStartedSlot(){
+	generatingMesh = true;
 }

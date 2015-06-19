@@ -16,8 +16,17 @@ using namespace std;
 
 FileReader::FileReader()
 {
+
+}
+
+FileReader::FileReader(QObject *_parent) 
+{
 	
 }
+
+
+
+
 
 
 FileReader::~FileReader()
@@ -73,6 +82,7 @@ int FileReader::loadDICOMPixelData(QStringList fileNames,PixelData*pixelData){
 		cout << "done" << endl;
 	}
 
+	emit dataFinishedReadingSignal();
 	return 1;
 }
 
