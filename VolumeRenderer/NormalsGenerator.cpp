@@ -2,7 +2,7 @@
 #include <boost/math/special_functions/round.hpp>
 #include <stdlib.h>
 #include <iostream>
-
+#define PI 3.14159265
 
 
 NormalsGenerator::NormalsGenerator()
@@ -167,6 +167,26 @@ void NormalsGenerator::normalsPerVertex(PixelData* pixelData, std::vector<glm::v
 		1 * (model->getSmoothPixelValue(j - 1, y + 1, k + 1)) + 2 * (model->getSmoothPixelValue(j, y + 1, k + 1)) + 1 * (model->getSmoothPixelValue(j + 1, y + 1, k + 1)) -
 		2 * (model->getSmoothPixelValue(j - 1, y, k + 1)) + 4 * (model->getSmoothPixelValue(j, y, k + 1)) + 2 * (model->getSmoothPixelValue(j + 1, y, k + 1)) -
 		1 * (model->getSmoothPixelValue(j - 1, y - 1, k + 1)) + 2 * (model->getSmoothPixelValue(j, y - 1, k + 1)) + 1 * (model->getSmoothPixelValue(j + 1, y - 1, k + 1));*/
+
+
+
+
+
+
+
+
+		if (dx == 0)
+			dx = 1;
+		if (dy == 0)
+			dy = 1;
+		if (dz == 0)
+			dz = 1;
+
+		/*THe 3 possible axis
+		dx-dy
+		dx-dz
+		dy-dz
+		*/
 
 
 		//we now normalize it

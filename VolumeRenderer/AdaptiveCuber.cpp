@@ -27,6 +27,7 @@ MarchingCuber(pixelData,  verts, normals,  isoLevel,  cellSizeX,  cellSizeY,  ce
 int AdaptiveCuber::run(){
 	verts->clear();
 	normals->clear();
+	octreeVector.clear();
 	std::cout << "Starting adaptive marching cubes 3" << std::endl;
 	//Calculate the gradients
 	//Create the original cube
@@ -65,7 +66,7 @@ int AdaptiveCuber::run(){
 	generateOctree_tree_version(*initial);
 	std::cout << "finished generateing octree" << std::endl;
 
-	correctlyAssignLeafs(initial);
+	//correctlyAssignLeafs(initial);
 
 	//Grab each octreebube in our octree and polygonise it
 	//polygoniseOctree(initial);
@@ -93,7 +94,11 @@ int AdaptiveCuber::run(){
 }
 
 
-
+/*! \brief Calcula los gradientes del volumen usando un operador Sobel
+*
+* Calcula los gradientes del volumen usando un kernel Sobel 3x3x3. 
+* A partir de las 3 derivadas halladas se calculan las 3 orientaciones del vector que luego se normaliza y se guarda en un mapa cuya clave es la posicion del punto y el valor el vector gradiente.
+*/
 void AdaptiveCuber::calculateGradient(){
 
 
@@ -289,15 +294,19 @@ void AdaptiveCuber::calculateGradient(){
 	}
 }
 
-
+/*! \brief Crea el cubo inicial del octree, el cubo raiz.
+*
+*  Es necesario que el cubo inicial tenga las mismas dimensiones en los tres ejes y ademas esas dimensiones sean potencias de 2 para que el proceso de subdividir funcione correctamente.
+*  Esto se realiza  buscando el maximo valor de las dimensiones del volumen y luego se redondea hacia arriba a la proxima potencia de 2. Este valor se asigna como las dimensiones del cubo.
+*/
 OctreeCube AdaptiveCuber::createInitialCube(){
 	OctreeCube cube;
-	cube.origin.x = 0;
-	cube.origin.y = 0;
-	cube.origin.z = 0;
+	cube.origin.x = 0 ;
+	cube.origin.y = 0 ;
+	cube.origin.z = 0 ;
 
 
-	int cubeSize = std::max(std::max(pixelDataWidth, pixelDataHeight), frames - 1);	//WE get the maximum value
+	int cubeSize = std::max(std::max(pixelDataWidth , pixelDataHeight ), frames - 1 );	//WE get the maximum value
 	cubeSize = pow(2, ceil(log(cubeSize) / log(2)));	// we round it up to the neerest power of 2
 
 	cube.sizeX = cubeSize;
@@ -308,7 +317,8 @@ OctreeCube AdaptiveCuber::createInitialCube(){
 	return cube;
 }
 
-
+/*! \brief Genera el arbol octree mediante un algoritmo recursivo, recibiendo como parametro el cubo raiz y la profundidad actual.
+*/
 int AdaptiveCuber::generateOctree_tree_version(OctreeCube& currentCube, int currentDepth){
 
 
@@ -320,7 +330,7 @@ int AdaptiveCuber::generateOctree_tree_version(OctreeCube& currentCube, int curr
 		//std::cout << "The cube doesnt have children now" << std::endl;
 		currentCube.subdivide_tree_version();
 		//std::cout << "The cube should have children now" << std::endl;
-
+		currentCube.isLeaf = false;
 		octreeVector.push_back(currentCube.children[0]);
 		octreeVector.push_back(currentCube.children[1]);
 		octreeVector.push_back(currentCube.children[2]);
@@ -347,7 +357,13 @@ int AdaptiveCuber::generateOctree_tree_version(OctreeCube& currentCube, int curr
 	return 0;
 }
 
-
+/*! \brief Pasandole un cubo como parametro decide si necesita subdividirse o no
+*
+*  Se le pasa un cubo del octree como parametro. 
+*  Se recorren todos los gradientes que puede haber dentro de ese cubo. 
+*  Cuando se encuentra el primero se toma como valor de referencia y se siguen mirando los demas valores. 
+*  Si en algun momento uno de ellos se desvia en alguna direccion mas que el valor de tolerancia, se retorna un true de la funcion indicando que el cubo necesita subdividirse.
+*/
 inline bool AdaptiveCuber::cubeNeedsSubdivision(OctreeCube &cube){
 
 
@@ -465,7 +481,7 @@ inline bool AdaptiveCuber::cubeNeedsSubdivision(OctreeCube &cube){
 }
 
 
-void AdaptiveCuber::correctlyAssignLeafs(OctreeCube* root){
+/*void AdaptiveCuber::correctlyAssignLeafs(OctreeCube* root){
 	OctreeCube* currentCube;
 	std::queue<OctreeCube*> queue;
 	queue.push(root);
@@ -492,10 +508,10 @@ void AdaptiveCuber::correctlyAssignLeafs(OctreeCube* root){
 		}
 	}
 
-}
+}*/
 
 /*Not being used*/
-int AdaptiveCuber::polygoniseOctree(OctreeCube* currentCube, int currentDepth){
+//int AdaptiveCuber::polygoniseOctree(OctreeCube* currentCube, int currentDepth){
 
 	//Recursive alrogithm, we go to all the children of current cube and if the children is null, we go back in the recursive stack and polygonise the current cube
 	/*
@@ -538,12 +554,15 @@ int AdaptiveCuber::polygoniseOctree(OctreeCube* currentCube, int currentDepth){
 	}
 	*/
 
-	return 0;
+//	return 0;
 
-}
+//}
 
 
-
+/*! \brief Extrae los triangulos, poligonizando los cubos del octree
+*
+*  Se recorre el octree por amplitud y por cada cubo que sea hoja, se polygoniza para descubrir que triangulos se forman dentro de el
+*/
 int AdaptiveCuber::polygoniseOctree2(OctreeCube* root){
 
 	OctreeCube* currentCube;
@@ -572,7 +591,12 @@ int AdaptiveCuber::polygoniseOctree2(OctreeCube* root){
 	return 0;
 }
 
-
+/*! \brief Crea triangulos dentro de una cubo
+*
+*  Se crea un vector on los puntos que se crean dentro del triangulo. 
+*  Ese vector se le asigna al cubo, de esta manera cada cubo tendra informacion de los puntos (y por lo tanto triangulos) que se han formado dentro de el.
+*  Es necesario que cada cubo tenga informacion de sus puntos y triangulo para el correcto funcionamiento del algoritmo de crack patching
+*/
 int AdaptiveCuber::polygoniseAssignToCube(OctreeCube* currentCube){
 
 
@@ -743,7 +767,11 @@ int AdaptiveCuber::polygoniseAssignToCube(OctreeCube* currentCube){
 }
 
 
-
+/*! \brief Resuelve los agujeros en el mallado usano proyeccion ortogonal de los puntos que forman el agujero
+*
+*  Se recorre el octree y por cada cubo que sea hoja se buscan sus 6 vecinos. 
+*  Se recogen los puntos tantos de los vecinos como del cubo actual y despues se proyectan los puntos del vecino sobre la linea formada en la cara del cubo actual.
+*/
 void AdaptiveCuber::crackPatch(OctreeCube* root){
 
 
@@ -1932,7 +1960,8 @@ void AdaptiveCuber::crackPatch(OctreeCube* root){
 	}*/
 }
 
-
+/*! \brief Realiza la proyeccion ortogonal del punto x sobre la linea formada por los puntos a y b.
+*/
 glm::vec3 AdaptiveCuber::pointOnLine(glm::vec3 a, glm::vec3 b, glm::vec3& x){
 
 
@@ -1990,7 +2019,8 @@ glm::vec3 AdaptiveCuber::pointOnLine(glm::vec3 a, glm::vec3 b, glm::vec3& x){
 	return projection;
 }//-See more at : http ://www.dietabaiamonte.info/197386.html#sthash.WtI0J8q1.dpuf
 
-
+/*! \brief Recorre el arbol y lee los puntos a los que tiene referencia cada cubo. Esos puntos se escriben en un vector con todos los puntos completos.
+*/
 int AdaptiveCuber::readPointsFromOctree(OctreeCube* root){
 	OctreeCube* currentCube;
 	std::queue<OctreeCube*> queue;

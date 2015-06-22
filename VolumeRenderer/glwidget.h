@@ -43,7 +43,7 @@ public:
 
 	double xRot;
 	double yRot;
-	double mouseSpeed = 0.5;
+	double mouseSpeed = 0.5;	//!<  Indica la velocidad de giro de la figura cuando el raton se arrastra por el visor 3D
 	double xMove, yMove, zMove;
 
 	bool generatingMesh;

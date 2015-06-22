@@ -33,7 +33,8 @@ FileReader::~FileReader()
 {
 }
 
-
+/*! \brief Pasando como parametro la ruta de los ficheros DICOM, see leen los pixels data y se escriben en un objeto de tipo PixelData
+*/
 int FileReader::loadDICOMPixelData(QStringList fileNames,PixelData*pixelData){
 
 
@@ -87,7 +88,8 @@ int FileReader::loadDICOMPixelData(QStringList fileNames,PixelData*pixelData){
 }
 
 
-
+/*! \brief Para la lectura de los ficheros DICOM es necesario conocer su representacion (alto, ancho, numeor de pixeles, bits por pixel, etc)
+*/
 int FileReader::getRepresentation(QString fileName, int& bitsAllocated, int& bitsStored, int& hightBit, int& pixelRepresentation, int& frames, int& height, int& width){
 	DcmFileFormat fileformat;
 	OFCondition status = fileformat.loadFile(fileName.toStdString().c_str());

@@ -5,7 +5,7 @@ public:
 	PixelData();
 	~PixelData();
 
-	int getPixelValue(int x, int y, int z);
+	
 
 
 	unsigned char** data;
@@ -15,6 +15,14 @@ public:
 	int numberOfBytes;
 
 	int borderXRight, borderXLeft, borderZCloser, borderZFurther, borderYTop, borderYBottom;
+
+	int getPixelValue(int x, int y, int z);
+
+	/*int getWidthWithBorder();
+	int getHeightWithBorder();
+	int getFramesWithBorder();*/
+
+	
 };
 
 

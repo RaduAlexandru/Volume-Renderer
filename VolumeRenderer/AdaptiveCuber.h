@@ -12,8 +12,8 @@ public:
 	OctreeCube createInitialCube();
 	int generateOctree_tree_version(OctreeCube&, int = 0);
 	inline bool cubeNeedsSubdivision(OctreeCube &cube);
-	void correctlyAssignLeafs(OctreeCube* root);
-	int polygoniseOctree(OctreeCube* currentCube, int currentDepth=0);
+	//void correctlyAssignLeafs(OctreeCube* root);
+	//int polygoniseOctree(OctreeCube* currentCube, int currentDepth=0);
 	int polygoniseOctree2(OctreeCube* root);
 	int polygoniseAssignToCube(OctreeCube* currentCube);
 	void crackPatch(OctreeCube* root);

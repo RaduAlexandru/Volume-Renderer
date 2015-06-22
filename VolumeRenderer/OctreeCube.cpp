@@ -9,7 +9,7 @@ OctreeCube::OctreeCube()
 	sizeX = 0;
 	sizeY = 0;
 	sizeZ = 0;
-	isLeaf = true;
+	isLeaf = false;
 	needsChecking = true;
 	polygonised = false;
 	containsVerts = false;

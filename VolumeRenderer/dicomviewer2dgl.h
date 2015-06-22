@@ -25,13 +25,13 @@ public:
 	//unsigned char * gradient;
 	void displayFrame();
 	void displayGradient();
-	std::vector<unsigned int> localFrame;
+	void displayBorderLines();
+	std::vector<unsigned int> localFrame; //!< Almacena los pixels data que se van a representar en la vista 2d. Va a cambiar segun la orientacion elegida
 
 private:
 	int frame_to_display;
 public slots:
 	void setFrame(int frame);
-	void setTolerance(int toleranceReceived);
 	
 };
 

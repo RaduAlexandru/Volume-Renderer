@@ -23,23 +23,15 @@ public:
 	VolumeRenderer(QWidget *parent = 0);
 	~VolumeRenderer();
 
-	typedef struct {
-		glm::vec3 position;
-		glm::vec3 normal;
-	} Vertex;
-
-	typedef struct {
-		glm::vec3 position[8];	//Position of the 8 vertices
-		glm::vec3 normal[8];	//normals of those vertices I dont know if I'm going to use it
-		double val[8];		//value at those vertices
-	} CELL;
-
 	
 
 	
 	
 
-private:
+	
+	
+
+public:
 	Ui::VolumeRendererClass ui;
 
 	Model* model;
@@ -59,7 +51,6 @@ private:
 	int getRepresentation(QString , int& , int& , int& , int& ,int&, int&, int&);
 	//void showPixels(void* pixelData, std::vector<Model::POINTF>);
 	void load_image_data(const char*);
-	int polygonise(CELL&, std::vector<glm::vec3>&);
 	inline void interpolate(int, glm::vec3 point1, glm::vec3 point2, float, float, glm::vec3&, int depth=0);
 	int loadDICOMPixelData(const char*);
 	int loadDICOMPixelData(QStringList);
@@ -104,7 +95,6 @@ signals:
 	void dataFinishedReading();
 
 private slots:
-	void on_test_clicked();
 	//void on_addDICOMFiles_clicked();
 	void on_isoLevelSlider_valueChanged();
 	//void on_loadTestImageButton_clicked();
@@ -114,8 +104,6 @@ private slots:
 	void on_loadDICOMFromFile_clicked();
 	void on_resolutionSlider_valueChanged();
 	void on_linearInterpolationSlider_valueChanged();
-	void on_pointFlagButton_clicked();
-	void on_borderFlagButton_clicked();
 	void on_frameSlider_valueChanged();
 	void on_showWireframeButton_clicked();
 	void on_toleranceSlider_valueChanged();
@@ -141,6 +129,8 @@ private slots:
 	void on_octreeDepthSlider_valueChanged();
 	void on_borderYBottomSlider_valueChanged();
 	void on_borderYTopSlider_valueChanged();
+	void on_borderXLeftSlider_valueChanged();
+	void on_borderXRightSlider_valueChanged();
 
 	void progressValueChangedSlot(int newValue);
 	void finishedMeshSlot();

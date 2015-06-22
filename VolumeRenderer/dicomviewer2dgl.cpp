@@ -63,7 +63,7 @@ void DicomViewer2DGL::paintGL()
 	//displayGradient();
 
 	
-
+	displayBorderLines();
 	
 
 
@@ -84,6 +84,9 @@ void DicomViewer2DGL::resizeGL(int w, int h)
 }
 
 
+
+/*! \brief Muestra en el visor 2D los pixels data almacenados en localFrame
+*/
 void DicomViewer2DGL::displayFrame(){
 	if (model->pixelData->height != 0){
 
@@ -120,6 +123,8 @@ void DicomViewer2DGL::displayFrame(){
 	}
 }
 
+/*! \brief Muestra los gradientes en el visor 2D. Solo valido si antes se han calculado los gradientes mediante el AdaptiveMarchingCuber
+*/
 void DicomViewer2DGL::displayGradient(){
 
 	boost::unordered_map< std::pair<int, int>, glm::vec3>::iterator it;
@@ -155,6 +160,97 @@ void DicomViewer2DGL::displayGradient(){
 
 }
 
+
+/*! \brief Muestra los planos de corte que se van a usar para la region de interes
+*/
+void DicomViewer2DGL::displayBorderLines(){
+	int orientation = model->orientation;
+	if (orientation == 1){
+		glColor3f(1.0f, 0.0, 0.0);
+
+		//Border XLeft
+		glBegin(GL_LINES);
+			glVertex2f(model->pixelData->borderXLeft, 0);
+			glVertex2f(model->pixelData->borderXLeft, model->pixelData->height);
+		glEnd();
+
+		//Border XRight
+		glBegin(GL_LINES);
+			glVertex2f(model->pixelData->width- model->pixelData->borderXRight, 0);
+			glVertex2f(model->pixelData->width - model->pixelData->borderXRight, model->pixelData->height);
+		glEnd();
+
+		//Border Ytop
+		glBegin(GL_LINES);
+			glVertex2f(0, model->pixelData->height- model->pixelData->borderYTop);
+			glVertex2f(model->pixelData->width, model->pixelData->height - model->pixelData->borderYTop);
+		glEnd();
+
+		//Border YBottom
+		glBegin(GL_LINES);
+			glVertex2f(0, model->pixelData->borderYBottom);
+			glVertex2f(model->pixelData->width, model->pixelData->borderYBottom);
+		glEnd();
+
+	}
+
+	if (orientation == 2){
+		//Border Ytop
+		glBegin(GL_LINES);
+		glVertex2f(model->pixelData->height - model->pixelData->borderYTop, 0);
+		glVertex2f(model->pixelData->height - model->pixelData->borderYTop, model->pixelData->height);
+		glEnd();
+
+		//Border YBottom
+		glBegin(GL_LINES);
+		glVertex2f(  model->pixelData->borderYBottom, 0);
+		glVertex2f (model->pixelData->borderYBottom, model->pixelData->height);
+		glEnd();
+
+		//Border Zcloser
+		glBegin(GL_LINES);
+		glVertex2f(0, model->pixelData->borderZCloser* ((float)model->pixelData->frames / (float)model->pixelData->width));
+		glVertex2f(model->pixelData->height, model->pixelData->borderZCloser* ((float)model->pixelData->frames / (float)model->pixelData->width));
+		glEnd();
+
+		//Border Zfurther
+		glBegin(GL_LINES);
+		glVertex2f(0, (model->pixelData->frames - model->pixelData->borderZFurther)* ((float)model->pixelData->frames/(float)model->pixelData->width));	//WE need to multply it by this ratio of change so that it shows correctly
+		glVertex2f(model->pixelData->height, (model->pixelData->frames - model->pixelData->borderZFurther) * ((float)model->pixelData->frames / (float)model->pixelData->width));
+		glEnd();
+
+	}
+
+	if (orientation == 3){
+		//Border Zcloser
+		glBegin(GL_LINES);
+		glVertex2f(0, model->pixelData->borderZCloser* ((float)model->pixelData->frames / (float)model->pixelData->width));
+		glVertex2f(model->pixelData->height, model->pixelData->borderZCloser* ((float)model->pixelData->frames / (float)model->pixelData->width));
+		glEnd();
+
+		//Border Zfurther
+		glBegin(GL_LINES);
+		glVertex2f(0, (model->pixelData->frames - model->pixelData->borderZFurther)* ((float)model->pixelData->frames / (float)model->pixelData->width));	//WE need to multply it by this ratio of change so that it shows correctly
+		glVertex2f(model->pixelData->height, (model->pixelData->frames - model->pixelData->borderZFurther) * ((float)model->pixelData->frames / (float)model->pixelData->width));
+		glEnd();
+
+		//Border XLeft
+		glBegin(GL_LINES);
+		glVertex2f(model->pixelData->borderXLeft, 0);
+		glVertex2f(model->pixelData->borderXLeft, model->pixelData->height);
+		glEnd();
+
+		//Border XRight
+		glBegin(GL_LINES);
+		glVertex2f(model->pixelData->width-model->pixelData->borderXRight, 0);
+		glVertex2f(model->pixelData->width - model->pixelData->borderXRight, model->pixelData->height);
+		glEnd();
+	}
+}
+
+
+/*! \brief Slot que se ejecuta cada vez que se cambia el frame. Dependiendo de la orientacion, los datos en esa direccion del volumen se copiaran en el localFrame
+*/
 void DicomViewer2DGL::setFrame(int frame)
 {
 	frame_to_display = frame;
@@ -521,11 +617,5 @@ void DicomViewer2DGL::setFrame(int frame)
 }
 
 
-void DicomViewer2DGL::setTolerance(int toleranceReceived){
-	tolerance = toleranceReceived;
-	//std::cout << "model pixel data"
-	if (model->pixelData->width == 500 || model->pixelData->width==256 || model->pixelData->width==512)
-		setFrame(0);
-	
-}
+
 

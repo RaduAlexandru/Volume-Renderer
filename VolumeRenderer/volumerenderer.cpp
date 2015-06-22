@@ -38,14 +38,7 @@
 #define PI 3.14159265
 
 
-struct mapCompare
-{
-	bool operator() (const std::pair<int, int>& lhs, const std::pair<int, int>& rhs)
-	{
-		if ((lhs.first + lhs.second) < (rhs.first + rhs.second))
-		return lhs < rhs;
-	}
-};
+
 
 
 using namespace::std;
@@ -398,256 +391,38 @@ In that case the widget can look in the model and see the height and width and e
 */
 
 
-
+/*! \brief Establece las conexiones de signals y slots entre la clase MarchingCubes y el controlador
+*/
 void VolumeRenderer::establishConnectionsMC(){
 	connect(mc, SIGNAL(progressValueChangedSignal(int)), this, SLOT(progressValueChangedSlot(int)));
 	connect(mc, SIGNAL(finishedMeshSignal()), this, SLOT(finishedMeshSlot()));
 }
 
-
+/*! \brief Establece las conexiones de signals y slots entre la clase AdaptiveMarchingCubes y el controlador
+*/
 void VolumeRenderer::establishConnectionsAMC(){
 	connect(amc, SIGNAL(progressValueChangedSignal(int)), this, SLOT(progressValueChangedSlot(int)));
 	connect(amc, SIGNAL(finishedMeshSignal()), this, SLOT(finishedMeshSlot()));
 }
 
+/*! \brief Establece las conexiones de signals y slots entre la clase NormalsGenerator y el controlador
+*/
 void VolumeRenderer::establishConnectionsNG(){
 	connect(ng, SIGNAL(progressValueChangedSignal(int)), this, SLOT(progressValueChangedSlot(int)));
 	connect(ng, SIGNAL(finishedNormalsSignal()), this, SLOT(finishedNormalsSlot()));
 }
 
-
+/*! \brief Establece las conexiones de signals y slots entre la clase Reader y el controlador
+*/
 void VolumeRenderer::establishConnectionsREADER(){
 	connect(reader, SIGNAL(progressValueChangedSignal(int)), this, SLOT(progressValueChangedSlot(int)));
 	connect(reader, SIGNAL(dataFinishedReadingSignal()), ui.glwidget, SLOT(dataFinishedReadingSlot()));
 
 }
 
-void VolumeRenderer::on_test_clicked(){
-	std::cout << "hola";
-	/*DcmFileFormat fileformat;
-	OFCondition status = fileformat.loadFile("E:\\Universidad\\Hecho por mi\\Volume Renderer\\cuda1\\MANIX\\MANIX\\MANIX\\CER-CT\\ANGIO CT\\IM-0001-0001.dcm");
-	if (!status.good())
-	{
-		cerr << "Error: cannot read DICOM file (" << status.text() << ")" << endl;
-		return;
-	}
-
-
-	OFString patientsName;
-	fileformat.getDataset()->findAndGetOFString(DCM_PatientName, patientsName);
-	cout << "Patient's Name: " << patientsName << endl;
-	*/
-
-	/*OFString rows;
-	fileformat.getDataset()->findAndGetOFString(DCM_Rows, rows);
-	cout << rows << endl;
-
-	OFString columns;
-	fileformat.getDataset()->findAndGetOFString(DCM_Columns, columns);
-	cout << columns << endl;
-
-	OFString Bits_stored;
-	fileformat.getDataset()->findAndGetOFString(DCM_BitsStored, Bits_stored);
-	cout << Bits_stored << endl;*/
-
-	/*
-
-	DicomImage *image = new DicomImage("E:\\Universidad\\Hecho por mi\\Volume Renderer\\cuda1\\MANIX\\MANIX\\MANIX\\CER-CT\\ANGIO CT\\IM-0001-0001.dcm");
-	if (image != NULL)
-	{
-		if (image->getStatus() == EIS_Normal)
-		{
-			Uint16 *pixelData = (Uint16 *)(image->getOutputData(16 ));
-			if (pixelData != NULL)
-			{
-				
-				cout << "we got the pixels";
-			}
-		}
-		else
-			cerr << "Error: cannot load DICOM image (" << DicomImage::getString(image->getStatus()) << ")" << endl;
-	}
-	*/
-
-
-	
-	int nbFrame = 0;
-	int bits_allocated = 8;
-	//const char* filename = "E:\\Universidad\\Hecho por mi\\Volume Renderer\\Examples\\CT-MONO2-16-brain\\CT-MONO2-16-brain.dcm";
-	const char* filename = "E:\\Universidad\\Hecho por mi\\Volume Renderer\\Examples\\MR-MONO2-8-16x-heart\\MR-MONO2-8-16x-heart";
-
-
-	DcmFileFormat fileformat;
-	OFCondition status = fileformat.loadFile(filename);
-
-	DcmDataset *data = fileformat.getDataset();
-	data->chooseRepresentation(EXS_LittleEndianImplicit, NULL); //Not really necesarry because the dicomImage class already does that
-	DicomImage* img = new DicomImage(filename);	
-	img->setMinMaxWindow();	//It is setting the adequate contrast and brightness
-	Uint8* pixelData; 
-	pixelData= (Uint8*)img->getOutputData(bits_allocated,0,0);
-	
-	
-	// Do something with pixel data
-	cout << "we got zem pixels!!";
-
-	/*for (int i = 100; i < 5; i++){
-		pixelData[i] = 0;
-	}*/
-
-	for (int i = 0; i < 256 ;i++)
-	{
-		cout << (int)pixelData[i] << " ";
-	}
-	
-	cout << "we finished the pixels";
-	
-	
-	
-	GLFWwindow* window;
-	if (!glfwInit())
-		exit(EXIT_FAILURE);
-	window = glfwCreateWindow(512, 512, "Simple example", NULL, NULL);
-	if (!window)
-	{
-		glfwTerminate();
-		exit(EXIT_FAILURE);
-	}
-	glfwMakeContextCurrent(window);
-	while (!glfwWindowShouldClose(window))
-	{
-		float ratio;
-		int width, height;
-		glfwGetFramebufferSize(window, &width, &height);
-		//printf("%d, %d\n",width,height);
-		ratio = width / (float)height;
-		glViewport(0, 0, width, height);
-		glClear(GL_COLOR_BUFFER_BIT);
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		glOrtho(-ratio, ratio, -1.f, 1.f, 1.f, -1.f);
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
-		
-		glDrawPixels(256, 256, GL_LUMINANCE, GL_UNSIGNED_BYTE, pixelData);
-		glfwSwapBuffers(window);
-		glfwPollEvents();
-	}
-	glfwDestroyWindow(window);
-	glfwTerminate();
-	exit(EXIT_SUCCESS);
-
-	
-
-
-
-	free(pixelData);
-	//DJLSDecoderRegistration::cleanup();
-
-	
-
-
-	
-	
-	//Sleep(100000);
-	//system("PAUSE");
-	return;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-inline void VolumeRenderer::interpolate(int isoLevel, glm::vec3 point1, glm::vec3 point2, float val1, float val2, glm::vec3& resultPoint, int depth){
-	
-
-	if (depth == model->interpolateDepth){
-		return;
-	}
-
-	//Model::POINTF point;
-	//std::cout << "depth is " << depth << std::endl;
-
-	if (model->linearInterpolation == false){
-
-		resultPoint.x = (point1.x + point2.x) / 2.0;
-		resultPoint.y = (point1.y + point2.y) / 2.0;
-		resultPoint.z = (point1.z + point2.z) / 2.0;
-	}
-	else{
-
-		float mu;
-		if (abs(isoLevel - val1) < 0.00001){
-			resultPoint = point1;
-			return;
-		}
-			
-		if (abs(isoLevel - val2) < 0.00001){
-			resultPoint = point1;
-			return;
-		}
-			
-		mu = (isoLevel - val1) / (val2 - val1);
-		resultPoint.x = point1.x + mu * (point2.x - point1.x);
-		resultPoint.y = point1.y + mu * (point2.y - point1.y);
-		resultPoint.z = point1.z + mu * (point2.z - point1.z);
-
-		//Now we just do it again
-		//We dedice witch one is the highest between point 1 and point2
-		
-		//The resulting point is inside the surface
-		long valueOfResultingPoint = model->getPixelValue(boost::math::iround(resultPoint.x), boost::math::iround(resultPoint.y), boost::math::iround(resultPoint.z));
-		if (valueOfResultingPoint > isoLevel){
-			//We chose the lowest point and we use that to interpolate
-			if (val1 < val2)
-				interpolate(isoLevel, point1, resultPoint, val1, valueOfResultingPoint, resultPoint, depth+1);
-			else
-				interpolate(isoLevel, point2, resultPoint, val2, valueOfResultingPoint, resultPoint, depth + 1);
-		}
-		//The resulting point is outside the surface
-		if (valueOfResultingPoint < isoLevel){
-			if (val2 < val1)
-				interpolate(isoLevel, point1, resultPoint, val1, valueOfResultingPoint, resultPoint, depth + 1);
-			else
-				interpolate(isoLevel, point2, resultPoint, val2, valueOfResultingPoint, resultPoint, depth + 1);
-		}
-		//The points is exactly on the surface
-		
-		
-
-
-	}
-
-	return;
-}
 
 /*void VolumeRenderer::marchingSquares(unsigned char** & pixelData, int numberOfByte, int celllSizeX, int celllSizeY, int celllSizeZ,
 	int pixelDataHeight, int pixelDataWidth, int frames, int isoLevel, std::vector<glm::vec3>& verts, std::vector<glm::vec3>& normals)*/
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -691,45 +466,6 @@ void VolumeRenderer::generateHypercube(){
 
 
 
-
-
-
-
-
-
-
-
-
-//Go through each cube and write the points info to the model->verts
-int VolumeRenderer::readPointsFromOctree(OctreeCube* root){
-	OctreeCube* currentCube;
-	std::queue<OctreeCube*> queue;
-	queue.push(root);
-	while (!queue.empty()){
-		currentCube = queue.front();
-		queue.pop();
-		if (currentCube->children[0] != NULL){
-			queue.push(currentCube->children[0]);
-			queue.push(currentCube->children[1]);
-			queue.push(currentCube->children[2]);
-			queue.push(currentCube->children[3]);
-			queue.push(currentCube->children[4]);
-			queue.push(currentCube->children[5]);
-			queue.push(currentCube->children[6]);
-			queue.push(currentCube->children[7]);
-		}
-
-		//Grab the current cube and polygonise it f it's leaf
-		if (currentCube->points!=NULL){
-			for (int i = 0; i < currentCube->points->size();i++){
-				model->verts.push_back(currentCube->points->at(i));
-			
-			}
-		}
-
-	}
-	return 0;
-}
  
 void VolumeRenderer::ballPivot(){
 	std::cout << "creating mesh with ball pivot algorithm" << std::endl;
@@ -815,7 +551,8 @@ void VolumeRenderer::ballPivot(){
 
 
 
-
+/*! \brief Escribe en el modelo el nuevo dato de isoLevel cuando cambia el slider correspondiente
+*/
 void VolumeRenderer::on_isoLevelSlider_valueChanged(){
 	cout << "isolevel changed" << endl;
 
@@ -838,7 +575,8 @@ void VolumeRenderer::on_isoLevelSlider_valueChanged(){
 
 
 
-
+/*! \brief Abre una ventana de dialogo donde seleccionar los archivos dicom. La ruta de los archivos se pasan a la clase Reader donde se leen los pixeles de cada archivo
+*/
 void VolumeRenderer::on_loadDICOMFromFile_clicked(){
 	
 	QFileDialog dialog(this);
@@ -894,31 +632,9 @@ void VolumeRenderer::on_resolutionSlider_valueChanged(){
 
 
 
-void VolumeRenderer::on_pointFlagButton_clicked(){
-/*	if (ui.pointFlagButton->isChecked()){
-		model->pointFlag = true;
-		ui.borderFlagButton->setEnabled(false);
-	}
-	else{
-		model->pointFlag = false;
-		ui.borderFlagButton->setEnabled(true);
-	}
-	wipePoints();
-	generateMesh();*/
-}
-void VolumeRenderer::on_borderFlagButton_clicked(){
-	/*if (ui.borderFlagButton->isChecked()){
-		model->borderFlag = true;
-		ui.pointFlagButton->setEnabled(false);
-	}
-	else{
-		model->borderFlag = false;
-		ui.pointFlagButton->setEnabled(true);
-	}
-	wipePoints();
-	generateMesh();*/
-}
 
+/*! \brief Establece el frame para ser visualizado en el visor dicom 2d
+*/
 void VolumeRenderer::on_frameSlider_valueChanged(){
 	model->frame_to_display = ui.frameSlider->value();
 	ui.glwidget->setFrame(model->frame_to_display);
@@ -1037,16 +753,24 @@ void VolumeRenderer::on_showGradientButton_clicked(){
 void VolumeRenderer::on_orientationZButton_clicked(){
 	if (ui.orientationZButton->isChecked()){
 		model->orientation = 1;
-		model->frame_to_display = 0;
-		ui.frameSlider->setValue(0);
+		model->frame_to_display = model->pixelData->frames/2;
+		ui.frameSlider->setValue(model->pixelData->frames / 2);
 		ui.frameSlider->setMaximum(model->pixelData->frames);
+		ui.dicomviewer2dgl->setFrame(model->pixelData->frames / 2);
+
+		//Give values to the slider and maximums
 
 		ui.borderYTopSlider->setValue(model->pixelData->borderYTop);
 		ui.borderYTopSlider->setMaximum(model->pixelData->height);
 
 		ui.borderYBottomSlider->setValue(model->pixelData->borderYBottom);
 		ui.borderYBottomSlider->setMaximum(model->pixelData->height);
-		//ui.borderYTopSlider->resize()
+		
+		ui.borderXLeftSlider->setValue(model->pixelData->borderXLeft);
+		ui.borderXLeftSlider->setMaximum(model->pixelData->width);
+
+		ui.borderXRightSlider->setValue(model->pixelData->borderXRight);
+		ui.borderXRightSlider->setMaximum(model->pixelData->width);
 
 
 		//Leave everything as original because in the z direction there cannot be any distorsion
@@ -1061,6 +785,14 @@ void VolumeRenderer::on_orientationZButton_clicked(){
 		rect.setTop(360);
 		ui.borderYBottomSlider->setGeometry(rect);
 
+		rect = ui.borderXLeftSlider->geometry();
+		rect.setLeft(1100);
+		rect.setRight(1100 + 231);
+		ui.borderXLeftSlider->setGeometry(rect);
+		rect = ui.borderXRightSlider->geometry();
+		rect.setLeft(1100);
+		rect.setRight(1100 + 231);
+		ui.borderXRightSlider->setGeometry(rect);
 		
 
 
@@ -1070,9 +802,10 @@ void VolumeRenderer::on_orientationZButton_clicked(){
 void VolumeRenderer::on_orientationXButton_clicked(){
 	if (ui.orientationXButton->isChecked()){
 		model->orientation = 2;
-		model->frame_to_display = 0;
-		ui.frameSlider->setValue(0);
+		model->frame_to_display = model->pixelData->width/2;
+		ui.frameSlider->setValue(model->pixelData->width / 2);
 		ui.frameSlider->setMaximum(model->pixelData->width);
+		ui.dicomviewer2dgl->setFrame(model->pixelData->width / 2);
 
 		ui.borderYTopSlider->setValue(model->pixelData->borderZFurther);
 		ui.borderYTopSlider->setMaximum(model->pixelData->frames);
@@ -1080,7 +813,15 @@ void VolumeRenderer::on_orientationXButton_clicked(){
 		ui.borderYBottomSlider->setValue(model->pixelData->borderZCloser);
 		ui.borderYBottomSlider->setMaximum(model->pixelData->frames);
 
-		if (model->pixelData->frames < model->pixelData->width){
+		ui.borderXLeftSlider->setValue(model->pixelData->borderYBottom);
+		ui.borderXLeftSlider->setMaximum(model->pixelData->height);
+
+		ui.borderXRightSlider->setValue(model->pixelData->borderYTop);
+		ui.borderXRightSlider->setMaximum(model->pixelData->height);
+
+
+
+		if (model->pixelData->frames < model->pixelData->width){	//change Y leave X as original
 			double ratio = (float)model->pixelData->frames / (float)model->pixelData->width;
 
 			QRect rect;
@@ -1093,6 +834,20 @@ void VolumeRenderer::on_orientationXButton_clicked(){
 			rect.setBottom(360 + 231);
 			rect.setTop(360 + (231 - 231 * ratio));
 			ui.borderYBottomSlider->setGeometry(rect);
+
+
+			//Leave X as original
+			rect = ui.borderXLeftSlider->geometry();
+			rect.setLeft(1100);
+			rect.setRight(1100 + 231);
+			ui.borderXLeftSlider->setGeometry(rect);
+			rect = ui.borderXRightSlider->geometry();
+			rect.setLeft(1100);
+			rect.setRight(1100 + 231);
+			ui.borderXRightSlider->setGeometry(rect);
+
+
+
 		}
 		else{
 			QRect rect;
@@ -1108,6 +863,17 @@ void VolumeRenderer::on_orientationXButton_clicked(){
 			ui.borderYBottomSlider->setGeometry(rect);
 			//modify X
 
+			double ratio = (float)model->pixelData->width / (float)model->pixelData->frames;
+
+			rect = ui.borderXLeftSlider->geometry();
+			rect.setLeft(1100);
+			rect.setRight(1100 + 231*ratio);
+			ui.borderXLeftSlider->setGeometry(rect);
+			rect = ui.borderXRightSlider->geometry();
+			rect.setLeft(1100);
+			rect.setRight(1100 + 231*ratio);
+			ui.borderXRightSlider->setGeometry(rect);
+
 		}
 
 
@@ -1117,9 +883,10 @@ void VolumeRenderer::on_orientationXButton_clicked(){
 void VolumeRenderer::on_orientationYButton_clicked(){
 	if (ui.orientationYButton->isChecked()){
 		model->orientation = 3;
-		model->frame_to_display = 0;
-		ui.frameSlider->setValue(0);
+		model->frame_to_display = model->pixelData->height/2;
+		ui.frameSlider->setValue(model->pixelData->height/2);
 		ui.frameSlider->setMaximum(model->pixelData->height);
+		ui.dicomviewer2dgl->setFrame(model->pixelData->height / 2);
 
 		//std::cout << "pixels have border closer " << model->pixelData->borderZCloser << " and border further " << model->pixelData->borderZFurther << std::endl;
 
@@ -1129,6 +896,14 @@ void VolumeRenderer::on_orientationYButton_clicked(){
 
 		ui.borderYBottomSlider->setValue(model->pixelData->borderZCloser);
 		ui.borderYBottomSlider->setMaximum(model->pixelData->frames);
+
+
+		ui.borderXLeftSlider->setValue(model->pixelData->borderXLeft);
+		ui.borderXLeftSlider->setMaximum(model->pixelData->width);
+
+		ui.borderXRightSlider->setValue(model->pixelData->borderXRight);
+		ui.borderXRightSlider->setMaximum(model->pixelData->width);
+
 
 		if (model->pixelData->frames < model->pixelData->height){ //The image will be squashed down so we need to move the Border Y sliders to coincide
 			
@@ -1144,6 +919,18 @@ void VolumeRenderer::on_orientationYButton_clicked(){
 			rect.setBottom(360 + 231);
 			rect.setTop(360 + (231 - 231 * ratio));
 			ui.borderYBottomSlider->setGeometry(rect);
+
+
+
+			//Leave X as original
+			rect = ui.borderXLeftSlider->geometry();
+			rect.setLeft(1100);
+			rect.setRight(1100 + 231);
+			ui.borderXLeftSlider->setGeometry(rect);
+			rect = ui.borderXRightSlider->geometry();
+			rect.setLeft(1100);
+			rect.setRight(1100 + 231);
+			ui.borderXRightSlider->setGeometry(rect);
 
 		}
 		else{ //In this case we need to change the border X slider to coincide and leave the Y to their original values;
@@ -1161,6 +948,18 @@ void VolumeRenderer::on_orientationYButton_clicked(){
 			rect.setTop(360);
 			ui.borderYBottomSlider->setGeometry(rect);
 			//Modify x
+
+			double ratio = (float)model->pixelData->width / (float)model->pixelData->frames;
+
+			rect = ui.borderXLeftSlider->geometry();
+			rect.setLeft(1100);
+			rect.setRight(1100 + 231 * ratio);
+			ui.borderXLeftSlider->setGeometry(rect);
+			rect = ui.borderXRightSlider->geometry();
+			rect.setLeft(1100);
+			rect.setRight(1100 + 231 * ratio);
+			ui.borderXRightSlider->setGeometry(rect);
+
 		}
 		
 	}
@@ -1172,13 +971,11 @@ void VolumeRenderer::on_showCubesButton_clicked(){
 }
 
 
-//************************************
-// Method:    generateMesh
-// FullName:  VolumeRenderer::generateMesh
-// Access:    private 
-// Returns:   void
-// Qualifier:
-//************************************
+/*! \brief Funcion encargada de crear los objetos y los hilos necesarios para la creacion del mallado.
+*
+*  Si el sistema esta en modo interactivo esta funcion no se ejecuta, a no ser que el usuario fuerze la creacion de un mallado mediante el boton Generate Mesh.
+*  La funcion se encarga de crear los objetos MarchingCuber o AdaptiveMarchingCuber y de crear un hilo donde se va a ejecutar la tarea principal de cada uno.
+*/
 void VolumeRenderer::generateMesh(int force){
 
 
@@ -1262,11 +1059,15 @@ void VolumeRenderer::generateMesh(int force){
 	
 }
 
-
+/*! \brief Slot que se ejecuta cuando el MarchingCuber o AdaptiveMarching cuber han acabado indicando que el mallado esta creado. Ejecuta la funcion de generateNormals para crear las normales.
+*/
 void VolumeRenderer::finishedMeshSlot(){
-	std::cout << "entered in finished mesh slot" << std::endl;
+	//std::cout << "entered in finished mesh slot" << std::endl;
 	generateNormals();
 }
+
+/*! \brief Slot indicando que NormalsGenerator ha acabado por lo tanto el mallado esta listo para representarse asi que se emite la señal correspondiente al visor en 3D.
+*/
 void VolumeRenderer::finishedNormalsSlot(){
 	//std::cout << "entered in finished normals slot" << std::endl;
 	emit generatingFinishedSignal();
@@ -1277,6 +1078,9 @@ void VolumeRenderer::finishedNormalsSlot(){
 //************************************
 //After the triangles are created we generate the normals for them, either one per triangle or one per vertice
 //************************************
+
+/*! \brief Funcion que crea el objeto NormalsGenerator y genera un hilo para ejecutar su funcion (normales por triangulos o por vertices dependiendo del algoritmo seleccionado)
+*/
 void VolumeRenderer::generateNormals(){
 
 	
@@ -1312,9 +1116,9 @@ void VolumeRenderer::wipeBitmap(){
 }
 
 
-//************************************
-//Wipes all the verts and normals. It is used before calculating a new mesh
-//************************************
+
+/*! \brief Borra todos los puntos del mallado, sus normales y los cubos que se han creado, dejando listo el modelo para un nuevo mallado
+*/
 void VolumeRenderer::wipePoints(){
 	
 	model->cubes.clear();
@@ -1322,9 +1126,9 @@ void VolumeRenderer::wipePoints(){
 	model->normals.clear();
 	model->octreeVector.clear();
 }
-//************************************
-// Wipes and frees all the PixelData. It is used before loading a new Dicom file
-//************************************
+
+/*! \brief Borra todos los datos de los pixels, dejando listo al modelo para la carga de otros archivos DICOM
+*/
 void VolumeRenderer::wipePixelData(){
 	int numberOfFrees=0;
 	for (int i = 0; i < model->pixelData->frames; i++){
@@ -1341,6 +1145,8 @@ void VolumeRenderer::wipePixelData(){
 
 }
 
+/*! \brief Actualiza el valor del ProgressBar con los valores que se envian a traves de las señales de los diferentes hilos
+*/
 void VolumeRenderer::progressValueChangedSlot(int newValue){
 	cout << "new value of progress" << newValue << endl;
 	ui.progressBar->setValue(newValue);
@@ -1386,11 +1192,15 @@ void VolumeRenderer::on_linearInterpolationSlider_valueChanged(){
 	generateMesh();
 }
 
-
+/*! \brief Fuerza la generacion de un mallado a partir de las opciones seleccionadas. Se creará un mallado aunque el sistema no este en el modo interactivo
+*/
 void VolumeRenderer::on_generateMeshButton_clicked(){
 	//std::cout << "clicked on generate mesh" << std::endl;
 	generateMesh(1);	//We force the generation of a mesh by passing it 1
 }
+
+/*! \brief Establece el modo interactivo, es decir se creara un mallado automaticamente al cambiar cualquier opcion.
+*/
 void VolumeRenderer::on_interactiveButton_clicked(){
 	if (ui.interactiveButton->isChecked()){
 		interactive = true;
@@ -1408,7 +1218,6 @@ void  VolumeRenderer::on_octreeDepthSlider_valueChanged(){
 	//adaptiveMarchingCubes();
 	generateMesh();
 }
-
 
 
 
@@ -1437,6 +1246,37 @@ void VolumeRenderer::on_borderYTopSlider_valueChanged(){
 		model->pixelData->borderZFurther = ui.borderYTopSlider->value();
 	}
 	
+	generateMesh();
+
+}
+
+
+
+
+void VolumeRenderer::on_borderXLeftSlider_valueChanged(){
+
+	if (model->orientation == 1){
+		model->pixelData->borderXLeft = ui.borderXLeftSlider->value();
+	}
+	if (model->orientation == 2){
+		model->pixelData->borderYBottom = ui.borderXLeftSlider->value();
+	}
+	if (model->orientation == 3){
+		model->pixelData->borderXLeft = ui.borderXLeftSlider->value();
+	}
+	generateMesh();
+}
+void VolumeRenderer::on_borderXRightSlider_valueChanged(){
+	if (model->orientation == 1){
+		model->pixelData->borderXRight = ui.borderXRightSlider->value();
+	}
+	if (model->orientation == 2){
+		model->pixelData->borderYTop = ui.borderXRightSlider->value();
+	}
+	if (model->orientation == 3){
+		model->pixelData->borderXRight = ui.borderXRightSlider->value();
+	}
+
 	generateMesh();
 
 }

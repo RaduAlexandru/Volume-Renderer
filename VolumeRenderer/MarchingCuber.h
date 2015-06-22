@@ -27,9 +27,8 @@ public:
 	~MarchingCuber();
 
 	typedef struct {
-		glm::vec3 position[8];	//Position of the 8 vertices
-		glm::vec3 normal[8];	//normals of those vertices I dont know if I'm going to use it
-		double val[8];		//value at those vertices
+		glm::vec3 position[8];	//!< Posicion de los 8 vertices de una celda
+		double val[8];		//!< Valor que tienen los 8 vertices de una celda
 	} CELL;
 
 	void run();

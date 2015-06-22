@@ -324,7 +324,7 @@ int MarchingCuber::polygonise(CELL & cell){
 
 /*! \brief Brief description.
 Interpolate es un algoritmo recursivo que recibe como parametro la posicion de los dos puntos que definen una arista 
-y sus respectivos valores y devuelve la posicion del punto que mas se aproxima a la superficie. Si el valor de la interpolacion está puesto a 0,
+y sus respectivos valores y devuelve la posicion del punto que mas se aproxima a la superficie. Si el valor de la interpolacion esta puesto a 0,
 no se realzia ningun calculo y se devuelve el punto que esta en medio de la arista. De esta manera produce resultados rapidos pero no supone una buena aproximacion de la superficie del volumen
 */
 inline void MarchingCuber::interpolate(int isoLevel, glm::vec3 point1, glm::vec3 point2, float val1, float val2, glm::vec3& resultPoint, int depth){

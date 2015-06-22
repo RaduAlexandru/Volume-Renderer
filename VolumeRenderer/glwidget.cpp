@@ -301,7 +301,7 @@ void GLWidget::paintGL()
 	//size=8
  
 	//Draw the cube for debugging
-	int x, y, z, size;
+	/*int x, y, z, size;
 	x = 256;
 	y = 168;
 	z = 56;
@@ -410,7 +410,7 @@ void GLWidget::paintGL()
 	glVertex3f(x, y + size, z);
 	glVertex3f(x + size, y + size, z);
 
-	glEnd();
+	glEnd();*/
 
 	//Draw face for debugging
 
@@ -463,6 +463,8 @@ void GLWidget::paintGL()
 }
 
 
+/*! \brief Funcion que muestra el mallado por pantalla. Se recorre el vector de puntos y de normales de 3 en 3, formandose triangulos con sus normales correspondientes
+*/
 void GLWidget::drawMesh(){
 	//glColor3f(1.f, 0.f, 0.f);
 	
@@ -657,7 +659,8 @@ void GLWidget::drawCubes2(){
 
 
 
-
+/*! \brief Lee un bitmap para representarlo como fondo del vison en 3D
+*/
 void GLWidget::readBackgroundImage(){
 	FILE *f = fopen("test9_background3.bmp", "rb");
 	if (!f) {
@@ -725,6 +728,8 @@ void GLWidget::setFrame(int frame)
 }*/
 
 
+/*! \brief Recorre el mapa de los gradientes y por cada direccion de gradiente se asigna un color en RGB para mostrarlo por pantalla
+*/
 void GLWidget::displayGradient(){
 
 
@@ -789,6 +794,8 @@ void GLWidget::displayGradient(){
 
 }
 
+/*! \brief Asigna las matriz de perspectiva o ortogonal dependiendo de las opciones seleccionadas por el usuario.
+*/
 void GLWidget::setMatrices(){
 
 	if (model->perspectiveActivated){
@@ -826,6 +833,11 @@ void GLWidget::setMatrices(){
 //Whenever the mouse is dragged over the glwidget, we calculate the position in that widget and we 
 //make the difference between where you dragged to and where originally clicked. Multiply it by the 
 //mouseSpeed that controls the speed of rotations and then we update the point where we originally clicked (mouseEntered)
+/*! \brief Recoge los eventos del raton
+*
+*	Cada vez que se mueve el raton, se resta la posicion actual de la anterior. Esa diferencia nos indica lo que se ha movido en cada direccion.
+*	En el modo normal mover el raton gira la figura pero se puede modificar ese comportamiento usando SHIFT o CTRL a la vez que se mueve el raton.
+*/
 void GLWidget::mouseMoveEvent(QMouseEvent * event){
 	int xpos=0, ypos=0;
 	
@@ -907,11 +919,16 @@ void  GLWidget::dataFinishedReadingSlot(){
 	xRot = -90;
 }
 
+
+/*! \brief Indica que los algoritmos de generacion de mallado han terminado su trabajo asi que podemos representarlo por pantalla
+*/
 void GLWidget::generatingFinishedSlot(){
 	//std::cout << "generating finished slot in the gl window" << std::endl;
 	generatingMesh = false;
 }
 
+/*! \brief Indica que Los algoritmos de generacion de mallado han empezado a trabajar asi que el visor en 3D deja de actualizarse hasta que el mallado se acaba.
+*/
 void GLWidget::generatingStartedSlot(){
 	generatingMesh = true;
 }

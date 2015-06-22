@@ -10,15 +10,15 @@ using namespace::std;
 
 int main(int argc, char *argv[])
 {
-	std::cout << "hola" << std::endl;
-	std::cout << "hola" << std::endl;
+	std::cout << "..." << std::endl;
+	std::cout << "..." << std::endl;
 	
 	QApplication a(argc, argv);
-	std::cout << "hola" << std::endl;
-	std::cout << "hola" << std::endl;
+	std::cout << "..." << std::endl;
+	std::cout << "..." << std::endl;
 	VolumeRenderer w;
 	w.show();
-	std::cout << "hola" << std::endl;
+	std::cout << "..." << std::endl;
 	return a.exec();
 	
 }

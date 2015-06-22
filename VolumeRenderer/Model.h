@@ -17,23 +17,7 @@
 
 
 
-class Data
-{
-public:
-	Data();
-	~Data();
-	virtual void** getData();
-};
 
-template<typename T>
-class DataTemplate : public Data
-{
-public:
-	T** data;
-	DataTemplate();
-	~DataTemplate();
-	
-};
 
 class Model
 {
