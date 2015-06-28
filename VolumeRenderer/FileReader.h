@@ -20,5 +20,7 @@ public:
 
 signals:
 	void dataFinishedReadingSignal();
+	void progressValueChangedSignal(int);
+	void progressTextSignal(QString);
 };
 

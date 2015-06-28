@@ -92,8 +92,8 @@ void NormalsGenerator::normalsPerVertex(PixelData* pixelData, std::vector<glm::v
 		//normals.push_back(n);
 		//continue;
 
-		//if (i% steps == 0)
-		//emit progressValueChangedSignal(i * 100 / model->verts.size());
+		if (i % (verts.size() / 10) == 0) //Update 10 times in total
+			emit progressValueChangedSignal(i * 100 / verts.size());
 		j = boost::math::iround(verts[i].x);
 		y = boost::math::iround(verts[i].y);
 		k = boost::math::iround(verts[i].z);

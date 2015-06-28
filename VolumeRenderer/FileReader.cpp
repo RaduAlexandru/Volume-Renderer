@@ -55,6 +55,7 @@ int FileReader::loadDICOMPixelData(QStringList fileNames,PixelData*pixelData){
 	pixelData->data = (unsigned char**)malloc(fileNames.size()*sizeof(unsigned char*));
 	for (int i = 0; i < fileNames.size(); i++){
 
+		emit progressValueChangedSignal(i * 100 / fileNames.size());
 		cout << "reading file" << fileNames[i].toStdString() << endl;
 		//DicomImage *img = new DicomImage(fileNames[i].toStdString().c_str(), 0);
 		/*DcmFileFormat fileformat;

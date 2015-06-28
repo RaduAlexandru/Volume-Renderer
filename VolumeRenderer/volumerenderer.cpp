@@ -364,6 +364,13 @@ VolumeRenderer::VolumeRenderer(QWidget *parent)
 	QString StyleSheet = QLatin1String(File.readAll());
 
 	qApp->setStyleSheet(StyleSheet);
+
+	ui.progressBar->setTextVisible(false);
+	ui.progressBar->setMaximumHeight(4);
+	ui.progressText->setText("<font color='black'></font>");
+
+	ui.progressText->setStyleSheet("QLabel { color: black }");
+	
 	
 
 }
@@ -403,6 +410,7 @@ void VolumeRenderer::establishConnectionsMC(){
 void VolumeRenderer::establishConnectionsAMC(){
 	connect(amc, SIGNAL(progressValueChangedSignal(int)), this, SLOT(progressValueChangedSlot(int)));
 	connect(amc, SIGNAL(finishedMeshSignal()), this, SLOT(finishedMeshSlot()));
+	connect(amc, SIGNAL(progressTextSignal(QString)), this, SLOT(progressTextSlot(QString)));
 }
 
 /*! \brief Establece las conexiones de signals y slots entre la clase NormalsGenerator y el controlador
@@ -417,6 +425,7 @@ void VolumeRenderer::establishConnectionsNG(){
 void VolumeRenderer::establishConnectionsREADER(){
 	connect(reader, SIGNAL(progressValueChangedSignal(int)), this, SLOT(progressValueChangedSlot(int)));
 	connect(reader, SIGNAL(dataFinishedReadingSignal()), ui.glwidget, SLOT(dataFinishedReadingSlot()));
+	connect(reader, SIGNAL(dataFinishedReadingSignal()), this, SLOT(dataFinishedReadingSlot()));
 
 }
 
@@ -594,15 +603,26 @@ void VolumeRenderer::on_loadDICOMFromFile_clicked(){
 	wipePoints();
 	wipePixelData();
 
-
+	ui.progressText->setText("Reading DICOM Files");
 	reader = new FileReader;
 	establishConnectionsREADER();
-	reader->loadDICOMPixelData(fileNames, model->pixelData);
+	//reader->loadDICOMPixelData(fileNames, model->pixelData);
+	boost::thread workerThread(boost::bind(&FileReader::loadDICOMPixelData, reader,fileNames,model->pixelData));
 	//loadDICOMPixelData(fileNames);
 
-
 	ui.frameSlider->setMaximum(fileNames.size() - 1);
-	if (model->pixelData->numberOfBytes ==1)
+	
+
+	
+
+}
+
+void VolumeRenderer::dataFinishedReadingSlot(){
+	ui.progressText->setText("");
+	ui.progressBar->setValue(0);
+
+	
+	if (model->pixelData->numberOfBytes == 1)
 		ui.isoLevelSlider->setMaximum(255);
 	if (model->pixelData->numberOfBytes == 2)
 		ui.isoLevelSlider->setMaximum(65536);
@@ -611,7 +631,7 @@ void VolumeRenderer::on_loadDICOMFromFile_clicked(){
 
 	generateMesh();
 	ui.dicomviewer2dgl->setFrame(model->pixelData->frames / 2);
-	ui.glwidget->sendDataToGL();
+	//ui.glwidget->sendDataToGL();
 	ui.glwidget->update();
 	emit dataFinishedReading();
 
@@ -994,7 +1014,7 @@ void VolumeRenderer::generateMesh(int force){
 	generatingMesh = true;
 	if (model->algorithmChosen == 1){
 		//boost::thread workerThread(boost::bind(&VolumeRenderer::marchingSquares, this));
-
+		ui.progressText->setText("<font color='black'>Generating Mesh</font>");
 		mc = new MarchingCuber((model->pixelData), &(model->verts), &(model->normals), model->isoLevel, model->cellSizeX, model->cellSizeY, model->cellSizeZ, model->interpolateDepth);
 		establishConnectionsMC();
 		//mc->run();
@@ -1011,17 +1031,19 @@ void VolumeRenderer::generateMesh(int force){
 		return;
 	}
 	if (model->algorithmChosen == 3){
-		AdaptiveCuber* amc = new AdaptiveCuber((model->pixelData), &(model->verts), &(model->normals), model->isoLevel, model->cellSizeX, model->cellSizeY, model->cellSizeZ, model->interpolateDepth, model->octreeMaxDepth, &(model->gradient), model->tolerance);
+		amc = new AdaptiveCuber((model->pixelData), &(model->verts), &(model->normals), model->isoLevel, model->cellSizeX, model->cellSizeY, model->cellSizeZ, model->interpolateDepth, model->octreeMaxDepth, &(model->gradient), model->tolerance);
 		establishConnectionsAMC();
-		amc->runWithCracks();
-		generateNormals();
+		//amc->runWithCracks();
+		boost::thread workerThread(boost::bind(&AdaptiveCuber::runWithCracks, amc));
+		//generateNormals();
 	}
 	if (model->algorithmChosen == 4){
 		//adaptiveMarchingCubes3();
-		AdaptiveCuber* amc = new AdaptiveCuber((model->pixelData), &(model->verts), &(model->normals), model->isoLevel,  model->cellSizeX, model->cellSizeY, model->cellSizeZ,  model->interpolateDepth, model->octreeMaxDepth,&(model->gradient),model->tolerance);
+		amc = new AdaptiveCuber((model->pixelData), &(model->verts), &(model->normals), model->isoLevel,  model->cellSizeX, model->cellSizeY, model->cellSizeZ,  model->interpolateDepth, model->octreeMaxDepth,&(model->gradient),model->tolerance);
 		establishConnectionsAMC();
-		amc->run();
-		generateNormals();
+		//amc->run();
+		boost::thread workerThread(boost::bind(&AdaptiveCuber::run, amc));
+		//generateNormals();
 	}
 
 	//model->generatingMesh = true;
@@ -1033,7 +1055,7 @@ void VolumeRenderer::generateMesh(int force){
 	QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedStates));
 	QLocale aEnglish;
 	//qWarning() << aEnglish.toString(i);
-	ui.numberOfTrianglesLabel->setText(aEnglish.toString(model->verts.size()/9));
+	ui.numberOfTrianglesLabel->setText(aEnglish.toString(model->verts.size()/3));
 
 
 	/*QPalette palette;
@@ -1067,6 +1089,7 @@ void VolumeRenderer::generateMesh(int force){
 */
 void VolumeRenderer::finishedMeshSlot(){
 	//std::cout << "entered in finished mesh slot" << std::endl;
+	ui.progressText->setText("<font color='black'>Generating Normals</font>");
 	generateNormals();
 }
 
@@ -1075,6 +1098,8 @@ void VolumeRenderer::finishedMeshSlot(){
 void VolumeRenderer::finishedNormalsSlot(){
 	//std::cout << "entered in finished normals slot" << std::endl;
 	emit generatingFinishedSignal();
+	ui.progressText->setText("<font color='black'></font>");
+	ui.progressBar->setValue(0);
 	generatingMesh = false;
 	ui.glwidget->update();
 }
@@ -1155,6 +1180,15 @@ void VolumeRenderer::progressValueChangedSlot(int newValue){
 	ui.progressBar->setValue(newValue);
 }
 
+
+void VolumeRenderer::progressTextSlot(QString text){
+	//ui.progressText->setText("<font color='black'>Some text</font>");
+	//ui.progressText->setText(text);
+
+
+
+	ui.progressText->setText(text);
+}
 
 
 void VolumeRenderer::on_xPosText_editingFinished(){

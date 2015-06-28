@@ -62,6 +62,7 @@ public:
 signals:
 	void finishedMeshSignal();
 	void progressValueChangedSignal(int);
+	void progressTextSignal(QString);
 
 
 };

@@ -65,6 +65,8 @@ int AdaptiveCuber::run(){
 	initial->depth = returnedFromCreateInitial.depth;
 
 	octreeVector.push_back(initial);
+
+	emit progressTextSignal("Generating Octree");
 	std::cout << "starting to generate octree" << std::endl;
 	generateOctree_tree_version(*initial);
 	std::cout << "finished generateing octree" << std::endl;
@@ -73,15 +75,17 @@ int AdaptiveCuber::run(){
 
 	//Grab each octreebube in our octree and polygonise it
 	//polygoniseOctree(initial);
+	emit progressTextSignal("Polygonise Octree");
 	polygoniseOctree2(initial);	//Polygonise octree will polygonise each octree but assign the points to the cube itself an not to the model->verts
 
-
+	emit progressTextSignal("Patch Cracks");
 	std::cout << "starting patch cracks" << std::endl;
 	crackPatch(initial);
 	//crackPatch(initial);
 	//crackPatch(initial);
 	std::cout << "finished patching cracks" << std::endl;
 
+	emit progressTextSignal("Reading Points");
 	readPointsFromOctree(initial);
 
 
@@ -91,7 +95,9 @@ int AdaptiveCuber::run(){
 	//boost::thread workerThread(boost::bind(&VolumeRenderer::generateNormals, this));
 	//model->generatingMesh = false;
 
-	octreeVector.clear();
+	//octreeVector.clear();
+	emit finishedMeshSignal();
+
 	return 0;
 
 }
@@ -139,6 +145,7 @@ int AdaptiveCuber::runWithCracks(){
 	initial->depth = returnedFromCreateInitial.depth;
 
 	octreeVector.push_back(initial);
+	emit progressTextSignal("Generating Octree");
 	std::cout << "starting to generate octree" << std::endl;
 	generateOctree_tree_version(*initial);
 	std::cout << "finished generateing octree" << std::endl;
@@ -147,6 +154,7 @@ int AdaptiveCuber::runWithCracks(){
 
 	//Grab each octreebube in our octree and polygonise it
 	//polygoniseOctree(initial);
+	emit progressTextSignal("Polygonise Octree");
 	polygoniseOctree2(initial);	//Polygonise octree will polygonise each octree but assign the points to the cube itself an not to the model->verts
 
 
@@ -165,7 +173,8 @@ int AdaptiveCuber::runWithCracks(){
 	//boost::thread workerThread(boost::bind(&VolumeRenderer::generateNormals, this));
 	//model->generatingMesh = false;
 
-	octreeVector.clear();
+	//octreeVector.clear();
+	emit finishedMeshSignal();
 	return 0;
 
 }
@@ -638,9 +647,16 @@ int AdaptiveCuber::polygoniseOctree2(OctreeCube* root){
 	OctreeCube* currentCube;
 	std::queue<OctreeCube*> queue;
 	queue.push(root);
+	int cubeNumber = 0;
 	while (!queue.empty()){
 		currentCube = queue.front();
 		queue.pop();
+
+		cubeNumber++;
+		if (cubeNumber % (octreeVector.size() / 10) == 0)
+			emit progressValueChangedSignal(cubeNumber * 100 / (octreeVector.size()));
+
+
 		if (currentCube->children[0] != NULL){
 			queue.push(currentCube->children[0]);
 			queue.push(currentCube->children[1]);
@@ -850,7 +866,7 @@ void AdaptiveCuber::crackPatch(OctreeCube* root){
 
 	OctreeCube* right, *left, *top, *bottom, *further, *closer;
 
-	int count = 0;
+	int cubeNumber = 0;
 	//Do the same but using the octree vector insted of a queue
 
 		
@@ -860,6 +876,13 @@ void AdaptiveCuber::crackPatch(OctreeCube* root){
 	while (!bigQueue.empty()){
 		currentCube = bigQueue.front();
 		bigQueue.pop();
+
+
+		cubeNumber++;
+		if (cubeNumber % (octreeVector.size() / 50) == 0)
+			emit progressValueChangedSignal(cubeNumber * 100 / (octreeVector.size()));
+
+
 		if (!currentCube->isLeaf){
 			bigQueue.push(currentCube->children[0]);
 			bigQueue.push(currentCube->children[1]);
@@ -870,7 +893,7 @@ void AdaptiveCuber::crackPatch(OctreeCube* root){
 			bigQueue.push(currentCube->children[6]);
 			bigQueue.push(currentCube->children[7]);
 		}
-		count++;
+		
 		right = NULL;
 		left = NULL;
 		top = NULL;

@@ -1,20 +1,26 @@
 
 
-QProgressBar {
-border: 1px solid black;
+/*QProgressBar {
+border: 0px solid black;
 text-align: top;
-padding: 1px;
 background: QLinearGradient( x1: 0, y1: 0, x2: 1, y2: 0,
 stop: 0 #fff,
 stop: 0.4999 #eee,
 stop: 0.5 #ddd,
 stop: 1 #eee );
 width: 5px;
+
+}*/
+
+QProgressBar {
+border: 0px;
+background: rgb(237,237,237);
 }
 
+
 QProgressBar::chunk {
-background: red;
-border: 1px solid black;
+background: rgb(200,20,20);
+border: 0px solid black;
 }
 
 
@@ -241,11 +247,9 @@ QRadioButton::indicator:checked:pressed {
 
 QLabel{
 color:white;
-size:20px;
 font-size: 15px;
 font-weight: bold;
 border:white;
-text-shadow: 0 0 3px #F00;
 }
 
 QLabel {

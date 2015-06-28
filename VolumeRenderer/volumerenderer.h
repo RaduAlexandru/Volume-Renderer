@@ -134,8 +134,10 @@ private slots:
 	void on_writeObjButton_clicked();
 
 	void progressValueChangedSlot(int newValue);
+	void progressTextSlot(QString);
 	void finishedMeshSlot();
 	void finishedNormalsSlot();
+	void dataFinishedReadingSlot();
 
 	
 };

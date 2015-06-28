@@ -27,5 +27,8 @@ public:
 
 	std::vector<OctreeCube*>  octreeVector;
 	std::vector<std::vector<OctreeCube*>>  octreeLevels;
+
+
+
 };
 
