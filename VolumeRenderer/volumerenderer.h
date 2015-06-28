@@ -11,6 +11,7 @@
 #include "AdaptiveCuber.h"
 #include "FileReader.h"
 #include "NormalsGenerator.h"
+#include "Exporter.h"
 #include <glm/glm.hpp>
 
 

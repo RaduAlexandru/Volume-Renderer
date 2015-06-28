@@ -11,6 +11,9 @@
 #include "dcmtk/dcmjpeg/djencode.h"  
 
 #include "dcmtk/dcmdata/dcpxitem.h"
+#include <stdlib.h>
+#include <iostream>
+#include <QFileDialog>
 
 using namespace std;
 
@@ -125,4 +128,96 @@ int FileReader::getRepresentation(QString fileName, int& bitsAllocated, int& bit
 	height = (int)heightLong;
 	width = (int)widthLong;
 	return 0;
+}
+
+
+int FileReader::loadOBJFile(QString fileName, PixelData*pixelData, std::vector<glm::vec3>& verts, std::vector<glm::vec3>& normals){
+
+
+
+	std::ifstream file(fileName.toStdString());
+	std::string line;
+	while (std::getline(file, line)) {
+		std::istringstream iss(line);
+		std::string token;
+		while (iss >> token)
+		{
+			// do something with token
+			//std::cout << "token is" << token << std::endl;
+
+			if (token.compare("v") == 0){
+				//std::cout << "token is vertice"  << std::endl;
+
+				glm::vec3 point;
+				float temp = 0.0;
+
+				iss >> token;
+				temp = ::atof(token.c_str());
+				point.x = temp;
+
+				iss >> token;
+				temp = ::atof(token.c_str());
+				point.y = temp;
+
+				iss >> token;
+				temp = ::atof(token.c_str());
+				point.z = temp;
+
+				verts.push_back(point);
+
+				//std::cout << "created point with " << point.x << "  " << point.y << "  " << point.z << std::endl;
+
+			}
+			if (token.compare("vn") == 0){
+				//std::cout << "token is normal" << std::endl;
+				glm::vec3 normal;
+				float temp = 0.0;
+
+				iss >> token;
+				temp = ::atof(token.c_str());
+				normal.x = temp;
+
+				iss >> token;
+				temp = ::atof(token.c_str());
+				normal.y = temp;
+
+				iss >> token;
+				temp = ::atof(token.c_str());
+				normal.z = temp;
+
+				normals.push_back(normal);
+				//std::cout << "created normal with " << normal.x << "  " << normal.y << "  " << normal.z << std::endl;
+
+			}
+
+			if (token.compare("representation") == 0){
+				//std::cout << "token is normal" << std::endl;
+				glm::vec3 normal;
+				double temp;
+
+				iss >> token;
+				temp = ::atof(token.c_str());
+				pixelData->width = temp;
+
+				iss >> token;
+				temp = ::atof(token.c_str());
+				pixelData->height = temp;
+
+				iss >> token;
+				temp = ::atof(token.c_str());
+				pixelData->frames = temp;
+
+				//std::cout << "loaded representation" << model->pixelData->width << "  " << model->pixelData->height << "  " << model->pixelData->frames << std::endl;
+
+			}
+
+
+
+
+		}
+	}
+
+	emit objFinishedReadingSignal();
+	return 0;
+
 }

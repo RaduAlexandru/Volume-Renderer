@@ -426,6 +426,7 @@ void VolumeRenderer::establishConnectionsREADER(){
 	connect(reader, SIGNAL(progressValueChangedSignal(int)), this, SLOT(progressValueChangedSlot(int)));
 	connect(reader, SIGNAL(dataFinishedReadingSignal()), ui.glwidget, SLOT(dataFinishedReadingSlot()));
 	connect(reader, SIGNAL(dataFinishedReadingSignal()), this, SLOT(dataFinishedReadingSlot()));
+	connect(reader, SIGNAL(objFinishedReadingSignal()), this, SLOT(finishedNormalsSlot()));		//When you finish reading the obj it is the same as when you finish the normals because you completely change the verts and the normals of the mesh
 
 }
 
@@ -1112,7 +1113,7 @@ void VolumeRenderer::finishedNormalsSlot(){
 */
 void VolumeRenderer::generateNormals(){
 
-	
+	ui.progressText->setText("Generating Normals");
 
 	model->normals.clear();
 	if (model->normalsAlgChosen == 1){
@@ -1339,99 +1340,20 @@ void VolumeRenderer::on_loadObjButton_clicked(){
 	wipePixelData();
 	wipePoints();
 
-	std::cout << "opened " << fileName.toStdString() << std::endl;
+	ui.progressText->setText("Reading OBJ File");
+	reader = new FileReader;
+	establishConnectionsREADER();
+	boost::thread workerThread(boost::bind(&FileReader::loadOBJFile, reader, fileName, model->pixelData, boost::ref(model->verts), boost::ref(model->normals)));
 
-	int type = -1;
+	
 
-	std::ifstream file(fileName.toStdString());
-	std::string line;
-	while (std::getline(file, line)) {
-		std::istringstream iss(line);
-		std::string token;
-		while (iss >> token)
-		{
-			// do something with token
-			//std::cout << "token is" << token << std::endl;
-
-			if (token.compare("v")==0){
-				//std::cout << "token is vertice"  << std::endl;
-
-				glm::vec3 point;
-				float temp=0.0;
-
-				iss >> token;
-				temp= ::atof(token.c_str());
-				point.x = temp;
-
-				iss >> token;
-				temp = ::atof(token.c_str());
-				point.y = temp;
-
-				iss >> token;
-				temp = ::atof(token.c_str());
-				point.z = temp;
-
-				model->verts.push_back(point);
-
-				//std::cout << "created point with " << point.x << "  " << point.y << "  " << point.z << std::endl;
-
-			}
-			if (token.compare("vn")==0){
-				//std::cout << "token is normal" << std::endl;
-				glm::vec3 normal;
-				float temp=0.0;
-
-				iss >> token;
-				temp = ::atof(token.c_str());
-				normal.x = temp;
-
-				iss >> token;
-				temp = ::atof(token.c_str());
-				normal.y = temp;
-
-				iss >> token;
-				temp = ::atof(token.c_str());
-				normal.z = temp;
-
-				model->normals.push_back(normal);
-				//std::cout << "created normal with " << normal.x << "  " << normal.y << "  " << normal.z << std::endl;
-
-			}
-
-			if (token.compare("representation")==0){
-				//std::cout << "token is normal" << std::endl;
-				glm::vec3 normal;
-				double temp;
-
-				iss >> token;
-				temp = ::atof(token.c_str());
-				model->pixelData->width = temp;
-
-				iss >> token;
-				temp = ::atof(token.c_str());
-				model->pixelData->height = temp;
-
-				iss >> token;
-				temp = ::atof(token.c_str());
-				model->pixelData->frames = temp;
-
-				//std::cout << "loaded representation" << model->pixelData->width << "  " << model->pixelData->height << "  " << model->pixelData->frames << std::endl;
-
-			}
-
-
-			
-
-		}
-	}
-
-	std::cout << "finishing " << std::endl;
-	emit generatingFinishedSignal();
+	
+	//emit generatingFinishedSignal();
 
 }
 void VolumeRenderer::on_writeObjButton_clicked(){
 	std::cout << "writing obj file" << std::endl;
-
+	
 	
 
 
@@ -1443,29 +1365,14 @@ void VolumeRenderer::on_writeObjButton_clicked(){
 	QString filename; 
 	filename = QFileDialog::getSaveFileName(0, "Save file", QDir::currentPath(),
 		filters, &defaultFilter);
-	QFile f(filename);
-	//f.open(QIODevice::WriteOnly);
-	// store data in f
-	if (!f.open(QIODevice::WriteOnly | QIODevice::Text)){
-		std::cout << "Error opening the file for writing" << std::endl;
-		return;
-	}
-		
-	QTextStream out(&f);
+	
+	ui.progressText->setText("Exporting to OBJ");
 
-	out << "representation " << model->pixelData->width << " " << model->pixelData->height << " " << model->pixelData->frames << "\n";
+	Exporter* exporter = new Exporter;
+	connect(exporter, SIGNAL(progressValueChangedSignal(int)), this, SLOT(progressValueChangedSlot(int)));
+	connect(exporter, SIGNAL(finishedWritingToFileSignal()), this, SLOT(finishedNormalsSlot()));
+	//exporter->writeToOBJ(filename, model->verts, model->normals, model->pixelData->width, model->pixelData->height, model->pixelData->frames);
 
-
-	for (int i = 0; i < model->verts.size(); i = i + 1){
-		out << "v " << model->verts[i].x << " " << model->verts[i].y << " " << model->verts[i].z << "\n";
-	}
-	for (int i = 0; i < model->normals.size(); i = i + 1){
-		out << "vn " << model->normals[i].x << " " << model->normals[i].y << " " << model->normals[i].z << "\n";
-	}
-	for (int i = 0; i < model->verts.size()-3; i = i + 3){
-		out << "f " << i+1 << "//" << i+1 << " " << i+2 << "//" << i+2  << " " << i+3 << "//" << i+3 << "\n";
-	}
-
-	f.close(); 
+	boost::thread workerThread(boost::bind(&Exporter::writeToOBJ, exporter, filename, model->verts, model->normals, model->pixelData->width, model->pixelData->height, model->pixelData->frames));
 
 }
