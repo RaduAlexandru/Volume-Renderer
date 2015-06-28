@@ -8,6 +8,7 @@ public:
 	AdaptiveCuber(PixelData* pixelData, std::vector<glm::vec3>* verts, std::vector<glm::vec3>* normals, int isoLevel, int cellSizeX, int cellSizeY, int cellSizeZ, int interpolateDepth, int octreeMaxDepth, std::vector< boost::unordered_map< std::pair<int, int>, glm::vec3> >* gradient, int tolerance);
 
 	int run();
+	int runWithCracks();
 	void calculateGradient();
 	OctreeCube createInitialCube();
 	int generateOctree_tree_version(OctreeCube&, int = 0);
@@ -25,5 +26,6 @@ public:
 	int tolerance;
 
 	std::vector<OctreeCube*>  octreeVector;
+	std::vector<std::vector<OctreeCube*>>  octreeLevels;
 };
 

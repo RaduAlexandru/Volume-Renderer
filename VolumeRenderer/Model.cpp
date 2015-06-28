@@ -11,7 +11,6 @@
 Model::Model()
 {
 	isoLevel = 14000;
-	bitmapPixels = NULL;
 	cellSizeX=6;
 	cellSizeY=6;
 	cellSizeZ=6;
@@ -21,9 +20,7 @@ Model::Model()
 	//pixelDataHeight = 0;
 	//pixelDataWidth = 0;
 
-	linearInterpolation = true;
-	pointFlag = false;
-	borderFlag = false;
+	
 	showWireframe = false;
 	perspectiveActivated = true;
 	showMesh = true;

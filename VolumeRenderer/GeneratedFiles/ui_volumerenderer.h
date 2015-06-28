@@ -38,7 +38,7 @@ public:
     QWidget *centralWidget;
     GLWidget *glwidget;
     QLabel *numberOfTrianglesLabel;
-    QPushButton *pushButton;
+    QPushButton *writeObjButton;
     QSlider *frameSlider;
     QLabel *label_2;
     QLabel *label_6;
@@ -56,7 +56,7 @@ public:
     QRadioButton *normalsPerTriangleButton;
     QRadioButton *normalsPerVerticeButton;
     QCheckBox *showCubesButton;
-    QPushButton *pushButton_2;
+    QPushButton *loadObjButton;
     QPushButton *pushButton_3;
     QCheckBox *showMeshButton;
     QCheckBox *showGradientButton;
@@ -109,9 +109,9 @@ public:
         numberOfTrianglesLabel->setGeometry(QRect(560, 560, 131, 20));
         numberOfTrianglesLabel->setTextFormat(Qt::RichText);
         numberOfTrianglesLabel->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
-        pushButton = new QPushButton(glwidget);
-        pushButton->setObjectName(QStringLiteral("pushButton"));
-        pushButton->setGeometry(QRect(660, 460, 75, 23));
+        writeObjButton = new QPushButton(glwidget);
+        writeObjButton->setObjectName(QStringLiteral("writeObjButton"));
+        writeObjButton->setGeometry(QRect(660, 460, 75, 23));
         frameSlider = new QSlider(centralWidget);
         frameSlider->setObjectName(QStringLiteral("frameSlider"));
         frameSlider->setGeometry(QRect(1170, 300, 121, 22));
@@ -167,9 +167,9 @@ public:
         showCubesButton = new QCheckBox(centralWidget);
         showCubesButton->setObjectName(QStringLiteral("showCubesButton"));
         showCubesButton->setGeometry(QRect(1180, 190, 81, 17));
-        pushButton_2 = new QPushButton(centralWidget);
-        pushButton_2->setObjectName(QStringLiteral("pushButton_2"));
-        pushButton_2->setGeometry(QRect(160, 510, 111, 23));
+        loadObjButton = new QPushButton(centralWidget);
+        loadObjButton->setObjectName(QStringLiteral("loadObjButton"));
+        loadObjButton->setGeometry(QRect(160, 510, 111, 23));
         pushButton_3 = new QPushButton(centralWidget);
         pushButton_3->setObjectName(QStringLiteral("pushButton_3"));
         pushButton_3->setGeometry(QRect(1180, 70, 111, 23));
@@ -339,7 +339,7 @@ public:
     {
         VolumeRendererClass->setWindowTitle(QApplication::translate("VolumeRendererClass", "VolumeRenderer", 0));
         numberOfTrianglesLabel->setText(QApplication::translate("VolumeRendererClass", "<html><head/><body><p><br/></p></body></html>", 0));
-        pushButton->setText(QApplication::translate("VolumeRendererClass", "writeToObj", 0));
+        writeObjButton->setText(QApplication::translate("VolumeRendererClass", "writeToObj", 0));
         label_2->setText(QApplication::translate("VolumeRendererClass", "Frame", 0));
         label_6->setText(QApplication::translate("VolumeRendererClass", "0", 0));
         loadDICOMFromFile->setText(QApplication::translate("VolumeRendererClass", "Load DICOM file", 0));
@@ -355,7 +355,7 @@ public:
         normalsPerTriangleButton->setText(QApplication::translate("VolumeRendererClass", "Normals Per Triangle", 0));
         normalsPerVerticeButton->setText(QApplication::translate("VolumeRendererClass", "Normals Per Vertice ", 0));
         showCubesButton->setText(QApplication::translate("VolumeRendererClass", "showCubes", 0));
-        pushButton_2->setText(QApplication::translate("VolumeRendererClass", "Load OBJ File", 0));
+        loadObjButton->setText(QApplication::translate("VolumeRendererClass", "Load OBJ File", 0));
         pushButton_3->setText(QApplication::translate("VolumeRendererClass", "ResetModelPosition", 0));
         showMeshButton->setText(QApplication::translate("VolumeRendererClass", "showMesh", 0));
         showGradientButton->setText(QApplication::translate("VolumeRendererClass", "showGradient", 0));

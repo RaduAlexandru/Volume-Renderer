@@ -591,7 +591,6 @@ void VolumeRenderer::on_loadDICOMFromFile_clicked(){
 	
 	if (fileNames.empty())
 		return;
-	wipeBitmap();
 	wipePoints();
 	wipePixelData();
 
@@ -1008,10 +1007,15 @@ void VolumeRenderer::generateMesh(int force){
 		//marchingSquares();
 	}
 		
-	if (model->algorithmChosen == 2)
+	if (model->algorithmChosen == 2){
 		return;
-	if (model->algorithmChosen == 3)
-		return;
+	}
+	if (model->algorithmChosen == 3){
+		AdaptiveCuber* amc = new AdaptiveCuber((model->pixelData), &(model->verts), &(model->normals), model->isoLevel, model->cellSizeX, model->cellSizeY, model->cellSizeZ, model->interpolateDepth, model->octreeMaxDepth, &(model->gradient), model->tolerance);
+		establishConnectionsAMC();
+		amc->runWithCracks();
+		generateNormals();
+	}
 	if (model->algorithmChosen == 4){
 		//adaptiveMarchingCubes3();
 		AdaptiveCuber* amc = new AdaptiveCuber((model->pixelData), &(model->verts), &(model->normals), model->isoLevel,  model->cellSizeX, model->cellSizeY, model->cellSizeZ,  model->interpolateDepth, model->octreeMaxDepth,&(model->gradient),model->tolerance);
@@ -1106,14 +1110,7 @@ void VolumeRenderer::generateNormals(){
 
 }
 
-void VolumeRenderer::wipeBitmap(){
-	//WE first wipe the data that migth already be in the model.
-	if (model->bitmapPixels != NULL){
-		free(model->bitmapPixels);
-		model->bitmapPixels = NULL;
-	}
-	
-}
+
 
 
 
@@ -1131,11 +1128,17 @@ void VolumeRenderer::wipePoints(){
 */
 void VolumeRenderer::wipePixelData(){
 	int numberOfFrees=0;
+
+	if (model->pixelData->data == NULL)
+		return;
+
 	for (int i = 0; i < model->pixelData->frames; i++){
 		free(model->pixelData->data[i]);
 		numberOfFrees++;
 	}
 	free(model->pixelData->data);
+	model->pixelData->data = NULL;
+	model->pixelData->numberOfBytes = 0;;
 	
 	ui.glwidget->xMove = 0; //Now we reset the position so that the new model will be centered
 	ui.glwidget->yMove = 0;
@@ -1278,5 +1281,157 @@ void VolumeRenderer::on_borderXRightSlider_valueChanged(){
 	}
 
 	generateMesh();
+
+}
+
+void VolumeRenderer::on_loadObjButton_clicked(){
+	std::cout << "loading obj file" << std::endl;
+	
+
+
+
+
+	QString fileName=NULL;
+	fileName = QFileDialog::getOpenFileName(this,
+		tr("Open OBJ File"), "/home", tr("OBJ File (*.obj)"));
+	
+	if (fileName == NULL)
+		return;
+
+	//send the signal so stop rendering. The generating mesh signal
+	//then when we are finished send the one that sais, finished generating
+	//also have to read the pixelwidht, height and frames
+	emit generatingStartedSignal();
+	wipePixelData();
+	wipePoints();
+
+	std::cout << "opened " << fileName.toStdString() << std::endl;
+
+	int type = -1;
+
+	std::ifstream file(fileName.toStdString());
+	std::string line;
+	while (std::getline(file, line)) {
+		std::istringstream iss(line);
+		std::string token;
+		while (iss >> token)
+		{
+			// do something with token
+			//std::cout << "token is" << token << std::endl;
+
+			if (token.compare("v")==0){
+				//std::cout << "token is vertice"  << std::endl;
+
+				glm::vec3 point;
+				float temp=0.0;
+
+				iss >> token;
+				temp= ::atof(token.c_str());
+				point.x = temp;
+
+				iss >> token;
+				temp = ::atof(token.c_str());
+				point.y = temp;
+
+				iss >> token;
+				temp = ::atof(token.c_str());
+				point.z = temp;
+
+				model->verts.push_back(point);
+
+				//std::cout << "created point with " << point.x << "  " << point.y << "  " << point.z << std::endl;
+
+			}
+			if (token.compare("vn")==0){
+				//std::cout << "token is normal" << std::endl;
+				glm::vec3 normal;
+				float temp=0.0;
+
+				iss >> token;
+				temp = ::atof(token.c_str());
+				normal.x = temp;
+
+				iss >> token;
+				temp = ::atof(token.c_str());
+				normal.y = temp;
+
+				iss >> token;
+				temp = ::atof(token.c_str());
+				normal.z = temp;
+
+				model->normals.push_back(normal);
+				//std::cout << "created normal with " << normal.x << "  " << normal.y << "  " << normal.z << std::endl;
+
+			}
+
+			if (token.compare("representation")==0){
+				//std::cout << "token is normal" << std::endl;
+				glm::vec3 normal;
+				double temp;
+
+				iss >> token;
+				temp = ::atof(token.c_str());
+				model->pixelData->width = temp;
+
+				iss >> token;
+				temp = ::atof(token.c_str());
+				model->pixelData->height = temp;
+
+				iss >> token;
+				temp = ::atof(token.c_str());
+				model->pixelData->frames = temp;
+
+				//std::cout << "loaded representation" << model->pixelData->width << "  " << model->pixelData->height << "  " << model->pixelData->frames << std::endl;
+
+			}
+
+
+			
+
+		}
+	}
+
+	std::cout << "finishing " << std::endl;
+	emit generatingFinishedSignal();
+
+}
+void VolumeRenderer::on_writeObjButton_clicked(){
+	std::cout << "writing obj file" << std::endl;
+
+	
+
+
+
+	QString filters("OBJ files (*.obj);;Text files (*.txt);;All files (*.*)");
+	QString defaultFilter("OBJ files (*.obj)");
+
+	/* Static method approach */
+	QString filename; 
+	filename = QFileDialog::getSaveFileName(0, "Save file", QDir::currentPath(),
+		filters, &defaultFilter);
+	QFile f(filename);
+	//f.open(QIODevice::WriteOnly);
+	// store data in f
+	if (!f.open(QIODevice::WriteOnly | QIODevice::Text)){
+		std::cout << "Error opening the file for writing" << std::endl;
+		return;
+	}
+		
+	QTextStream out(&f);
+
+	out << "representation " << model->pixelData->width << " " << model->pixelData->height << " " << model->pixelData->frames << "\n";
+
+
+	for (int i = 0; i < model->verts.size(); i = i + 1){
+		out << "v " << model->verts[i].x << " " << model->verts[i].y << " " << model->verts[i].z << "\n";
+	}
+	for (int i = 0; i < model->normals.size(); i = i + 1){
+		out << "vn " << model->normals[i].x << " " << model->normals[i].y << " " << model->normals[i].z << "\n";
+	}
+	for (int i = 0; i < model->verts.size()-3; i = i + 3){
+		out << "f " << i+1 << "//" << i+1 << " " << i+2 << "//" << i+2  << " " << i+3 << "//" << i+3 << "\n";
+	}
+
+	f.close(); 
 
 }

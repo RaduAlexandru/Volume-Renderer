@@ -313,6 +313,7 @@ int OctreeCube::subdivide_tree_version(){
 		children[i]->sizeX = sizeX / 2;
 		children[i]->sizeY = sizeY / 2;
 		children[i]->sizeZ = sizeZ / 2;
+		children[i]->depth = depth + 1;
 	}
 
 

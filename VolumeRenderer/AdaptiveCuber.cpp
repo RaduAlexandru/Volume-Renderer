@@ -28,6 +28,8 @@ int AdaptiveCuber::run(){
 	verts->clear();
 	normals->clear();
 	octreeVector.clear();
+	octreeLevels.clear();
+	octreeLevels.resize(octreeMaxDepth +  1);
 	std::cout << "Starting adaptive marching cubes 3" << std::endl;
 	//Calculate the gradients
 	//Create the original cube
@@ -60,6 +62,7 @@ int AdaptiveCuber::run(){
 	initial->sizeX = returnedFromCreateInitial.sizeX;
 	initial->sizeY = returnedFromCreateInitial.sizeY;
 	initial->sizeZ = returnedFromCreateInitial.sizeZ;
+	initial->depth = returnedFromCreateInitial.depth;
 
 	octreeVector.push_back(initial);
 	std::cout << "starting to generate octree" << std::endl;
@@ -75,6 +78,80 @@ int AdaptiveCuber::run(){
 
 	std::cout << "starting patch cracks" << std::endl;
 	crackPatch(initial);
+	//crackPatch(initial);
+	//crackPatch(initial);
+	std::cout << "finished patching cracks" << std::endl;
+
+	readPointsFromOctree(initial);
+
+
+
+
+
+	//boost::thread workerThread(boost::bind(&VolumeRenderer::generateNormals, this));
+	//model->generatingMesh = false;
+
+	octreeVector.clear();
+	return 0;
+
+}
+
+
+
+int AdaptiveCuber::runWithCracks(){
+	std::cout << "Starting adaptive marching cubes 3 with cracks" << std::endl;
+	verts->clear();
+	normals->clear();
+	octreeVector.clear();
+	octreeLevels.clear();
+	octreeLevels.resize(octreeMaxDepth + 1);
+	//Calculate the gradients
+	//Create the original cube
+	/*
+	7---------6
+	size Z
+	/			  !
+	3---------2	  5
+	!
+	size Y
+	!
+	origin----size X
+	*/
+
+
+	int cubesSize = 0, depth = 0, maxDepth = octreeMaxDepth;
+
+	if (gradient->size() == 0 || gradient->empty())
+		calculateGradient();
+	cout << "Finished calculating gradients" << endl;
+
+
+	OctreeCube* initial = new OctreeCube;
+	OctreeCube returnedFromCreateInitial;
+	returnedFromCreateInitial = createInitialCube();
+	initial->origin.x = returnedFromCreateInitial.origin.x;
+	initial->origin.y = returnedFromCreateInitial.origin.y;
+	initial->origin.z = returnedFromCreateInitial.origin.z;
+
+	initial->sizeX = returnedFromCreateInitial.sizeX;
+	initial->sizeY = returnedFromCreateInitial.sizeY;
+	initial->sizeZ = returnedFromCreateInitial.sizeZ;
+	initial->depth = returnedFromCreateInitial.depth;
+
+	octreeVector.push_back(initial);
+	std::cout << "starting to generate octree" << std::endl;
+	generateOctree_tree_version(*initial);
+	std::cout << "finished generateing octree" << std::endl;
+
+	//correctlyAssignLeafs(initial);
+
+	//Grab each octreebube in our octree and polygonise it
+	//polygoniseOctree(initial);
+	polygoniseOctree2(initial);	//Polygonise octree will polygonise each octree but assign the points to the cube itself an not to the model->verts
+
+
+	std::cout << "starting patch cracks" << std::endl;
+	//crackPatch(initial);
 	//crackPatch(initial);
 	//crackPatch(initial);
 	std::cout << "finished patching cracks" << std::endl;
@@ -313,6 +390,8 @@ OctreeCube AdaptiveCuber::createInitialCube(){
 	cube.sizeY = cubeSize;
 	cube.sizeZ = cubeSize;
 
+	cube.depth = 0;
+
 	//model->cubes.push_back(cube);
 	return cube;
 }
@@ -322,24 +401,15 @@ OctreeCube AdaptiveCuber::createInitialCube(){
 int AdaptiveCuber::generateOctree_tree_version(OctreeCube& currentCube, int currentDepth){
 
 
-
+	octreeVector.push_back(&currentCube);
+	octreeLevels[currentCube.depth].push_back(&currentCube);
 
 	//Grab the initial one and see if it needs subdivision and if we are also below the maximum octree depth, if it needs subdiviosn, sundivid it, and also recursivelly call the same function for the children
 
 	if (currentDepth < octreeMaxDepth && cubeNeedsSubdivision(currentCube) && currentCube.needsChecking){
-		//std::cout << "The cube doesnt have children now" << std::endl;
 		currentCube.subdivide_tree_version();
-		//std::cout << "The cube should have children now" << std::endl;
 		currentCube.isLeaf = false;
-		octreeVector.push_back(currentCube.children[0]);
-		octreeVector.push_back(currentCube.children[1]);
-		octreeVector.push_back(currentCube.children[2]);
-		octreeVector.push_back(currentCube.children[3]);
-		octreeVector.push_back(currentCube.children[4]);
-		octreeVector.push_back(currentCube.children[5]);
-		octreeVector.push_back(currentCube.children[6]);
-		octreeVector.push_back(currentCube.children[7]);
-
+		
 		generateOctree_tree_version(*(currentCube.children[0]), currentDepth + 1);
 		generateOctree_tree_version(*(currentCube.children[1]), currentDepth + 1);
 		generateOctree_tree_version(*(currentCube.children[2]), currentDepth + 1);
@@ -782,8 +852,24 @@ void AdaptiveCuber::crackPatch(OctreeCube* root){
 
 	int count = 0;
 	//Do the same but using the octree vector insted of a queue
-	for (int i = 0; i < octreeVector.size(); i++){
-		currentCube = octreeVector[i];
+
+		
+
+	std::queue<OctreeCube*> bigQueue;
+	bigQueue.push(root);
+	while (!bigQueue.empty()){
+		currentCube = bigQueue.front();
+		bigQueue.pop();
+		if (!currentCube->isLeaf){
+			bigQueue.push(currentCube->children[0]);
+			bigQueue.push(currentCube->children[1]);
+			bigQueue.push(currentCube->children[2]);
+			bigQueue.push(currentCube->children[3]);
+			bigQueue.push(currentCube->children[4]);
+			bigQueue.push(currentCube->children[5]);
+			bigQueue.push(currentCube->children[6]);
+			bigQueue.push(currentCube->children[7]);
+		}
 		count++;
 		right = NULL;
 		left = NULL;
@@ -792,15 +878,20 @@ void AdaptiveCuber::crackPatch(OctreeCube* root){
 		further = NULL;
 		closer = NULL;
 
+		
+
+
+
+
 		if (currentCube->isLeaf && currentCube->containsVerts){
 			//std::cout << "We need to check it's adyacents of cube "  << count << std::endl;
 			//std::cout << "checking cube  " << count << "of " << model->octreeVector.size() << std::endl;
-			for (int j = 0; j < octreeVector.size(); j++){
+			for (int j = 0; j < octreeLevels[currentCube->depth].size(); j++){
 
 
 
 				//We check if it adyacent is the one on the right, left, top, bottom, further and closer cube
-				adyacent =octreeVector[j];
+				adyacent = octreeLevels[currentCube->depth][j];
 
 				//Right cube
 				if (right == NULL &&

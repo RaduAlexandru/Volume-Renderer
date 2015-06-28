@@ -100,20 +100,13 @@ public:
 	int frame_to_display;
 	//int numberOfBytes;
 
-	bool linearInterpolation;
-	bool pointFlag;
-	bool borderFlag;
+
 	bool showWireframe;
 	bool perspectiveActivated;
 	bool showMesh;
 	bool showGradient;
 	bool showCubes;
 
-	unsigned char *bitmapPixels;
-	//int pixelDataWidth;
-	//int pixelDataHeight;
-	int bitmapImageSize;
-	int bitmapNumberOfPixels;
-	char signature[2];
+	
 };
 

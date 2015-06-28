@@ -45,7 +45,7 @@
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
     </widget>
-    <widget class="QPushButton" name="pushButton">
+    <widget class="QPushButton" name="writeObjButton">
      <property name="geometry">
       <rect>
        <x>660</x>
@@ -286,7 +286,7 @@
      <string>showCubes</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton_2">
+   <widget class="QPushButton" name="loadObjButton">
     <property name="geometry">
      <rect>
       <x>160</x>

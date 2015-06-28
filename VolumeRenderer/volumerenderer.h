@@ -80,7 +80,6 @@ public:
 	//void crackPatch2(OctreeCube*);
 	
 	void marchingSquares();
-	void wipeBitmap();
 	void wipePoints();
 	void wipePixelData();
 
@@ -131,6 +130,8 @@ private slots:
 	void on_borderYTopSlider_valueChanged();
 	void on_borderXLeftSlider_valueChanged();
 	void on_borderXRightSlider_valueChanged();
+	void on_loadObjButton_clicked();
+	void on_writeObjButton_clicked();
 
 	void progressValueChangedSlot(int newValue);
 	void finishedMeshSlot();

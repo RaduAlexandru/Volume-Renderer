@@ -21,6 +21,7 @@ public:
 	OctreeCube* parent;
 	std::vector<glm::vec3> *points;
 
+	int depth;
 
 	int needsSubdivision( int, std::vector< boost::unordered_map< std::pair<int, int>, glm::vec3> > &  );
 	int subdivide(std::vector <OctreeCube> &);
