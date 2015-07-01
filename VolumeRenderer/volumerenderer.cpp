@@ -34,11 +34,12 @@
 #include <boost/thread.hpp>
 #include <queue>
 
+
 //#include <boost/variant.hpp>
 #define PI 3.14159265
 
 
-
+extern "C" void launch_kernel(std::vector<int >, std::vector< std::vector<int> >);
 
 
 using namespace::std;
@@ -630,7 +631,7 @@ void VolumeRenderer::dataFinishedReadingSlot(){
 	if (model->pixelData->numberOfBytes == 3)
 		ui.isoLevelSlider->setMaximum(4294967296);
 
-	generateMesh();
+	generateMesh(1);
 	ui.dicomviewer2dgl->setFrame(model->pixelData->frames / 2);
 	//ui.glwidget->sendDataToGL();
 	ui.glwidget->update();
@@ -1029,7 +1030,10 @@ void VolumeRenderer::generateMesh(int force){
 	}
 		
 	if (model->algorithmChosen == 2){
-		return;
+
+		
+
+		launch_kernel(model->edgeTable,model->triTable);
 	}
 	if (model->algorithmChosen == 3){
 		amc = new AdaptiveCuber((model->pixelData), &(model->verts), &(model->normals), model->isoLevel, model->cellSizeX, model->cellSizeY, model->cellSizeZ, model->interpolateDepth, model->octreeMaxDepth, &(model->gradient), model->tolerance);
@@ -1162,6 +1166,8 @@ void VolumeRenderer::wipePixelData(){
 		free(model->pixelData->data[i]);
 		numberOfFrees++;
 	}
+
+	model->gradient.clear();
 	free(model->pixelData->data);
 	model->pixelData->data = NULL;
 	model->pixelData->numberOfBytes = 0;;
@@ -1366,6 +1372,9 @@ void VolumeRenderer::on_writeObjButton_clicked(){
 	filename = QFileDialog::getSaveFileName(0, "Save file", QDir::currentPath(),
 		filters, &defaultFilter);
 	
+	if (filename.isEmpty())
+		return;
+
 	ui.progressText->setText("Exporting to OBJ");
 
 	Exporter* exporter = new Exporter;

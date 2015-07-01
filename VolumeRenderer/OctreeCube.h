@@ -23,6 +23,8 @@ public:
 
 	int depth;
 
+	std::vector<int> locationalCode;
+
 	int needsSubdivision( int, std::vector< boost::unordered_map< std::pair<int, int>, glm::vec3> > &  );
 	int subdivide(std::vector <OctreeCube> &);
 

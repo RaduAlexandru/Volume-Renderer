@@ -2,8 +2,18 @@
 #include "OctreeCube.h"
 #include <math.h>
 #include <queue>
+#include <boost/dynamic_bitset.hpp>
 #define PI 3.14159265
 using namespace std;
+
+
+#define RIGHT 1
+#define LEFT 2
+#define UP 3
+#define DOWN 4
+#define FURTHER 5
+#define CLOSER 6
+
 
 AdaptiveCuber::AdaptiveCuber()
 {
@@ -44,7 +54,7 @@ int AdaptiveCuber::run(){
 	origin----size X
 	*/
 
-
+	emit progressTextSignal("Generating Gradients");
 	int cubesSize = 0, depth = 0, maxDepth = octreeMaxDepth;
 
 	if (gradient->size() == 0 || gradient->empty())
@@ -53,17 +63,9 @@ int AdaptiveCuber::run(){
 
 
 	OctreeCube* initial = new OctreeCube;
-	OctreeCube returnedFromCreateInitial;
-	returnedFromCreateInitial = createInitialCube();
-	initial->origin.x = returnedFromCreateInitial.origin.x;
-	initial->origin.y = returnedFromCreateInitial.origin.y;
-	initial->origin.z = returnedFromCreateInitial.origin.z;
+	
 
-	initial->sizeX = returnedFromCreateInitial.sizeX;
-	initial->sizeY = returnedFromCreateInitial.sizeY;
-	initial->sizeZ = returnedFromCreateInitial.sizeZ;
-	initial->depth = returnedFromCreateInitial.depth;
-
+	initial = createInitialCube();
 	octreeVector.push_back(initial);
 
 	emit progressTextSignal("Generating Octree");
@@ -127,22 +129,16 @@ int AdaptiveCuber::runWithCracks(){
 
 	int cubesSize = 0, depth = 0, maxDepth = octreeMaxDepth;
 
+	emit progressTextSignal("Generating Gradients");
 	if (gradient->size() == 0 || gradient->empty())
 		calculateGradient();
 	cout << "Finished calculating gradients" << endl;
 
 
 	OctreeCube* initial = new OctreeCube;
-	OctreeCube returnedFromCreateInitial;
-	returnedFromCreateInitial = createInitialCube();
-	initial->origin.x = returnedFromCreateInitial.origin.x;
-	initial->origin.y = returnedFromCreateInitial.origin.y;
-	initial->origin.z = returnedFromCreateInitial.origin.z;
+	
 
-	initial->sizeX = returnedFromCreateInitial.sizeX;
-	initial->sizeY = returnedFromCreateInitial.sizeY;
-	initial->sizeZ = returnedFromCreateInitial.sizeZ;
-	initial->depth = returnedFromCreateInitial.depth;
+	initial = createInitialCube();
 
 	octreeVector.push_back(initial);
 	emit progressTextSignal("Generating Octree");
@@ -215,8 +211,8 @@ void AdaptiveCuber::calculateGradient(){
 
 	//Here i is y axis and j is the x axis
 	for (int i = 0; i < pixelDataHeight; i = i + 1){
-		//if (i % 10 == 0)
-			//emit progressValueChangedSignal(i * 100 / model->pixelDataHeight);
+		if (i % 10 == 0)
+			emit progressValueChangedSignal(i * 100 / pixelDataHeight);
 		for (int j = 0; j < pixelDataWidth; j = j + 1){
 			for (int k = 0; k < frames; k = k + 1){			//You need to check why it doesnt work without the -1 in the frames
 
@@ -385,21 +381,26 @@ void AdaptiveCuber::calculateGradient(){
 *  Es necesario que el cubo inicial tenga las mismas dimensiones en los tres ejes y ademas esas dimensiones sean potencias de 2 para que el proceso de subdividir funcione correctamente.
 *  Esto se realiza  buscando el maximo valor de las dimensiones del volumen y luego se redondea hacia arriba a la proxima potencia de 2. Este valor se asigna como las dimensiones del cubo.
 */
-OctreeCube AdaptiveCuber::createInitialCube(){
-	OctreeCube cube;
-	cube.origin.x = 0 ;
-	cube.origin.y = 0 ;
-	cube.origin.z = 0 ;
+OctreeCube* AdaptiveCuber::createInitialCube(){
+	OctreeCube* cube= new OctreeCube;
+	cube->origin.x = 0 ;
+	cube->origin.y = 0 ;
+	cube->origin.z = 0 ;
 
 
 	int cubeSize = std::max(std::max(pixelDataWidth , pixelDataHeight ), frames - 1 );	//WE get the maximum value
 	cubeSize = pow(2, ceil(log(cubeSize) / log(2)));	// we round it up to the neerest power of 2
 
-	cube.sizeX = cubeSize;
-	cube.sizeY = cubeSize;
-	cube.sizeZ = cubeSize;
+	cube->sizeX = cubeSize;
+	cube->sizeY = cubeSize;
+	cube->sizeZ = cubeSize;
 
-	cube.depth = 0;
+	cube->depth = 0;
+
+	cube->locationalCode.resize(octreeMaxDepth);
+	for (int i = 0; i < cube->locationalCode.size(); i++){
+		cube->locationalCode[i] = 0;
+	}
 
 	//model->cubes.push_back(cube);
 	return cube;
@@ -909,115 +910,10 @@ void AdaptiveCuber::crackPatch(OctreeCube* root){
 		if (currentCube->isLeaf && currentCube->containsVerts){
 			//std::cout << "We need to check it's adyacents of cube "  << count << std::endl;
 			//std::cout << "checking cube  " << count << "of " << model->octreeVector.size() << std::endl;
-			for (int j = 0; j < octreeLevels[currentCube->depth].size(); j++){
 
+			findNeighbours(currentCube, root,right,left,top,bottom,further,closer );
 
-
-				//We check if it adyacent is the one on the right, left, top, bottom, further and closer cube
-				adyacent = octreeLevels[currentCube->depth][j];
-
-				//Right cube
-				if (right == NULL &&
-
-					adyacent->origin.x == currentCube->origin.x + currentCube->sizeX &&
-					adyacent->origin.y == currentCube->origin.y &&
-					adyacent->origin.z == currentCube->origin.z &&
-
-					adyacent->sizeX == currentCube->sizeX &&
-					adyacent->sizeY == currentCube->sizeY &&
-					adyacent->sizeZ == currentCube->sizeZ)
-				{
-					right = adyacent;
-				}
-
-				//Left cube
-				if (left == NULL &&
-
-					adyacent->origin.x == currentCube->origin.x - currentCube->sizeX &&
-					adyacent->origin.y == currentCube->origin.y &&
-					adyacent->origin.z == currentCube->origin.z &&
-
-					adyacent->sizeX == currentCube->sizeX &&
-					adyacent->sizeY == currentCube->sizeY &&
-					adyacent->sizeZ == currentCube->sizeZ)
-				{
-					left = adyacent;
-				}
-
-				//Top cube
-				if (top == NULL &&
-
-					adyacent->origin.x == currentCube->origin.x &&
-					adyacent->origin.y == currentCube->origin.y + currentCube->sizeY &&
-					adyacent->origin.z == currentCube->origin.z &&
-
-					adyacent->sizeX == currentCube->sizeX &&
-					adyacent->sizeY == currentCube->sizeY &&
-					adyacent->sizeZ == currentCube->sizeZ)
-				{
-					top = adyacent;
-				}
-
-				//bottom cube
-				if (bottom == NULL &&
-
-					adyacent->origin.x == currentCube->origin.x &&
-					adyacent->origin.y == currentCube->origin.y - currentCube->sizeY &&
-					adyacent->origin.z == currentCube->origin.z &&
-
-					adyacent->sizeX == currentCube->sizeX &&
-					adyacent->sizeY == currentCube->sizeY &&
-					adyacent->sizeZ == currentCube->sizeZ)
-				{
-					bottom = adyacent;
-				}
-
-				//further cube
-				if (further == NULL &&
-
-					adyacent->origin.x == currentCube->origin.x &&
-					adyacent->origin.y == currentCube->origin.y &&
-					adyacent->origin.z == currentCube->origin.z + currentCube->sizeZ &&
-
-					adyacent->sizeX == currentCube->sizeX &&
-					adyacent->sizeY == currentCube->sizeY &&
-					adyacent->sizeZ == currentCube->sizeZ)
-				{
-					further = adyacent;
-				}
-
-
-				//closer cube
-				if (closer == NULL &&
-
-					adyacent->origin.x == currentCube->origin.x &&
-					adyacent->origin.y == currentCube->origin.y &&
-					adyacent->origin.z == currentCube->origin.z - currentCube->sizeZ &&
-
-					adyacent->sizeX == currentCube->sizeX &&
-					adyacent->sizeY == currentCube->sizeY &&
-					adyacent->sizeZ == currentCube->sizeZ)
-				{
-					closer = adyacent;
-				}
-
-				if (right != NULL && left != NULL && top != NULL && bottom != NULL && further != NULL && closer != NULL){
-					break;	//WE stop searching because we found all the neihbours
-				}
-
-
-			}
-
-
-
-
-
-
-
-
-
-
-
+			
 
 
 
@@ -2163,4 +2059,329 @@ int AdaptiveCuber::readPointsFromOctree(OctreeCube* root){
 
 	}
 	return 0;
+}
+
+
+void AdaptiveCuber::findNeighbours(OctreeCube* currentCube, OctreeCube* initial, OctreeCube*& right, OctreeCube*& left, OctreeCube*& top, OctreeCube*& bottom, OctreeCube*& further, OctreeCube*& closer){
+
+	right = NULL;
+	left = NULL;
+	top = NULL;
+	bottom = NULL;
+	further = NULL;
+	closer = NULL;
+	OctreeCube* adyacent=NULL;
+
+	//Brute force code that look in all the cubes thare on the same level. It kinda works but is slow
+	/*for (int j = 0; j < octreeLevels[currentCube->depth].size(); j++){
+
+
+
+		//We check if it adyacent is the one on the right, left, top, bottom, further and closer cube
+		adyacent = octreeLevels[currentCube->depth][j];
+
+		//Right cube
+		if (right == NULL &&
+
+			adyacent->origin.x == currentCube->origin.x + currentCube->sizeX &&
+			adyacent->origin.y == currentCube->origin.y &&
+			adyacent->origin.z == currentCube->origin.z &&
+
+			adyacent->sizeX == currentCube->sizeX &&
+			adyacent->sizeY == currentCube->sizeY &&
+			adyacent->sizeZ == currentCube->sizeZ)
+		{
+			right = adyacent;
+		}
+
+		//Left cube
+		if (left == NULL &&
+
+			adyacent->origin.x == currentCube->origin.x - currentCube->sizeX &&
+			adyacent->origin.y == currentCube->origin.y &&
+			adyacent->origin.z == currentCube->origin.z &&
+
+			adyacent->sizeX == currentCube->sizeX &&
+			adyacent->sizeY == currentCube->sizeY &&
+			adyacent->sizeZ == currentCube->sizeZ)
+		{
+			left = adyacent;
+		}
+
+		//Top cube
+		if (top == NULL &&
+
+			adyacent->origin.x == currentCube->origin.x &&
+			adyacent->origin.y == currentCube->origin.y + currentCube->sizeY &&
+			adyacent->origin.z == currentCube->origin.z &&
+
+			adyacent->sizeX == currentCube->sizeX &&
+			adyacent->sizeY == currentCube->sizeY &&
+			adyacent->sizeZ == currentCube->sizeZ)
+		{
+			top = adyacent;
+		}
+
+		//bottom cube
+		if (bottom == NULL &&
+
+			adyacent->origin.x == currentCube->origin.x &&
+			adyacent->origin.y == currentCube->origin.y - currentCube->sizeY &&
+			adyacent->origin.z == currentCube->origin.z &&
+
+			adyacent->sizeX == currentCube->sizeX &&
+			adyacent->sizeY == currentCube->sizeY &&
+			adyacent->sizeZ == currentCube->sizeZ)
+		{
+			bottom = adyacent;
+		}
+
+		//further cube
+		if (further == NULL &&
+
+			adyacent->origin.x == currentCube->origin.x &&
+			adyacent->origin.y == currentCube->origin.y &&
+			adyacent->origin.z == currentCube->origin.z + currentCube->sizeZ &&
+
+			adyacent->sizeX == currentCube->sizeX &&
+			adyacent->sizeY == currentCube->sizeY &&
+			adyacent->sizeZ == currentCube->sizeZ)
+		{
+			further = adyacent;
+		}
+
+
+		//closer cube
+		if (closer == NULL &&
+
+			adyacent->origin.x == currentCube->origin.x &&
+			adyacent->origin.y == currentCube->origin.y &&
+			adyacent->origin.z == currentCube->origin.z - currentCube->sizeZ &&
+
+			adyacent->sizeX == currentCube->sizeX &&
+			adyacent->sizeY == currentCube->sizeY &&
+			adyacent->sizeZ == currentCube->sizeZ)
+		{
+			closer = adyacent;
+		}
+
+		if (right != NULL && left != NULL && top != NULL && bottom != NULL && further != NULL && closer != NULL){
+			break;	//WE stop searching because we found all the neihbours
+		}
+
+
+	}*/
+
+
+
+	//Findlocational code for each direction
+	//traverse the octree with that locational code and return the octreecube at that location or null if there is nothing
+
+	// The directions are in the same orders as the points to the cube: right,left,top,bottom,further,closer
+	std::vector<int> neighLoc;
+	
+	neighLoc=getLocationalOfNeighbours(currentCube->locationalCode, currentCube->depth, RIGHT);
+	//Now that we have the location of the neightbout we need to traverse the cube and find it weather it exists or not
+	right = traverseWithLocation(initial, neighLoc, currentCube->depth);
+
+	neighLoc = getLocationalOfNeighbours(currentCube->locationalCode, currentCube->depth, LEFT);
+	left = traverseWithLocation(initial, neighLoc, currentCube->depth);
+
+	neighLoc = getLocationalOfNeighbours(currentCube->locationalCode, currentCube->depth, UP);
+	top = traverseWithLocation(initial, neighLoc, currentCube->depth);
+
+	neighLoc = getLocationalOfNeighbours(currentCube->locationalCode, currentCube->depth, DOWN);
+	bottom = traverseWithLocation(initial, neighLoc, currentCube->depth);
+
+
+	neighLoc = getLocationalOfNeighbours(currentCube->locationalCode, currentCube->depth, FURTHER);
+	further = traverseWithLocation(initial, neighLoc, currentCube->depth);
+
+
+	neighLoc = getLocationalOfNeighbours(currentCube->locationalCode, currentCube->depth, CLOSER);
+	closer = traverseWithLocation(initial, neighLoc, currentCube->depth);
+
+
+	/*std::cout << "depth of the current cube is " << currentCube->depth << std::endl;
+	std::cout << "on the right, from the locational code  ";
+	for (int i = 0; i < currentCube->locationalCode.size(); i++){
+		std::cout << "| " << currentCube->locationalCode[i] << " | ";
+	}
+	std::cout << std::endl;
+	std::cout << "we get to  ";
+	for (int i = 0; i < neighLoc.size(); i++){
+		std::cout << "| " << neighLoc[i] << " | ";
+	}
+	std::cout << std::endl;
+	std::cout << std::endl;
+	std::cout << std::endl;*/
+
+	return;
+}
+
+
+//Function that given a locational code, a depth and a direction return the locationalCode of the neighbour weather it exists or not
+std::vector<int> AdaptiveCuber::getLocationalOfNeighbours(std::vector<int> currentLocation, int depth, int direction){
+
+
+	std::vector<int> neighLoc (currentLocation); //First we copy the current location into the neighbour one
+
+
+
+
+	
+
+	for (int i = depth - 1; i >= 0; i--){
+		//move the number at index i in the direction, if it changes subsection, continue moving them, if not then break from the loop
+		//neighLoc[i];
+		unsigned long value = 0;
+		value = neighLoc[i];
+		boost::dynamic_bitset<> valueInBits (3, value);
+
+
+		//in the Value in bits the 0 index is the least significant one
+		if (direction == RIGHT){
+			if (valueInBits[0] == 0){
+				valueInBits[0] = 1;
+				//and we finished
+				neighLoc[i] = valueInBits.to_ulong();
+				break;
+			}
+			else{
+				valueInBits[0] = 0;
+				neighLoc[i] = valueInBits.to_ulong();
+			}
+		}
+
+
+
+		if (direction == LEFT){
+			if (valueInBits[0] == 1){
+				valueInBits[0] = 0;
+				neighLoc[i] = valueInBits.to_ulong();
+				break;
+			}
+			else{
+				valueInBits[0] = 1;
+				neighLoc[i] = valueInBits.to_ulong();
+			}
+		}
+
+		
+		if (direction == UP){
+			if (valueInBits[1] == 1){
+				valueInBits[1] = 0;
+				neighLoc[i] = valueInBits.to_ulong();
+				break;
+			}
+			else{
+				valueInBits[1] = 1;
+				neighLoc[i] = valueInBits.to_ulong();
+			}
+		}
+
+
+		if (direction == DOWN){
+			if (valueInBits[1] == 0){
+				valueInBits[1] = 1;
+				neighLoc[i] = valueInBits.to_ulong();
+				break;
+			}
+			else{
+				valueInBits[1] = 0;
+				neighLoc[i] = valueInBits.to_ulong();
+			}
+		}
+
+
+		if (direction == FURTHER){
+			if (valueInBits[2] == 0){
+				valueInBits[2] = 1;
+				neighLoc[i] = valueInBits.to_ulong();
+				break;
+			}
+			else{
+				valueInBits[2] = 0;
+				neighLoc[i] = valueInBits.to_ulong();
+			}
+		}
+
+
+		if (direction == CLOSER){
+			if (valueInBits[2] == 1){
+				valueInBits[2] = 0;
+				neighLoc[i] = valueInBits.to_ulong();
+				break;
+			}
+			else{
+				valueInBits[2] = 1;
+				neighLoc[i] = valueInBits.to_ulong();
+			}
+		}
+
+	}
+
+	
+	return neighLoc;
+
+}
+
+
+OctreeCube* AdaptiveCuber::traverseWithLocation(OctreeCube* root, std::vector<int> neighLoc, int depth, int currentDepth){
+
+	/*if (root == NULL){
+		return NULL;
+	}
+
+	if (root->locationalCode == neighLoc){
+		return root;
+	}
+	
+
+	if (currentDepth < depth){
+		//Acess the initial one first with the index of current depth
+		//Lookat the roots children, if they are 
+
+		//WE recursivelly call with root being the children, if the child is not null. if the recursive call returned null, we also return null
+
+		//Grab the child
+		OctreeCube* child, *neighbhour=NULL;
+		child = root->children[neighLoc[currentDepth]];
+
+
+		neighbhour = traverseWithLocation(child, neighLoc, depth, currentDepth + 1);
+
+		if (neighbhour == NULL){
+			return NULL;
+		}
+		else{
+			return neighbhour;
+		}
+
+	}
+	else{
+		return NULL;
+	}
+	
+	*/
+
+
+
+
+
+	//Now i am going to try and make it iterative insted of recursive
+
+	OctreeCube* neighbour;
+	for (int i = 0; i < depth; i++){
+		neighbour = root->children[neighLoc[i]];
+		root = neighbour;
+
+		if (root == NULL)
+			return root;
+	}
+
+	return root;
+
+
+
 }
