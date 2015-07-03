@@ -10,6 +10,9 @@ public:
 	int run();
 	int runWithCracks();
 	void calculateGradient();
+	int convolveX(int x, int y, int z);
+	int convolveY(int x, int y, int z);
+	int convolveZ(int x, int y, int z);
 	OctreeCube* createInitialCube();
 	int generateOctree_tree_version(OctreeCube&, int = 0);
 	inline bool cubeNeedsSubdivision(OctreeCube &cube);
@@ -22,7 +25,10 @@ public:
 	int readPointsFromOctree(OctreeCube* root);
 	void findNeighbours(OctreeCube* currentCube, OctreeCube* root,OctreeCube*& right, OctreeCube*& left, OctreeCube*& top, OctreeCube*& bottom, OctreeCube*& further, OctreeCube*& closer);
 	std::vector<int> getLocationalOfNeighbours(std::vector<int> currentLocation, int depth, int direction);
-	OctreeCube* traverseWithLocation(OctreeCube* root, std::vector<int> neighLoc, int depth, int currentDepth=0);
+	OctreeCube* traverseWithLocation(OctreeCube* root, std::vector<int> neighLoc, int depth);
+	void patchFace(OctreeCube* lowRes, OctreeCube* highRes, int direction);
+	void getPointsFromFace(OctreeCube* cube, OctreeCube* reference, std::vector<glm::vec3>& vec, int direction);
+	std::vector<glm::vec3>  removeDuplicates(std::vector<glm::vec3> vec);
 
 	int octreeMaxDepth;
 	std::vector< boost::unordered_map< std::pair<int, int>, glm::vec3> >* gradient;

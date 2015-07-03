@@ -46,7 +46,8 @@
      </property>
     </widget>
     <zorder>numberOfTrianglesLabel</zorder>
-    <zorder>writeObjButton</zorder>
+    <zorder>frameSlider</zorder>
+    <zorder>dicomviewer2dgl</zorder>
    </widget>
    <widget class="QSlider" name="frameSlider">
     <property name="geometry">

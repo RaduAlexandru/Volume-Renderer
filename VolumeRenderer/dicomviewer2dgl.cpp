@@ -60,7 +60,8 @@ void DicomViewer2DGL::paintGL()
 	//glPixelStorei(GL_UNPACK_ALIGNMENT, 2); //In case the size of the image is not a power of 2
 
 	displayFrame();
-	//displayGradient();
+	if (model->showGradient)
+		displayGradient();
 
 	
 	displayBorderLines();

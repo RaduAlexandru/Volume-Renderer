@@ -28,7 +28,7 @@ Model::Model()
 	showCubes = false;
 	tolerance = 60;
 	octreeMaxDepth = 8;
-	interpolateDepth = 10;
+	interpolateDepth = 50;
 
 	algorithmChosen=1;
 	normalsAlgChosen = 1;

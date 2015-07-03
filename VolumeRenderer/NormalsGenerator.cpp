@@ -94,9 +94,13 @@ void NormalsGenerator::normalsPerVertex(PixelData* pixelData, std::vector<glm::v
 
 		if (i % (verts.size() / 10) == 0) //Update 10 times in total
 			emit progressValueChangedSignal(i * 100 / verts.size());
-		j = boost::math::iround(verts[i].x);
+		/*j = boost::math::iround(verts[i].x);
 		y = boost::math::iround(verts[i].y);
-		k = boost::math::iround(verts[i].z);
+		k = boost::math::iround(verts[i].z);*/
+
+		j = round(verts[i].x );
+		y = round(verts[i].y );
+		k = round(verts[i].z );
 
 		/*if (y>pixelData->height-200-50){
 			n.x = 0.0;
@@ -107,7 +111,7 @@ void NormalsGenerator::normalsPerVertex(PixelData* pixelData, std::vector<glm::v
 		}*/
 
 		//getSmoothPixelValue
-
+		/*
 		dx = -1 * (pixelData->getPixelValue(j - 1, y + 1, k - 1)) + 1 * (pixelData->getPixelValue(j + 1, y + 1, k - 1)) -
 			2 * (pixelData->getPixelValue(j - 1, y, k - 1)) + 2 * (pixelData->getPixelValue(j + 1, y, k - 1)) -
 			1 * (pixelData->getPixelValue(j - 1, y - 1, k - 1)) + 1 * (pixelData->getPixelValue(j + 1, y - 1, k - 1)) -
@@ -135,7 +139,7 @@ void NormalsGenerator::normalsPerVertex(PixelData* pixelData, std::vector<glm::v
 
 			1 * (pixelData->getPixelValue(j - 1, y + 1, k + 1)) + 2 * (pixelData->getPixelValue(j, y + 1, k + 1)) + 1 * (pixelData->getPixelValue(j + 1, y + 1, k + 1)) -
 			2 * (pixelData->getPixelValue(j - 1, y, k + 1)) + 4 * (pixelData->getPixelValue(j, y, k + 1)) + 2 * (pixelData->getPixelValue(j + 1, y, k + 1)) -
-			1 * (pixelData->getPixelValue(j - 1, y - 1, k + 1)) + 2 * (pixelData->getPixelValue(j, y - 1, k + 1)) + 1 * (pixelData->getPixelValue(j + 1, y - 1, k + 1));
+			1 * (pixelData->getPixelValue(j - 1, y - 1, k + 1)) + 2 * (pixelData->getPixelValue(j, y - 1, k + 1)) + 1 * (pixelData->getPixelValue(j + 1, y - 1, k + 1));*/
 
 		///Smooth one
 
@@ -169,7 +173,9 @@ void NormalsGenerator::normalsPerVertex(PixelData* pixelData, std::vector<glm::v
 		1 * (model->getSmoothPixelValue(j - 1, y - 1, k + 1)) + 2 * (model->getSmoothPixelValue(j, y - 1, k + 1)) + 1 * (model->getSmoothPixelValue(j + 1, y - 1, k + 1));*/
 
 
-
+		dx = convolveX(pixelData, j, y, k);
+		dy = convolveY(pixelData, j, y, k);
+		dz = convolveZ(pixelData, j, y, k);
 
 
 
@@ -213,3 +219,168 @@ void NormalsGenerator::normalsPerVertex(PixelData* pixelData, std::vector<glm::v
 }
 
 
+int NormalsGenerator::convolveZ(PixelData* pixelData, int x, int y, int z){
+
+	int arr[3][3][3] = { {
+			{ -1, -2, -1 },
+			{ -2, -4, -2 },
+			{ -1, -2, -1 } },
+
+
+			{
+				{ 0, 0, 0 },
+				{ 0, 0, 0 },
+				{ 0, 0, 0 } },
+
+				{
+					{ 1, 2, 1 },
+					{ 2, 4, 2 },
+					{ 1, 2, 1 } },
+
+	};
+
+	/*int arr[3][3][3] = { {
+	{ -1, 0, 1 },
+	{ -3, 0, 3 },
+	{ -1, 0, 1 } },
+
+
+	{
+	{ -3, 0, 3 },
+	{ -6, 0, 6 },
+	{ -3, 0, 3 } },
+
+	{
+	{ -1, 0, 1 },
+	{ -3, 0, 3 },
+	{ -1, 0, 1 } },
+
+	};*/
+
+	int acum = 0;
+
+	for (int i = 0; i < 3; i++){
+		for (int j = 0; j < 3; j++){
+			for (int k = 0; k < 3; k++){
+				acum += arr[i][j][k] * pixelData->getPixelValue(x - 1 + k, y + 1 - j, z - 1 + i);
+
+			}
+		}
+	}
+	return acum;
+
+
+
+}
+
+
+int NormalsGenerator::convolveY(PixelData* pixelData, int x, int y, int z){
+
+	int arr[3][3][3] = { {
+			{ 1, 2, 1 },
+			{ 0, 0, 0 },
+			{ -1, -2, -1 } },
+
+
+			{
+				{ 2, 4, 2 },
+				{ 0, 0, 0 },
+				{ -2, -4, -2 } },
+
+				{
+					{ 1, 2, 1 },
+					{ 0, 0, 0 },
+					{ -1, -2, -1 } },
+
+	};
+
+	/*int arr[3][3][3] = { {
+	{ 1, 3, 1 },
+	{ 0, 0, 0 },
+	{ -1, -3, -1 } },
+
+
+	{
+	{ 3, 6, 3 },
+	{ 0, 0, 0 },
+	{ -3, -6, -3 } },
+
+	{
+	{ 1, 3, 1 },
+	{ 0, 0, 0 },
+	{ 1, 3, 1 } },
+
+	};*/
+
+	int acum = 0;
+
+	for (int i = 0; i < 3; i++){
+		for (int j = 0; j < 3; j++){
+			for (int k = 0; k < 3; k++){
+				acum += arr[i][j][k] * pixelData->getPixelValue(x - 1 + k, y + 1 - j, z - 1 + i);
+
+			}
+		}
+	}
+	return acum;
+
+
+
+}
+
+
+int NormalsGenerator::convolveX(PixelData* pixelData, int x, int y, int z){
+
+	int arr[3][3][3] = { {
+			{ -1, 0, 1 },
+			{ -2, 0, 2 },
+			{ -1, 0, 1 } },
+
+
+			{
+				{ -2, 0, 2 },
+				{ -4, 0, 4 },
+				{ -2, 0, 2 } },
+
+				{
+					{ -1, 0, 1 },
+					{ -2, 0, 2 },
+					{ -1, 0, 1 } },
+
+	};
+
+
+	/*int arr[3][3][3] = { {
+	{ -1, -3, -1 },
+	{ -3, -6, -3 },
+	{ -1, -3, -1 } },
+
+
+	{
+	{ 0, 0, 0 },
+	{ 0, 0, 0 },
+	{ 0, 0, 0 } },
+
+	{
+	{ 1, 3, 1 },
+	{ 3, 6, 3 },
+	{ 1, 3, 1 } },
+
+	};*/
+
+	int acum = 0;
+
+	for (int i = 0; i < 3; i++){
+		for (int j = 0; j < 3; j++){
+			for (int k = 0; k < 3; k++){
+				//acum += arr[i][j][k] * pixelData->getPixelValue(x - 1 + k, y + 1 - j, z + 1 - i);
+				acum += arr[i][j][k] * pixelData->getPixelValue(x - 1 + k, y + 1 - j, z - 1 + i);
+				//std::cout << "val is" << arr[i][j][k] << std::endl;
+			}
+		}
+	}
+	return acum;
+
+
+
+}

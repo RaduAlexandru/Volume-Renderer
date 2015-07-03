@@ -17,6 +17,7 @@ public:
 	int borderXRight, borderXLeft, borderZCloser, borderZFurther, borderYTop, borderYBottom;
 
 	int getPixelValue(int x, int y, int z);
+	int getSmoothPixelValue(int x, int y, int z);
 
 	/*int getWidthWithBorder();
 	int getHeightWithBorder();

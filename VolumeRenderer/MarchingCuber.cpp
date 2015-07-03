@@ -291,22 +291,10 @@ int MarchingCuber::polygonise(CELL & cell){
 	glm::vec3 point1, point2, point3;
 	for (int i = 0; triTable[cubeIndex][i] != -1; i += 3) {
 
-		point1.x = (vertlist[triTable[cubeIndex][i]]).x;
-		point1.y = (vertlist[triTable[cubeIndex][i]]).y;
-		point1.z = (vertlist[triTable[cubeIndex][i]]).z;
-
-		point2.x = (vertlist[triTable[cubeIndex][i + 1]]).x;
-		point2.y = (vertlist[triTable[cubeIndex][i + 1]]).y;
-		point2.z = (vertlist[triTable[cubeIndex][i + 1]]).z;
-
-		point3.x = (vertlist[triTable[cubeIndex][i + 2]]).x;
-		point3.y = (vertlist[triTable[cubeIndex][i + 2]]).y;
-		point3.z = (vertlist[triTable[cubeIndex][i + 2]]).z;
-
-
-		verts->push_back(point1);
-		verts->push_back(point2);
-		verts->push_back(point3);
+		
+		verts->push_back((vertlist[triTable[cubeIndex][i]]));
+		verts->push_back((vertlist[triTable[cubeIndex][i + 1]]));
+		verts->push_back((vertlist[triTable[cubeIndex][i + 2]]));
 
 
 	}

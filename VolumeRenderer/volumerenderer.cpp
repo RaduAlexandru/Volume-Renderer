@@ -1093,6 +1093,14 @@ void VolumeRenderer::generateMesh(int force){
 /*! \brief Slot que se ejecuta cuando el MarchingCuber o AdaptiveMarching cuber han acabado indicando que el mallado esta creado. Ejecuta la funcion de generateNormals para crear las normales.
 */
 void VolumeRenderer::finishedMeshSlot(){
+
+	//Copy the octree vector over to the model
+	/*if (amc!=NULL)
+	for (int i = 0; i < amc->octreeVector.size(); i++){
+		model->octreeVector.push_back(amc->octreeVector[i]);
+	}*/
+
+
 	//std::cout << "entered in finished mesh slot" << std::endl;
 	ui.progressText->setText("<font color='black'>Generating Normals</font>");
 	generateNormals();
