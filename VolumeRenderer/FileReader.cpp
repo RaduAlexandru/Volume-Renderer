@@ -82,6 +82,10 @@ int FileReader::loadDICOMPixelData(QStringList fileNames,PixelData*pixelData){
 			(pixelData->data)[i][j] = outputPointer[j];
 		}
 
+		//pixelData->data2[i] = new DicomImage(fileNames[i].toStdString().c_str(), CIF_MayDetachPixelData, 0, 1);
+
+
+
 		img->deleteOutputData();
 		delete(img);
 		cout << "done" << endl;

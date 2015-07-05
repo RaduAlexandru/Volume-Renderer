@@ -307,7 +307,7 @@ void GLWidget::paintGL()
 	//size = 8;
 
 	//Draw the cube for debugging
-	int x, y, z, size;
+	/*int x, y, z, size;
 	x = 256;
 	y = 168;
 	z = 56;
@@ -416,7 +416,7 @@ void GLWidget::paintGL()
 	glVertex3f(x, y + size, z);
 	glVertex3f(x + size, y + size, z);
 
-	glEnd();
+	glEnd();*/
 
 	//Draw face for debugging
 

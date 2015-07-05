@@ -3,6 +3,8 @@
 #include <math.h>
 #include <queue>
 #include <boost/dynamic_bitset.hpp>
+#define NOMINMAX
+
 #define PI 3.14159265
 using namespace std;
 
@@ -661,7 +663,7 @@ OctreeCube* AdaptiveCuber::createInitialCube(){
 	cube->origin.z = 0 ;
 
 
-	int cubeSize = std::max(std::max(pixelDataWidth , pixelDataHeight ), frames - 1 );	//WE get the maximum value
+	int cubeSize = (std::max)((std::max)(pixelDataWidth , pixelDataHeight ), frames - 1 );	//WE get the maximum value
 	cubeSize = pow(2, ceil(log(cubeSize) / log(2)));	// we round it up to the neerest power of 2
 
 	cube->sizeX = cubeSize;
