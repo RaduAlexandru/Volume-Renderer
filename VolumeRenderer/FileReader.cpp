@@ -52,7 +52,8 @@ int FileReader::loadDICOMPixelData(QStringList fileNames,PixelData*pixelData){
 	pixelData->width = width;
 	pixelData->frames = fileNames.size();
 	pixelData->numberOfBytes = bitsAllocated / 8;
-	
+
+
 
 
 	pixelData->data = (unsigned char**)malloc(fileNames.size()*sizeof(unsigned char*));
@@ -68,11 +69,11 @@ int FileReader::loadDICOMPixelData(QStringList fileNames,PixelData*pixelData){
 		//DicomImage* img = new DicomImage(data, data->getOriginalXfer(), CIF_UsePartialAccessToPixelData, i, 1);	//Get the img
 		DicomImage *img = new DicomImage(fileNames[i].toStdString().c_str(), CIF_MayDetachPixelData, 0, 1);	//WatchOut. If you put CIF_UsePartialAccessToPixelData as the flag it seems to work but on the 510th frame it stops reading it. If you leave it at 0 it works correctly but it may not work well for multiframe dicomfiles (like the heart) more teasting needed
 		//img->setMinMaxWindow();
-		double center, width;
+		double center=0.0, width=0.0;
 		img->getWindow(center, width);
 		img->setWindow(400, 2000);
 		//cout << "window is " << center << "  " << width << endl;
-		cout << "copying pixel data" << endl;
+		//cout << "copying pixel data" << endl;
 		//(boost::get<unsigned char**>(model->pixelData))[i] = (unsigned char*)img->getOutputData(bitsAllocated, 0, 0);
 		unsigned char* outputPointer = NULL;
 		//(model->pixelData)[i] = (unsigned char*)img->getOutputData(bitsAllocated, 0, 0);		//WatchOut you are asinging pixel data to the output of that image which is made on the stack. when the function terminates, the data may not exist anymore
@@ -82,7 +83,7 @@ int FileReader::loadDICOMPixelData(QStringList fileNames,PixelData*pixelData){
 			(pixelData->data)[i][j] = outputPointer[j];
 		}
 
-		//pixelData->data2[i] = new DicomImage(fileNames[i].toStdString().c_str(), CIF_MayDetachPixelData, 0, 1);
+		
 
 
 
@@ -123,6 +124,8 @@ int FileReader::getRepresentation(QString fileName, int& bitsAllocated, int& bit
 	fileformat.getDataset()->findAndGetLongInt(DCM_NumberOfFrames, framesLong);
 	fileformat.getDataset()->findAndGetLongInt(DCM_Rows, heightLong);
 	fileformat.getDataset()->findAndGetLongInt(DCM_Columns, widthLong);
+
+	
 
 	bitsAllocated = (int)bitsAllocatedLong;
 	bitsStored = (int)bitsStoredLong;

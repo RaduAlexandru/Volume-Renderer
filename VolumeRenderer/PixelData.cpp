@@ -9,7 +9,6 @@
 PixelData::PixelData()
 {
 	data = NULL;
-	//data2.clear();
 	width=0;
 	height=0;
 	frames=0;
@@ -21,6 +20,8 @@ PixelData::PixelData()
 	borderZFurther = 0;
 	borderYTop = 0; 
 	borderYBottom = 0;
+
+	
 
 }
 
@@ -43,25 +44,11 @@ int PixelData::getPixelValue(int x, int y, int z){
 	dataPointer = &(((data))[z][0]);
 	dataPointer = dataPointer + (x + y*width)*numberOfBytes;
 	memcpy(&value, dataPointer, numberOfBytes);
+
 	return value;
 
 
-	/*if (x<0 || x>width || y<0 || y>height || z < 0 || z >= frames)
-		return 1;
-
-	if (data2.empty())
-		return 1;
-
-
-	unsigned char* outputPointer = NULL;
-	outputPointer = (unsigned char*)data2[z]->getOutputData(numberOfBytes*8, 0, 0);
-
-	int value = 0;
-
-	//dataPointer = &(((data))[z][0]);
-	//dataPointer = dataPointer + (x + y*width)*numberOfBytes;
-	memcpy(&value, outputPointer, numberOfBytes);
-	return value;*/
+	
 
 }
 

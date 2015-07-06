@@ -609,7 +609,7 @@ void VolumeRenderer::on_loadDICOMFromFile_clicked(){
 	reader = new FileReader;
 	establishConnectionsREADER();
 	//reader->loadDICOMPixelData(fileNames, model->pixelData);
-	//model->pixelData->data2.resize(fileNames.size());
+	
 
 	boost::thread workerThread(boost::bind(&FileReader::loadDICOMPixelData, reader,fileNames,model->pixelData));
 	//loadDICOMPixelData(fileNames);

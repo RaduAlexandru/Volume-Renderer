@@ -90,6 +90,8 @@ void MarchingCuber::run(){
 	std::ofstream outputFile;
 	outputFile.open("PixelsValues.txt");
 
+	
+
 	//Now we make a square and march it
 	//i is the y axis and j is the x axis
 	//Since the bitmap is stored in reverse, we shall asign the y position to height-i insted of just i, thus mirroring the position
@@ -106,7 +108,7 @@ void MarchingCuber::run(){
 				//if (model->getPixelValue(j, i, k)!=0)
 				//cout << model->getPixelValue(j, i, k) << endl;
 
-
+		
 
 				/*
 				7---------6

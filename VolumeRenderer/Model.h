@@ -107,6 +107,11 @@ public:
 	bool showGradient;
 	bool showCubes;
 
+
+
+	std::vector<glm::vec3> verts;
+	std::vector<glm::vec3> normals;
+
 	
 };
 

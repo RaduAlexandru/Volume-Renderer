@@ -775,9 +775,9 @@ inline bool AdaptiveCuber::cubeNeedsSubdivision(OctreeCube &cube){
 					if (!gotReference){
 						firstAngle = actualValue;
 						//Map the first angle to rgb 255
-						int r = 0 + (255 - 0)* (((sin(firstAngle.x  *PI / 180) + 1) / 2) / (1- 0));
-						int g = 0 + (255 - 0)* (((sin(firstAngle.y  *PI / 180) + 1) / 2) / (1 - 0));
-						int b = 0 + (255 - 0)* (((sin(firstAngle.z  *PI / 180) + 1) / 2) / (1 - 0));
+						//int r = 0 + (255 - 0)* (((sin(firstAngle.x  *PI / 180) + 1) / 2) / (1- 0));
+						//int g = 0 + (255 - 0)* (((sin(firstAngle.y  *PI / 180) + 1) / 2) / (1 - 0));
+						//int b = 0 + (255 - 0)* (((sin(firstAngle.z  *PI / 180) + 1) / 2) / (1 - 0));
 						gotReference = true;
 					}
 				}
@@ -812,9 +812,9 @@ inline bool AdaptiveCuber::cubeNeedsSubdivision(OctreeCube &cube){
 					return false;*/
 
 				if (angleMagnitude > tolerance && firstAngle != glm::vec3(-1, -1, -1) && actualValue != glm::vec3(-1, -1, -1) && gotReference){
-					int r = 0 + (255 - 0)* (((sin(actualValue.x  *PI / 180) + 1) / 2) / (1 - 0));
-					int g = 0 + (255 - 0)* (((sin(actualValue.y  *PI / 180) + 1) / 2) / (1 - 0));
-					int b = 0 + (255 - 0)* (((sin(actualValue.z  *PI / 180) + 1) / 2) / (1 - 0));
+					//int r = 0 + (255 - 0)* (((sin(actualValue.x  *PI / 180) + 1) / 2) / (1 - 0));
+					//int g = 0 + (255 - 0)* (((sin(actualValue.y  *PI / 180) + 1) / 2) / (1 - 0));
+					//int b = 0 + (255 - 0)* (((sin(actualValue.z  *PI / 180) + 1) / 2) / (1 - 0));
 					return true;
 				}
 
@@ -1972,24 +1972,10 @@ void AdaptiveCuber::patchFace(OctreeCube* lowRes, OctreeCube* highRes, int direc
 
 
 
-	int x = 240;
-	int y = 160;
-	int z = 32;
-
-
-	if (lowRes->origin.x == 240 && lowRes->origin.y == 160 && lowRes->origin.z == 32 && lowRes->sizeX == 8){
-		std::cout << "found the cube" << std::endl;
-
-		if (highRes != NULL){
-			std::cout << "found the closer" << std::endl;
-			//std::cout << "it has dims " << closer->origin.x << " " << closer->origin.y << " " << closer->origin.z << " " << closer->sizeX << std::endl;
-		}
-
-		if (highRes != NULL){
-			std::cout << "found the further" << std::endl;
-			//std::cout << "it has dims " << further->origin.x << " " << further->origin.y << " " << further->origin.z << " " << further->sizeX << std::endl;
-		}
-	}
+	/*bool test = true;
+	test= checkSurfaceOrientation(lowRes, highRes);
+	if (test == false)
+		return;*/
 
 
 	if (highRes != NULL && !highRes->isLeaf){
@@ -2146,4 +2132,115 @@ std::vector<glm::vec3>  AdaptiveCuber::removeDuplicates(std::vector<glm::vec3> v
 
 
 	return pointsOnFaceNoDuplicates;
+}
+
+
+bool AdaptiveCuber::checkSurfaceOrientation(OctreeCube* lowRes, OctreeCube* highRes){
+	//Go through all the gradients of each cube and calculate the average gradient
+
+	//If the magnitude of change between the two gradients surfaces is higher than a certain threshold, return false indicating that they are not on the same surface
+
+	if (lowRes == NULL || highRes == NULL)
+		return false;
+
+	boost::unordered_map< std::pair<int, int>, glm::vec3>::iterator it;
+	int count = 0;
+	glm::vec3 averageLowRes(0, 0, 0);
+	glm::vec3 averageHighRes(0, 0, 0);
+
+	float angleDifX = 0.0;
+	float angleDifY = 0.0;
+	float angleDifZ = 0.0;
+	float angleMagnitude = 0.0;
+
+
+	for (int k = lowRes->origin.z; k < lowRes->sizeZ + lowRes->origin.z; k = k + 1){
+		for (int i = lowRes->origin.y; i < lowRes->sizeY + lowRes->origin.y; i = i + 1){
+			for (int j = lowRes->origin.x; j < lowRes->sizeX + lowRes->origin.x; j = j + 1){
+
+
+
+				glm::vec3 actualValue(-1, -1, -1);
+				it = gradient->at(k).find(std::make_pair(j, i));
+				if (it != gradient->at(k).end())
+				{
+					//gradient found;
+					actualValue = it->second;
+					count++;
+					averageLowRes.x += actualValue.x;
+					averageLowRes.y += actualValue.y;
+					averageLowRes.z += actualValue.z;
+
+					// this value will get pishes onto an average vector
+
+				}
+				
+			}
+		}
+	}
+
+	if (count != 0){
+		averageLowRes.x = averageLowRes.x / count;
+		averageLowRes.y = averageLowRes.y / count;
+		averageLowRes.z = averageLowRes.z / count;
+	}
+
+
+	
+
+
+	count = 0;
+	for (int k = highRes->origin.z; k < highRes->sizeZ + highRes->origin.z; k = k + 1){
+		for (int i = highRes->origin.y; i < highRes->sizeY + highRes->origin.y; i = i + 1){
+			for (int j = highRes->origin.x; j < highRes->sizeX + highRes->origin.x; j = j + 1){
+
+
+
+				glm::vec3 actualValue(-1, -1, -1);
+				if (k >= frames)
+					return false;
+				it = gradient->at(k).find(std::make_pair(j, i));
+				if (it != gradient->at(k).end())
+				{
+					//gradient found;
+					actualValue = it->second;
+					count++;
+					averageHighRes.x += actualValue.x;
+					averageHighRes.y += actualValue.y;
+					averageHighRes.z += actualValue.z;
+
+					// this value will get pishes onto an average vector
+
+				}
+
+			}
+		}
+	}
+
+	if (count != 0){
+		averageHighRes.x = averageHighRes.x / count;
+		averageHighRes.y = averageHighRes.y / count;
+		averageHighRes.z = averageHighRes.z / count;
+	}
+
+	if (averageHighRes == glm::vec3(0, 0, 0) || averageLowRes == glm::vec3(0, 0, 0))	//they dont have any gradients inside therefore no surface
+		return false;	//Return false because it doesnt need patching
+
+	
+	//Calculate the difference between the two vectors if it is bigger than a certain value, return false because they dont need patching
+	angleDifX = 180 - abs(abs(averageLowRes.x - averageHighRes.x) - 180);
+	angleDifY = 180 - abs(abs(averageLowRes.y - averageHighRes.y) - 180);
+	angleDifZ = 180 - abs(abs(averageLowRes.z - averageHighRes.z) - 180);
+
+	angleMagnitude = sqrt(angleDifX*angleDifX + angleDifY*angleDifY + angleDifZ*angleDifZ);
+
+	if (angleMagnitude > 40){
+		return false;
+	}
+
+
+
+	return true;
+
+
 }

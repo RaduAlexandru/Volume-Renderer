@@ -29,6 +29,7 @@ public:
 	void patchFace(OctreeCube* lowRes, OctreeCube* highRes, int direction);
 	void getPointsFromFace(OctreeCube* cube, OctreeCube* reference, std::vector<glm::vec3>& vec, int direction);
 	std::vector<glm::vec3>  removeDuplicates(std::vector<glm::vec3> vec);
+	bool checkSurfaceOrientation(OctreeCube* lowRes, OctreeCube* highRes);
 
 	int octreeMaxDepth;
 	std::vector< boost::unordered_map< std::pair<int, int>, glm::vec3> >* gradient;

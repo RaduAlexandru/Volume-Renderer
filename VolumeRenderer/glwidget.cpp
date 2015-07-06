@@ -76,12 +76,20 @@ void GLWidget::sendDataToGL(){
 		std::cout << "value is" << model->verts[i] <<std::endl;
 	}*/
 
+
+
 	GLuint vertexBufferID;
 	glGenBuffers(1, &vertexBufferID);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
 	glBufferData(GL_ARRAY_BUFFER, model->verts.size()*sizeof(float), model->verts.data(), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);//0 is the positional attribute
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+
+	GLuint normalBufferID;
+	glGenBuffers(1, &normalBufferID);
+	glBindBuffer(GL_ARRAY_BUFFER, normalBufferID);
+	glBufferData(GL_ARRAY_BUFFER, model->verts.size()*sizeof(float), model->verts.data(), GL_STATIC_DRAW);
 }
 
 void GLWidget::initializeGL()
@@ -91,16 +99,25 @@ void GLWidget::initializeGL()
 	glEnable(GL_DEPTH_TEST);
 	dataSended = 0;
 	//sendDataToGL();
-	
+	glFrontFace(GL_CW);
 	
 
 	glEnable(GL_LIGHTING);
+	glEnable(GL_NORMALIZE);
+
+	glEnable(GL_COLOR_MATERIAL);
+	//glColorMaterial(GL_BACK, GL_AMBIENT_AND_DIFFUSE);
+	//glLightModelf(GL_LIGHT_MODEL_TWO_SIDE, 1);
+	
 
 	//WE ADD THE LIGHTS
 	glEnable(GL_LIGHT0);
 	glEnable(GL_LIGHT1);
 	glEnable(GL_LIGHT2);
+
 	
+	//glEnable(GL_LIGHT3);
+
 	//Light 1 is a point light, an omni light
 	float lightColor[4] = { 0.5, 0.5, 0.5, 1 };
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, lightColor);
@@ -114,7 +131,11 @@ void GLWidget::initializeGL()
 	glLightfv(GL_LIGHT2, GL_DIFFUSE, lightColor3);
 	
 
-
+	/*float lightColor4[4] = { 0.3, 0.3, 0.3, 1 };
+	float specReflection[] = { 0.3f, 0.3f, 0.3f, 1.0f };
+	glMaterialfv(GL_BACK, GL_SPECULAR, specReflection);
+	glMateriali(GL_BACK, GL_SHININESS, 56);
+	glLightfv(GL_LIGHT3, GL_SPECULAR, lightColor4);*/
 
 
 	
@@ -124,10 +145,7 @@ void GLWidget::initializeGL()
 	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientColor);
 
 
-	glEnable(GL_COLOR_MATERIAL);
-	glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
-	//glLightModelf(GL_LIGHT_MODEL_TWO_SIDE, 1);
-	glFrontFace(GL_CCW);
+	
 
 	/*glEnable(GL_CULL_FACE);
 	glCullFace(GL_FRONT);*/
@@ -137,6 +155,9 @@ void GLWidget::initializeGL()
 	glShadeModel(GL_SMOOTH);
 
 	generatingMesh = false;
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
 }
 
@@ -199,13 +220,15 @@ void GLWidget::paintGL()
 
 	//std::cout << "xrot is" << xRot << std::endl;
 
+	
+
 	glTranslatef((model->pixelData->width / 2), (model->pixelData->height / 2 - yMove), -(510.0f) + zMove);
 	//glScalef(scale, scale, scale);
 	glRotatef(xRot, 1, 0, 0);
 	glTranslatef(-(model->pixelData->width / 2  -xMove), -(model->pixelData->height / 2  ), 0.0f );
 
 	glTranslatef((model->pixelData->width / 2 ), (model->pixelData->height / 2 ), 0.0f  );
-	glRotatef(yRot, 0, 0, 1);	//We put it to minus so that the rotation is reversed
+	glRotatef(yRot, 0, 0, 1);	
 	glTranslatef(-(model->pixelData->width / 2 ), -(model->pixelData->height / 2 ), 0.0f - (model->pixelData->frames / 2 ));
 
 	
@@ -245,6 +268,12 @@ void GLWidget::paintGL()
 
 
 
+	float lightPosition3[4] = { model->pixelData->width / 2, model->pixelData->height / 1.1, 0, 0 };
+	//float lightPosition3[4] = { 0, 0, 0, 0 };
+	glLightfv(GL_LIGHT3, GL_POSITION, lightPosition3);
+
+
+
 	/*glColor3f(1.f, 0.f, 0.f);
 	glPointSize(1.0);
 	glBegin(GL_POINTS);
@@ -256,7 +285,7 @@ void GLWidget::paintGL()
 
 	
 	//glDrawArrays(GL_TRIANGLES, 0, model->verts.size());
-	glColor3f(0.55f, 0.55f, 0.55f);
+	glColor4f(0.55f, 0.55f, 0.55f, 0.5f);
 	if (model->showMesh)
 		drawMesh();
 
