@@ -60,7 +60,10 @@ VolumeRenderer::VolumeRenderer(QWidget *parent)
 
 	ui.setupUi(this);
 	model = new Model();
-	ui.glwidget->model = model;
+	//ui.glwidget->model = model;
+	ui.glwidget->mesh = model->mesh;
+	ui.glwidget->mesh2 = model->mesh2;
+	ui.glwidget->gradient = &(model->gradient);
 	ui.dicomviewer2dgl->pixelData = model->pixelData;
 	interactive = true;
 	generatingMesh = false;
@@ -411,7 +414,7 @@ void VolumeRenderer::on_normalsPerTriangleButton_clicked(){
 	}
 	if (!interactive)
 		return;
-	model->normals.clear();
+	model->mesh->normals.clear();
 	emit generatingStartedSignal();
 	generatingMesh = true;
 	generateNormals();
@@ -423,7 +426,7 @@ void VolumeRenderer::on_normalsPerVerticeButton_clicked(){
 	}
 	if (!interactive)
 		return;
-	model->normals.clear();
+	model->mesh->normals.clear();
 	emit generatingStartedSignal();
 	generatingMesh = true;
 	generateNormals();
@@ -460,12 +463,12 @@ void VolumeRenderer::on_orientationZButton_clicked(){
 		QRect rect;
 
 		rect = ui.borderYTopSlider->geometry();
-		rect.setBottom(360 + 231);
-		rect.setTop(360);
+		rect.setBottom(370 + 231);
+		rect.setTop(370);
 		ui.borderYTopSlider->setGeometry(rect);
 		rect = ui.borderYBottomSlider->geometry();
-		rect.setBottom(360 + 231);
-		rect.setTop(360);
+		rect.setBottom(370 + 231);
+		rect.setTop(370);
 		ui.borderYBottomSlider->setGeometry(rect);
 
 		rect = ui.borderXLeftSlider->geometry();
@@ -510,12 +513,12 @@ void VolumeRenderer::on_orientationXButton_clicked(){
 			QRect rect;
 	
 			rect = ui.borderYTopSlider->geometry();
-			rect.setBottom(360 + 231);
-			rect.setTop(360 + (231 - 231 * ratio));
+			rect.setBottom(370 + 231);
+			rect.setTop(370 + (231 - 231 * ratio));
 			ui.borderYTopSlider->setGeometry(rect);
 			rect = ui.borderYBottomSlider->geometry();
-			rect.setBottom(360 + 231);
-			rect.setTop(360 + (231 - 231 * ratio));
+			rect.setBottom(370 + 231);
+			rect.setTop(370 + (231 - 231 * ratio));
 			ui.borderYBottomSlider->setGeometry(rect);
 
 
@@ -536,13 +539,13 @@ void VolumeRenderer::on_orientationXButton_clicked(){
 			QRect rect;
 
 			rect = ui.borderYTopSlider->geometry();
-			rect.setBottom(360 + 231);
-			rect.setTop(360);
+			rect.setBottom(370 + 231);
+			rect.setTop(370);
 			ui.borderYTopSlider->setGeometry(rect);
 
 			rect = ui.borderYBottomSlider->geometry();
-			rect.setBottom(360 + 231);
-			rect.setTop(360);
+			rect.setBottom(370 + 231);
+			rect.setTop(370);
 			ui.borderYBottomSlider->setGeometry(rect);
 			//modify X
 
@@ -595,12 +598,12 @@ void VolumeRenderer::on_orientationYButton_clicked(){
 			QRect rect;
 			//360 is the slider y position got from the designer, and the 231 it the slider height
 			rect = ui.borderYTopSlider->geometry();
-			rect.setBottom(360 + 231);
-			rect.setTop(360 +  (231-231 * ratio));
+			rect.setBottom(370 + 231);
+			rect.setTop(370 +  (231-231 * ratio));
 			ui.borderYTopSlider->setGeometry(rect);
 			rect = ui.borderYBottomSlider->geometry();
-			rect.setBottom(360 + 231);
-			rect.setTop(360 + (231 - 231 * ratio));
+			rect.setBottom(370 + 231);
+			rect.setTop(370 + (231 - 231 * ratio));
 			ui.borderYBottomSlider->setGeometry(rect);
 
 
@@ -622,13 +625,13 @@ void VolumeRenderer::on_orientationYButton_clicked(){
 			QRect rect;
 
 			rect = ui.borderYTopSlider->geometry();
-			rect.setBottom(360 + 231);
-			rect.setTop(360);
+			rect.setBottom(370 + 231);
+			rect.setTop(370);
 			ui.borderYTopSlider->setGeometry(rect);
 
 			rect = ui.borderYBottomSlider->geometry();
-			rect.setBottom(360 + 231);
-			rect.setTop(360);
+			rect.setBottom(370 + 231);
+			rect.setTop(370);
 			ui.borderYBottomSlider->setGeometry(rect);
 			//Modify x
 
@@ -676,7 +679,7 @@ void VolumeRenderer::generateMesh(int force){
 	if (model->algorithmChosen == 1){
 		//boost::thread workerThread(boost::bind(&VolumeRenderer::marchingSquares, this));
 		ui.progressText->setText("<font color='black'>Generating Mesh</font>");
-		mc = new MarchingCuber((model->pixelData), &(model->verts), &(model->normals), model->isoLevel, model->cellSizeX, model->cellSizeY, model->cellSizeZ, model->interpolateDepth);
+		mc = new MarchingCuber((model->pixelData), model->mesh, model->isoLevel, model->cellSizeX, model->cellSizeY, model->cellSizeZ, model->interpolateDepth);
 		establishConnectionsMC();
 		//mc->run();
 		boost::thread workerThread(boost::bind(&MarchingCuber::run, mc));
@@ -695,7 +698,7 @@ void VolumeRenderer::generateMesh(int force){
 		launch_kernel(model->edgeTable,model->triTable);
 	}
 	if (model->algorithmChosen == 3){
-		amc = new AdaptiveCuber((model->pixelData), &(model->verts), &(model->normals), model->isoLevel, model->cellSizeX, model->cellSizeY, model->cellSizeZ, model->interpolateDepth, model->octreeMaxDepth, &(model->gradient), model->tolerance);
+		amc = new AdaptiveCuber((model->pixelData), model->mesh, model->isoLevel, model->cellSizeX, model->cellSizeY, model->cellSizeZ, model->interpolateDepth, model->octreeMaxDepth, &(model->gradient), model->tolerance);
 		establishConnectionsAMC();
 		//amc->runWithCracks();
 		boost::thread workerThread(boost::bind(&AdaptiveCuber::runWithCracks, amc));
@@ -703,7 +706,7 @@ void VolumeRenderer::generateMesh(int force){
 	}
 	if (model->algorithmChosen == 4){
 		//adaptiveMarchingCubes3();
-		amc = new AdaptiveCuber((model->pixelData), &(model->verts), &(model->normals), model->isoLevel,  model->cellSizeX, model->cellSizeY, model->cellSizeZ,  model->interpolateDepth, model->octreeMaxDepth,&(model->gradient),model->tolerance);
+		amc = new AdaptiveCuber((model->pixelData), model->mesh, model->isoLevel, model->cellSizeX, model->cellSizeY, model->cellSizeZ, model->interpolateDepth, model->octreeMaxDepth, &(model->gradient), model->tolerance);
 		establishConnectionsAMC();
 		//amc->run();
 		boost::thread workerThread(boost::bind(&AdaptiveCuber::run, amc));
@@ -766,6 +769,9 @@ void VolumeRenderer::finishedMeshSlot(){
 */
 void VolumeRenderer::finishedNormalsSlot(){
 	//std::cout << "entered in finished normals slot" << std::endl;
+	model->mesh->height = model->pixelData->height;
+	model->mesh->width = model->pixelData->width;
+	model->mesh->frames = model->pixelData->frames;
 	emit generatingFinishedSignal();
 	ui.progressText->setText("<font color='black'></font>");
 	ui.progressBar->setValue(0);
@@ -778,7 +784,7 @@ void VolumeRenderer::finishedNormalsSlot(){
 	//qWarning() << aEnglish.toString(i);
 
 	QString string;
-	string = aEnglish.toString(model->verts.size() / 3);
+	string = aEnglish.toString(model->mesh->verts.size() / 3);
 	string.append(" triangles");
 
 	ui.numberOfTrianglesLabel->setText(string);
@@ -809,13 +815,13 @@ void VolumeRenderer::generateNormals(){
 
 	ui.progressText->setText("Generating Normals");
 
-	model->normals.clear();
+	model->mesh->normals.clear();
 	if (model->normalsAlgChosen == 1){
 
 		ng = new NormalsGenerator();
 		establishConnectionsNG();
 		//ng->normalsPerTriangle(model->pixelData, model->verts, model->normals);
-		boost::thread workerThread(boost::bind(&NormalsGenerator::normalsPerTriangle, ng, model->pixelData, boost::ref(model->verts), boost::ref(model->normals)));
+		boost::thread workerThread(boost::bind(&NormalsGenerator::normalsPerTriangle, ng, model->pixelData, model->mesh));
 	}
 
 	if (model->normalsAlgChosen == 2){
@@ -823,7 +829,7 @@ void VolumeRenderer::generateNormals(){
 		ng = new NormalsGenerator();
 		establishConnectionsNG();
 		//ng->normalsPerVertex(model->pixelData, model->verts, model->normals);
-		boost::thread workerThread(boost::bind(&NormalsGenerator::normalsPerVertex, ng, model->pixelData, boost::ref(model->verts), boost::ref(model->normals)));
+		boost::thread workerThread(boost::bind(&NormalsGenerator::normalsPerVertex, ng, model->pixelData, model->mesh));
 	}
 
 	//model->generatingMesh = false;
@@ -839,8 +845,8 @@ void VolumeRenderer::generateNormals(){
 void VolumeRenderer::wipePoints(){
 	
 	model->cubes.clear();
-	model->verts.clear();
-	model->normals.clear();
+	model->mesh->verts.clear();
+	model->mesh->normals.clear();
 	model->octreeVector.clear();
 }
 
@@ -931,25 +937,25 @@ void  VolumeRenderer::on_octreeDepthSlider_valueChanged(){
 
 void VolumeRenderer::on_borderYBottomSlider_valueChanged(){
 
-	if (model->orientation == 1){
+	if (ui.dicomviewer2dgl->orientation == 1){
 		model->pixelData->borderYBottom = ui.borderYBottomSlider->value();
 	}
-	if (model->orientation == 2){
+	if (ui.dicomviewer2dgl->orientation == 2){
 		model->pixelData->borderZCloser = ui.borderYBottomSlider->value();
 	}
-	if (model->orientation == 3){
+	if (ui.dicomviewer2dgl->orientation == 3){
 		model->pixelData->borderZCloser = ui.borderYBottomSlider->value();
 	}
 	generateMesh();
 }
 void VolumeRenderer::on_borderYTopSlider_valueChanged(){
-	if (model->orientation == 1){
+	if (ui.dicomviewer2dgl->orientation == 1){
 		model->pixelData->borderYTop = ui.borderYTopSlider->value();
 	}
-	if (model->orientation == 2){
+	if (ui.dicomviewer2dgl->orientation == 2){
 		model->pixelData->borderZFurther = ui.borderYTopSlider->value();
 	}
-	if (model->orientation == 3){
+	if (ui.dicomviewer2dgl->orientation == 3){
 		model->pixelData->borderZFurther = ui.borderYTopSlider->value();
 	}
 	
@@ -962,25 +968,25 @@ void VolumeRenderer::on_borderYTopSlider_valueChanged(){
 
 void VolumeRenderer::on_borderXLeftSlider_valueChanged(){
 
-	if (model->orientation == 1){
+	if (ui.dicomviewer2dgl->orientation == 1){
 		model->pixelData->borderXLeft = ui.borderXLeftSlider->value();
 	}
-	if (model->orientation == 2){
+	if (ui.dicomviewer2dgl->orientation == 2){
 		model->pixelData->borderYBottom = ui.borderXLeftSlider->value();
 	}
-	if (model->orientation == 3){
+	if (ui.dicomviewer2dgl->orientation == 3){
 		model->pixelData->borderXLeft = ui.borderXLeftSlider->value();
 	}
 	generateMesh();
 }
 void VolumeRenderer::on_borderXRightSlider_valueChanged(){
-	if (model->orientation == 1){
+	if (ui.dicomviewer2dgl->orientation == 1){
 		model->pixelData->borderXRight = ui.borderXRightSlider->value();
 	}
-	if (model->orientation == 2){
+	if (ui.dicomviewer2dgl->orientation == 2){
 		model->pixelData->borderYTop = ui.borderXRightSlider->value();
 	}
-	if (model->orientation == 3){
+	if (ui.dicomviewer2dgl->orientation == 3){
 		model->pixelData->borderXRight = ui.borderXRightSlider->value();
 	}
 
@@ -1006,13 +1012,13 @@ void VolumeRenderer::on_loadObjButton_clicked(){
 	//then when we are finished send the one that sais, finished generating
 	//also have to read the pixelwidht, height and frames
 	emit generatingStartedSignal();
-	wipePixelData();
+	//wipePixelData();
 	wipePoints();
 
 	ui.progressText->setText("Reading OBJ File");
 	reader = new FileReader;
 	establishConnectionsREADER();
-	boost::thread workerThread(boost::bind(&FileReader::loadOBJFile, reader, fileName, model->pixelData, boost::ref(model->verts), boost::ref(model->normals)));
+	boost::thread workerThread(boost::bind(&FileReader::loadOBJFile, reader, fileName, model->pixelData, model->mesh));
 
 	
 
@@ -1040,12 +1046,12 @@ void VolumeRenderer::on_writeObjButton_clicked(){
 
 	ui.progressText->setText("Exporting to OBJ");
 
-	Exporter* exporter = new Exporter;
-	connect(exporter, SIGNAL(progressValueChangedSignal(int)), this, SLOT(progressValueChangedSlot(int)));
-	connect(exporter, SIGNAL(finishedWritingToFileSignal()), this, SLOT(finishedNormalsSlot()));
+	//Exporter* exporter = new Exporter;
+	connect(model->mesh, SIGNAL(progressValueChangedSignal(int)), this, SLOT(progressValueChangedSlot(int)));
+	connect(model->mesh, SIGNAL(finishedWritingToFileSignal()), this, SLOT(finishedNormalsSlot()));
 	//exporter->writeToOBJ(filename, model->verts, model->normals, model->pixelData->width, model->pixelData->height, model->pixelData->frames);
 
-	boost::thread workerThread(boost::bind(&Exporter::writeToOBJ, exporter, filename, model->verts, model->normals, model->pixelData->width, model->pixelData->height, model->pixelData->frames));
+	boost::thread workerThread(boost::bind(&Mesh::writeToOBJ, model->mesh, filename));
 
 }
 
@@ -1053,19 +1059,19 @@ void VolumeRenderer::on_writeObjButton_clicked(){
 void VolumeRenderer::on_saveToSecondaryButton_clicked(){
 	std::cout << "Copying from mesh 1 to secondary" << std::endl;
 
-	model->verts2.clear();
-	model->normals2.clear();
+	model->mesh2->verts.clear();
+	model->mesh2->normals.clear();
 
-	for (int i = 0; i < model->verts.size(); i++){
-		model->verts2.push_back( model->verts[i]);
-		model->normals2.push_back(model->normals[i]);
+	for (int i = 0; i < model->mesh->verts.size(); i++){
+		model->mesh2->verts.push_back(model->mesh->verts[i]);
+		model->mesh2->normals.push_back(model->mesh->normals[i]);
 	}
 }
 
 void VolumeRenderer::on_clearPinButton_clicked(){
 	std::cout << "Clearing pined mesh" << std::endl;
-	model->verts2.clear();
-	model->normals2.clear();
+	model->mesh2->verts.clear();
+	model->mesh2->normals.clear();
 }
 
 

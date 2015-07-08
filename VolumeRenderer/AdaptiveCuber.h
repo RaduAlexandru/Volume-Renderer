@@ -5,14 +5,11 @@ class AdaptiveCuber:public MarchingCuber
 public:
 	AdaptiveCuber();
 	~AdaptiveCuber();
-	AdaptiveCuber(PixelData* pixelData, std::vector<glm::vec3>* verts, std::vector<glm::vec3>* normals, int isoLevel, int cellSizeX, int cellSizeY, int cellSizeZ, int interpolateDepth, int octreeMaxDepth, std::vector< boost::unordered_map< std::pair<int, int>, glm::vec3> >* gradient, int tolerance);
+	AdaptiveCuber(PixelData* pixelData, Mesh* mesh, int isoLevel, int cellSizeX, int cellSizeY, int cellSizeZ, int interpolateDepth, int octreeMaxDepth, std::vector< boost::unordered_map< std::pair<int, int>, glm::vec3> >* gradient, int tolerance);
 
 	int run();
 	int runWithCracks();
 	void calculateGradient();
-	int convolveX(int x, int y, int z);
-	int convolveY(int x, int y, int z);
-	int convolveZ(int x, int y, int z);
 	OctreeCube* createInitialCube();
 	int generateOctree_tree_version(OctreeCube&, int = 0);
 	inline bool cubeNeedsSubdivision(OctreeCube &cube);

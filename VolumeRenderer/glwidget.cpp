@@ -34,7 +34,8 @@ GLWidget::GLWidget(QWidget *parent)
 	showWireframe = false;
 	showCubes = false;
 	showGradients = false;
-
+	mesh = NULL;
+	mesh2 = NULL;
 	
 }
 
@@ -43,62 +44,6 @@ GLWidget::~GLWidget()
 
 }
 
-void GLWidget::sendDataToGL(){
-	/*GLfloat verts[] = {
-		100.0f, 0.0f, 0.0f,
-		100.0f, 100.0f, 0.0f,
-		0.0f, 100.0f, 0.0f,
-
-		100.0f, 0.0f, 0.0f,
-		100.0f, 100.0f, 0.0f,
-		150.0f, 50.0f, 600.0f,
-	};*/
-	std::cout << "creating data and sending to gl" << std::endl;
-
-	/*model->verts.push_back(100.0f);
-	model->verts.push_back(0.0f);
-	model->verts.push_back(0.0f);
-
-	model->verts.push_back(100.0f);
-	model->verts.push_back(100.0f);
-	model->verts.push_back(0.0f);
-
-	model->verts.push_back(0.0f);
-	model->verts.push_back(100.0f);
-	model->verts.push_back(0.0f);
-
-	model->verts.push_back(100.0f);
-	model->verts.push_back(0.0f);
-	model->verts.push_back(0.0f);
-
-	model->verts.push_back(100.0f);
-	model->verts.push_back(100.0f);
-	model->verts.push_back(0.0f);
-
-	model->verts.push_back(150.0f);
-	model->verts.push_back(50.0f);
-	model->verts.push_back(600.0f);*/
-
-	std::cout << "the size of the vector is" << model->verts.size() << std::endl;
-	/*for (int i = 0; i < model->verts.size();i++){
-		std::cout << "value is" << model->verts[i] <<std::endl;
-	}*/
-
-
-
-	GLuint vertexBufferID;
-	glGenBuffers(1, &vertexBufferID);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
-	glBufferData(GL_ARRAY_BUFFER, model->verts.size()*sizeof(float), model->verts.data(), GL_STATIC_DRAW);
-	glEnableVertexAttribArray(0);//0 is the positional attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
-
-	GLuint normalBufferID;
-	glGenBuffers(1, &normalBufferID);
-	glBindBuffer(GL_ARRAY_BUFFER, normalBufferID);
-	glBufferData(GL_ARRAY_BUFFER, model->verts.size()*sizeof(float), model->verts.data(), GL_STATIC_DRAW);
-}
 
 void GLWidget::initializeGL()
 {
@@ -175,20 +120,13 @@ void GLWidget::initializeGL()
 
 void GLWidget::paintGL()
 {
-	if (!dataSended &&!model->verts.empty()){
-		GLuint vertexBufferID;
-		glGenBuffers(1, &vertexBufferID);
-		glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
-		glBufferData(GL_ARRAY_BUFFER, model->verts.size()*sizeof(float), model->verts.data(), GL_STATIC_DRAW);
-		glEnableVertexAttribArray(0);//0 is the positional attribute
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-		dataSended = 1;
-		//xRot = -90;
-	}
+	
 
 	if (generatingMesh)
 		return;
 
+	if (mesh == NULL);
+	
 	
 	glViewport(0.0, 0.0, width(), height());
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -234,14 +172,14 @@ void GLWidget::paintGL()
 
 	
 
-	glTranslatef((model->pixelData->width / 2), (model->pixelData->height / 2 - yMove), -(510.0f) + zMove);
+	glTranslatef((mesh->width / 2), (mesh->height / 2 - yMove), -(510.0f) + zMove);
 	//glScalef(scale, scale, scale);
 	glRotatef(xRot, 1, 0, 0);
-	glTranslatef(-(model->pixelData->width / 2  -xMove), -(model->pixelData->height / 2  ), 0.0f );
+	glTranslatef(-(mesh->width / 2 - xMove), -(mesh->height / 2), 0.0f);
 
-	glTranslatef((model->pixelData->width / 2 ), (model->pixelData->height / 2 ), 0.0f  );
+	glTranslatef((mesh->width / 2), (mesh->height / 2), 0.0f);
 	glRotatef(yRot, 0, 0, 1);	
-	glTranslatef(-(model->pixelData->width / 2 ), -(model->pixelData->height / 2 ), 0.0f - (model->pixelData->frames / 2 ));
+	glTranslatef(-(mesh->width / 2), -(mesh->height / 2), 0.0f - (mesh->frames / 2));
 
 	
 	
@@ -271,16 +209,16 @@ void GLWidget::paintGL()
 	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 
 	//Position of light 2
-	float lightPosition1[4] = { model->pixelData->width, model->pixelData->height/8, 0, 1 };
+	float lightPosition1[4] = { mesh->width, mesh->height / 8, 0, 1 };
 	glLightfv(GL_LIGHT1, GL_POSITION, lightPosition1);
 
 	//Position of light 3
-	float lightPosition2[4] = { model->pixelData->width/2, model->pixelData->height/1.1, 0, 1 };
+	float lightPosition2[4] = { mesh->width / 2, mesh->height / 1.1, 0, 1 };
 	glLightfv(GL_LIGHT2, GL_POSITION, lightPosition2);
 
 
 
-	float lightPosition3[4] = { model->pixelData->width / 2, model->pixelData->height / 1.1, 0, 0 };
+	float lightPosition3[4] = { mesh->width / 2, mesh->height / 1.1, 0, 0 };
 	//float lightPosition3[4] = { 0, 0, 0, 0 };
 	glLightfv(GL_LIGHT3, GL_POSITION, lightPosition3);
 
@@ -302,12 +240,12 @@ void GLWidget::paintGL()
 	//glColor4f(1.0f, 0.9f, 0.55f, 1.0f);
 	glColor4f(1.0f, 0.9f, 0.65f, 1.0f);
 	if (showMesh)
-		drawMesh2();
+		drawMesh(mesh2);
 	
 	
 	glColor4f(0.55f, 0.55f, 0.55f,float (opacity));
 	if (showMesh)
-		drawMesh();
+		drawMesh(mesh);
 
 	
 
@@ -315,15 +253,15 @@ void GLWidget::paintGL()
 	if (showGradients)
 		displayGradient();
 
-	if (showCubes)
-		drawCubes2();
+	//if (showCubes)
+		//drawCubes2();
 
 
 	if (showWireframe){
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		glLineWidth(1.5f);
 		glColor3f(1.f, 0.f, 0.f);
-		drawMesh();
+		drawMesh(mesh);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 	else{
@@ -522,11 +460,14 @@ void GLWidget::paintGL()
 
 /*! \brief Funcion que muestra el mallado por pantalla. Se recorre el vector de puntos y de normales de 3 en 3, formandose triangulos con sus normales correspondientes
 */
-void GLWidget::drawMesh(){
+void GLWidget::drawMesh(Mesh* meshtoDraw){
 	//glColor3f(1.f, 0.f, 0.f);
 	
+	if (meshtoDraw == NULL)
+		return;
+
 	//glDrawArrays(GL_TRIANGLES, 0, model->verts.size());
-	if (model->verts.empty() || model->normals.empty())
+	if (meshtoDraw->verts.empty() || meshtoDraw->normals.empty())
 		return;
 
 
@@ -537,19 +478,19 @@ void GLWidget::drawMesh(){
 	int normalIndex = 0;
 
 	glBegin(GL_TRIANGLES);
-	for (int i = 0; i < model->verts.size() - 3; i = i + 3){
+	for (int i = 0; i < meshtoDraw->verts.size() - 3; i = i + 3){
 
-		if (i >= model->normals.size())
+		if (i >= meshtoDraw->normals.size())
 			break;
 
-		glNormal3f(model->normals[i].x, model->normals[i].y, model->normals[i].z);
-		glVertex3f(model->verts[i].x, model->verts[i].y, model->verts[i].z);
+		glNormal3f(meshtoDraw->normals[i].x, meshtoDraw->normals[i].y, meshtoDraw->normals[i].z);
+		glVertex3f(meshtoDraw->verts[i].x, meshtoDraw->verts[i].y, meshtoDraw->verts[i].z);
 
-		glNormal3f(model->normals[i + 1].x, model->normals[i + 1].y, model->normals[i + 1].z);
-		glVertex3f(model->verts[i + 1].x, model->verts[i + 1].y, model->verts[i + 1].z);
+		glNormal3f(meshtoDraw->normals[i + 1].x, meshtoDraw->normals[i + 1].y, meshtoDraw->normals[i + 1].z);
+		glVertex3f(meshtoDraw->verts[i + 1].x, meshtoDraw->verts[i + 1].y, meshtoDraw->verts[i + 1].z);
 
-		glNormal3f(model->normals[i + 2].x, model->normals[i + 2].y, model->normals[i + 2].z);
-		glVertex3f(model->verts[i + 2].x, model->verts[i + 2].y, model->verts[i + 2].z);
+		glNormal3f(meshtoDraw->normals[i + 2].x, meshtoDraw->normals[i + 2].y, meshtoDraw->normals[i + 2].z);
+		glVertex3f(meshtoDraw->verts[i + 2].x, meshtoDraw->verts[i + 2].y, meshtoDraw->verts[i + 2].z);
 	}
 	glEnd();
 
@@ -595,11 +536,14 @@ void GLWidget::drawMesh(){
 
 
 
-void GLWidget::drawMesh2(){
+/*void GLWidget::drawMesh2(){
 	//glColor3f(1.f, 0.f, 0.f);
 
+	if (mesh2 == NULL)
+		return;
+
 	//glDrawArrays(GL_TRIANGLES, 0, model->verts.size());
-	if (model->verts2.empty() || model->normals2.empty())
+	if (mesh2->verts.empty() || mesh2->normals.empty())
 		return;
 
 
@@ -610,23 +554,23 @@ void GLWidget::drawMesh2(){
 	int normalIndex = 0;
 
 	glBegin(GL_TRIANGLES);
-	for (int i = 0; i < model->verts2.size() - 3; i = i + 3){
+	for (int i = 0; i < mesh2->verts.size() - 3; i = i + 3){
 
-		if (i >= model->normals2.size())
+		if (i >= mesh2->normals.size())
 			break;
 
-		glNormal3f(model->normals2[i].x, model->normals2[i].y, model->normals2[i].z);
-		glVertex3f(model->verts2[i].x, model->verts2[i].y, model->verts2[i].z);
+		glNormal3f(mesh2->normals[i].x, mesh2->normals[i].y, mesh2->normals[i].z);
+		glVertex3f(mesh2->verts[i].x, mesh2->verts[i].y, mesh2->verts[i].z);
 
-		glNormal3f(model->normals2[i + 1].x, model->normals2[i + 1].y, model->normals2[i + 1].z);
-		glVertex3f(model->verts2[i + 1].x, model->verts2[i + 1].y, model->verts2[i + 1].z);
+		glNormal3f(mesh2->normals[i + 1].x, mesh2->normals[i + 1].y, mesh2->normals[i + 1].z);
+		glVertex3f(mesh2->verts[i + 1].x, mesh2->verts[i + 1].y, mesh2->verts[i + 1].z);
 
-		glNormal3f(model->normals2[i + 2].x, model->normals2[i + 2].y, model->normals2[i + 2].z);
-		glVertex3f(model->verts2[i + 2].x, model->verts2[i + 2].y, model->verts2[i + 2].z);
+		glNormal3f(mesh2->normals[i + 2].x, mesh2->normals[i + 2].y, mesh2->normals[i + 2].z);
+		glVertex3f(mesh2->verts[i + 2].x, mesh2->verts[i + 2].y, mesh2->verts[i + 2].z);
 	}
 	glEnd();
 }
-void GLWidget::drawCubes(){
+/*void GLWidget::drawCubes(){
 	//Draw the cubes now The cube configuracion can be found as a comment in the adaptiveMarchingCubes function
 	
 	glLineWidth(1.0f);
@@ -683,19 +627,19 @@ void GLWidget::drawCubes(){
 
 	}
 	glEnd();
-}
+}*/
 
 
 //This one get the octreecubes from octreevector which is the one that gets used when adaptivemarchingvubes3
-void GLWidget::drawCubes2(){
+/*void GLWidget::drawCubes2(){
 	//Draw the cubes now The cube configuracion can be found as a comment in the adaptiveMarchingCubes function
 
 	glBegin(GL_LINES);
 	for (int i = 0; i < model->octreeVector.size(); i = i + 1){
 
-		/*if (!model->octreeVector[i]->isLeaf){
-			continue;
-		}*/
+		//if (!model->octreeVector[i]->isLeaf){
+		//	continue;
+		//}
 
 		if (!model->octreeVector[i]->containsVerts){
 			continue;
@@ -744,7 +688,7 @@ void GLWidget::drawCubes2(){
 
 	}
 	glEnd();
-}
+}*/
 
 
 
@@ -817,7 +761,7 @@ void GLWidget::resizeGL(int w, int h)
 void GLWidget::displayGradient(){
 
 
-	if (model->gradient.empty())
+	if (gradient->empty())
 		return;
 
 	
@@ -827,8 +771,8 @@ void GLWidget::displayGradient(){
 
 	//We read values only if keys is emty
 	if (keys.empty())
-	for (int k = 0; k < model->pixelData->frames; k++){
-		for (auto kv : model->gradient[k]) {
+	for (int k = 0; k < mesh->frames; k++){
+		for (auto kv : (*gradient)[k]) {
 			glm::vec3 positionKey;
 			positionKey.x = kv.first.first;
 			positionKey.y = kv.first.second;
@@ -888,8 +832,8 @@ void GLWidget::setMatrices(){
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		//Now we position the camera in the middle of the screen (width/2 and heidth /2 ) and looking at the negative z axis
-		gluLookAt(model->pixelData->width / 2, model->pixelData->height / 2, model->pixelData->frames,
-			model->pixelData->width / 2, model->pixelData->height / 2, -model->pixelData->frames,
+		gluLookAt(mesh->width / 2, mesh->height / 2, mesh->frames,
+			mesh->width / 2, mesh->height / 2, -mesh->frames,
 			0.0, 1.0, 0.0);
 	}
 	else{
@@ -901,11 +845,11 @@ void GLWidget::setMatrices(){
 
 		float aspectRatio = (GLfloat)width() / (GLfloat)height();
 		if (width() <= height())
-			glOrtho(0.0f, model->pixelData->width, 0.0f - (model->pixelData->height* (aspectRatio - 1)), model->pixelData->height / aspectRatio, -1024.0f, 1024.0f);
+			glOrtho(0.0f, mesh->width, 0.0f - (mesh->height* (aspectRatio - 1)), mesh->height / aspectRatio, -1024.0f, 1024.0f);
 		if (width() > height())
-			glOrtho(0.0f - (model->pixelData->width* (aspectRatio-1)), model->pixelData->width*aspectRatio, 0.0f, model->pixelData->height, -1024.0f, 1024.0f);
+			glOrtho(0.0f - (mesh->width* (aspectRatio - 1)), mesh->width*aspectRatio, 0.0f, mesh->height, -1024.0f, 1024.0f);
 		else
-			glOrtho(0.0f, model->pixelData->width, 0.0f, model->pixelData->height, -1024.0f, 1024.0f);
+			glOrtho(0.0f, mesh->width, 0.0f, mesh->height, -1024.0f, 1024.0f);
 
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();

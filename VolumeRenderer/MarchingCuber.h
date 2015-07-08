@@ -16,6 +16,8 @@
 #include <boost/unordered_map.hpp>
 #include <QtWidgets/QApplication>
 #include <QObject>
+#include "Mesh.h"
+
 
 class MarchingCuber : public QObject
 {
@@ -23,7 +25,7 @@ class MarchingCuber : public QObject
 public:
 	MarchingCuber();
 	MarchingCuber(QObject *_parent);
-	MarchingCuber(PixelData* pixelData, std::vector<glm::vec3>* verts, std::vector<glm::vec3>* normals, int isoLevel ,  int cellSizeX, int cellSizeY, int cellSizeZ, int interpolateDepth );
+	MarchingCuber(PixelData* pixelData, Mesh*, int isoLevel ,  int cellSizeX, int cellSizeY, int cellSizeZ, int interpolateDepth );
 	~MarchingCuber();
 
 	typedef struct {
@@ -45,8 +47,7 @@ public:
 
 	PixelData* pixelData;
 
-	std::vector<glm::vec3>* verts;
-	std::vector<glm::vec3>* normals;
+	Mesh* mesh;
 
 	int isoLevel; //!< Detailed Representa el valor umbral con el que se segmenta el volumen de datos 
 	int frames;

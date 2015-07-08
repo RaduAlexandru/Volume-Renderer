@@ -4,6 +4,7 @@
 #include "PixelData.h"
 #include <QtWidgets/QApplication>
 #include <QObject>
+#include "Mesh.h"
 
 
 class NormalsGenerator : public  QObject
@@ -13,12 +14,10 @@ public:
 	NormalsGenerator();
 	~NormalsGenerator();
 
-	void normalsPerTriangle(PixelData* pixeldata, std::vector<glm::vec3>&verts, std::vector<glm::vec3>&normals);
-	void normalsPerVertex(PixelData* pixeldata, std::vector<glm::vec3>&verts, std::vector<glm::vec3>&normals);
+	void normalsPerTriangle(PixelData* pixeldata, Mesh* mesh);
+	void normalsPerVertex(PixelData* pixeldata, Mesh* mesh);
 private:
-	int convolveZ(PixelData* pixelData, int x, int y, int z);
-	int convolveY(PixelData* pixelData, int x, int y, int z);
-	int convolveX(PixelData* pixelData, int x, int y, int z);
+	
 
 signals:
 	void finishedNormalsSignal();

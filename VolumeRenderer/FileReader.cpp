@@ -138,7 +138,7 @@ int FileReader::getRepresentation(QString fileName, int& bitsAllocated, int& bit
 }
 
 
-int FileReader::loadOBJFile(QString fileName, PixelData*pixelData, std::vector<glm::vec3>& verts, std::vector<glm::vec3>& normals){
+int FileReader::loadOBJFile(QString fileName, PixelData*pixelData, Mesh* mesh){
 
 
 
@@ -170,7 +170,7 @@ int FileReader::loadOBJFile(QString fileName, PixelData*pixelData, std::vector<g
 				temp = ::atof(token.c_str());
 				point.z = temp;
 
-				verts.push_back(point);
+				mesh->verts.push_back(point);
 
 				//std::cout << "created point with " << point.x << "  " << point.y << "  " << point.z << std::endl;
 
@@ -192,7 +192,7 @@ int FileReader::loadOBJFile(QString fileName, PixelData*pixelData, std::vector<g
 				temp = ::atof(token.c_str());
 				normal.z = temp;
 
-				normals.push_back(normal);
+				mesh->normals.push_back(normal);
 				//std::cout << "created normal with " << normal.x << "  " << normal.y << "  " << normal.z << std::endl;
 
 			}
@@ -204,15 +204,18 @@ int FileReader::loadOBJFile(QString fileName, PixelData*pixelData, std::vector<g
 
 				iss >> token;
 				temp = ::atof(token.c_str());
-				pixelData->width = temp;
+				//pixelData->width = temp;
+				mesh->width = temp;
 
 				iss >> token;
 				temp = ::atof(token.c_str());
-				pixelData->height = temp;
+				//pixelData->height = temp;
+				mesh->height = temp;
 
 				iss >> token;
 				temp = ::atof(token.c_str());
-				pixelData->frames = temp;
+				//pixelData->frames = temp;
+				mesh->frames = temp;
 
 				//std::cout << "loaded representation" << model->pixelData->width << "  " << model->pixelData->height << "  " << model->pixelData->frames << std::endl;
 

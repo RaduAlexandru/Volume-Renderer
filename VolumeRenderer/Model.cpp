@@ -56,7 +56,8 @@ Model::Model()
 			std::istream_iterator<int>()));
 		}
 
-
+	mesh = new Mesh;
+	mesh2 = new Mesh;
 }
 
 

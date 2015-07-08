@@ -5,6 +5,7 @@
 #include "PixelData.h"
 #include <QObject>
 #include <glm/vec3.hpp>
+#include "Mesh.h"
 
 class FileReader : public QObject
 {
@@ -18,7 +19,7 @@ public:
 
 	int FileReader::loadDICOMPixelData(QStringList fileNames, PixelData*pixelData);
 	int FileReader::getRepresentation(QString fileName, int& bitsAllocated, int& bitsStored, int& hightBit, int& pixelRepresentation, int& frames, int& height, int& width);
-	int FileReader::loadOBJFile(QString fileName, PixelData*pixelData,std::vector<glm::vec3>& verts,std::vector<glm::vec3>& normals);
+	int FileReader::loadOBJFile(QString fileName, PixelData*pixelData,Mesh* mesh);
 
 signals:
 	void dataFinishedReadingSignal();

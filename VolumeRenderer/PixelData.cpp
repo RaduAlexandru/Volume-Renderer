@@ -131,3 +131,172 @@ int PixelData::getSmoothPixelValue(int x, int y, int z){
 
 
 }
+
+
+
+
+int PixelData::convolveZ(int x, int y, int z){
+
+	int arr[3][3][3] = { {
+			{ -1, -2, -1 },
+			{ -2, -4, -2 },
+			{ -1, -2, -1 } },
+
+
+			{
+				{ 0, 0, 0 },
+				{ 0, 0, 0 },
+				{ 0, 0, 0 } },
+
+				{
+					{ 1, 2, 1 },
+					{ 2, 4, 2 },
+					{ 1, 2, 1 } },
+
+	};
+
+	/*int arr[3][3][3] = { {
+	{ -1, 0, 1 },
+	{ -3, 0, 3 },
+	{ -1, 0, 1 } },
+
+
+	{
+	{ -3, 0, 3 },
+	{ -6, 0, 6 },
+	{ -3, 0, 3 } },
+
+	{
+	{ -1, 0, 1 },
+	{ -3, 0, 3 },
+	{ -1, 0, 1 } },
+
+	};*/
+
+	int acum = 0;
+
+	for (int i = 0; i < 3; i++){
+		for (int j = 0; j < 3; j++){
+			for (int k = 0; k < 3; k++){
+				acum += arr[i][j][k] * getPixelValue(x - 1 + k, y + 1 - j, z - 1 + i);
+
+			}
+		}
+	}
+	return acum;
+
+
+
+}
+
+
+int PixelData::convolveY(int x, int y, int z){
+
+	int arr[3][3][3] = { {
+			{ 1, 2, 1 },
+			{ 0, 0, 0 },
+			{ -1, -2, -1 } },
+
+
+			{
+				{ 2, 4, 2 },
+				{ 0, 0, 0 },
+				{ -2, -4, -2 } },
+
+				{
+					{ 1, 2, 1 },
+					{ 0, 0, 0 },
+					{ -1, -2, -1 } },
+
+	};
+
+	/*int arr[3][3][3] = { {
+	{ 1, 3, 1 },
+	{ 0, 0, 0 },
+	{ -1, -3, -1 } },
+
+
+	{
+	{ 3, 6, 3 },
+	{ 0, 0, 0 },
+	{ -3, -6, -3 } },
+
+	{
+	{ 1, 3, 1 },
+	{ 0, 0, 0 },
+	{ 1, 3, 1 } },
+
+	};*/
+
+	int acum = 0;
+
+	for (int i = 0; i < 3; i++){
+		for (int j = 0; j < 3; j++){
+			for (int k = 0; k < 3; k++){
+				acum += arr[i][j][k] * getPixelValue(x - 1 + k, y + 1 - j, z - 1 + i);
+
+			}
+		}
+	}
+	return acum;
+
+
+
+}
+
+
+int PixelData::convolveX(int x, int y, int z){
+
+	int arr[3][3][3] = { {
+			{ -1, 0, 1 },
+			{ -2, 0, 2 },
+			{ -1, 0, 1 } },
+
+
+			{
+				{ -2, 0, 2 },
+				{ -4, 0, 4 },
+				{ -2, 0, 2 } },
+
+				{
+					{ -1, 0, 1 },
+					{ -2, 0, 2 },
+					{ -1, 0, 1 } },
+
+	};
+
+
+	/*int arr[3][3][3] = { {
+	{ -1, -3, -1 },
+	{ -3, -6, -3 },
+	{ -1, -3, -1 } },
+
+
+	{
+	{ 0, 0, 0 },
+	{ 0, 0, 0 },
+	{ 0, 0, 0 } },
+
+	{
+	{ 1, 3, 1 },
+	{ 3, 6, 3 },
+	{ 1, 3, 1 } },
+
+	};*/
+
+	int acum = 0;
+
+	for (int i = 0; i < 3; i++){
+		for (int j = 0; j < 3; j++){
+			for (int k = 0; k < 3; k++){
+				//acum += arr[i][j][k] * pixelData->getPixelValue(x - 1 + k, y + 1 - j, z + 1 - i);
+				acum += arr[i][j][k] * getPixelValue(x - 1 + k, y + 1 - j, z - 1 + i);
+				//std::cout << "val is" << arr[i][j][k] << std::endl;
+			}
+		}
+	}
+	return acum;
+
+
+
+}

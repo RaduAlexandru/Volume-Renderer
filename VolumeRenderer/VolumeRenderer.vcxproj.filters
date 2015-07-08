@@ -116,6 +116,15 @@
     <ClCompile Include="GeneratedFiles\Release\moc_Exporter.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_Mesh.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_Mesh.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="volumerenderer.h">
@@ -143,6 +152,9 @@
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="Exporter.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Mesh.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>

@@ -26,8 +26,8 @@ AdaptiveCuber::~AdaptiveCuber()
 {
 }
 
-AdaptiveCuber::AdaptiveCuber(PixelData* pixelData, std::vector<glm::vec3>* verts, std::vector<glm::vec3>* normals, int isoLevel, int cellSizeX, int cellSizeY, int cellSizeZ,  int interpolateDepth, int octreeMaxDepth, std::vector< boost::unordered_map< std::pair<int, int>, glm::vec3> >* gradient, int tolerance):
-MarchingCuber(pixelData,  verts, normals,  isoLevel,  cellSizeX,  cellSizeY,  cellSizeZ,  interpolateDepth) {
+AdaptiveCuber::AdaptiveCuber(PixelData* pixelData, Mesh* mesh, int isoLevel, int cellSizeX, int cellSizeY, int cellSizeZ,  int interpolateDepth, int octreeMaxDepth, std::vector< boost::unordered_map< std::pair<int, int>, glm::vec3> >* gradient, int tolerance):
+MarchingCuber(pixelData,  mesh,  isoLevel,  cellSizeX,  cellSizeY,  cellSizeZ,  interpolateDepth) {
 
 	this->octreeMaxDepth = octreeMaxDepth;
 	this->gradient = gradient;
@@ -37,8 +37,8 @@ MarchingCuber(pixelData,  verts, normals,  isoLevel,  cellSizeX,  cellSizeY,  ce
 
 
 int AdaptiveCuber::run(){
-	verts->clear();
-	normals->clear();
+	mesh->verts.clear();
+	mesh->normals.clear();
 	octreeVector.clear();
 	octreeLevels.clear();
 	octreeLevels.resize(octreeMaxDepth +  1);
@@ -115,8 +115,8 @@ int AdaptiveCuber::run(){
 
 int AdaptiveCuber::runWithCracks(){
 	std::cout << "Starting adaptive marching cubes 3 with cracks" << std::endl;
-	verts->clear();
-	normals->clear();
+	mesh->verts.clear();
+	mesh->normals.clear();
 	octreeVector.clear();
 	octreeLevels.clear();
 	octreeLevels.resize(octreeMaxDepth + 1);
@@ -269,9 +269,9 @@ void AdaptiveCuber::calculateGradient(){
 
 
 
-		dx = convolveX(border[i].x, border[i].y, border[i].z);
-		dy = convolveY(border[i].x, border[i].y, border[i].z);
-		dz = convolveZ(border[i].x, border[i].y, border[i].z);
+		dx = pixelData->convolveX(border[i].x, border[i].y, border[i].z);
+		dy = pixelData->convolveY(border[i].x, border[i].y, border[i].z);
+		dz = pixelData->convolveZ(border[i].x, border[i].y, border[i].z);
 
 		if (dx == 0)
 			dx = 1;
@@ -415,9 +415,9 @@ void AdaptiveCuber::calculateGradient(){
 					2 * (pixelData->getSmoothPixelValue(j - 1, i, k + 1)) + 4 * (pixelData->getSmoothPixelValue(j, i, k + 1)) + 2 * (pixelData->getSmoothPixelValue(j + 1, i, k + 1)) -
 					1 * (pixelData->getSmoothPixelValue(j - 1, i - 1, k + 1)) + 2 * (pixelData->getSmoothPixelValue(j, i - 1, k + 1)) + 1 * (pixelData->getSmoothPixelValue(j + 1, i - 1, k + 1));
 				*/
-				dx = convolveX(j, i, k);
-				dy = convolveY(j, i, k);
-				dz = convolveZ(j, i, k);
+				dx = pixelData->convolveX(j, i, k);
+				dy = pixelData->convolveY(j, i, k);
+				dz = pixelData->convolveZ(j, i, k);
 
 				/*
 				xyz
@@ -484,171 +484,6 @@ void AdaptiveCuber::calculateGradient(){
 
 
 
-int AdaptiveCuber::convolveZ(int x, int y, int z){
-
-	int arr[3][3][3] = { { 
-			{ -1, -2, -1 }, 
-			{ -2, -4, -2 },
-			{ -1, -2, -1 } },
-
-
-	{ 
-		{ 0,0,0 }, 
-		{ 0,0,0 }, 
-		{ 0,0,0 } } ,
-
-	{
-		{ 1, 2, 1 },
-		{ 2, 4, 2 },
-		{ 1, 2, 1 } },
-	
-	};
-
-	/*int arr[3][3][3] = { {
-			{ -1, 0, 1 },
-			{ -3, 0, 3 },
-			{ -1, 0, 1 } },
-
-
-			{
-				{ -3, 0, 3 },
-				{ -6, 0, 6 },
-				{ -3, 0, 3 } },
-
-				{
-					{ -1, 0, 1 },
-					{ -3, 0, 3 },
-					{ -1, 0, 1 } },
-
-	};*/
-
-	int acum = 0;
-
-	for (int i = 0; i < 3; i++){
-		for (int j = 0; j < 3; j++){
-			for (int k = 0; k < 3; k++){
-				acum += arr[i][j][k] * pixelData->getPixelValue(x - 1 + k, y + 1 - j, z - 1 + i);
-
-			}
-		}
-	}
-	return acum;
-
-
-
-}
-
-
-int AdaptiveCuber::convolveY(int x, int y, int z){
-
-	int arr[3][3][3] = { {
-			{ 1, 2, 1 },
-			{ 0, 0, 0 },
-			{ -1, -2, -1 } },
-
-
-			{
-				{ 2, 4, 2 },
-				{ 0, 0, 0 },
-				{ -2, -4, -2 } },
-
-				{
-					{ 1, 2, 1 },
-					{ 0, 0, 0 },
-					{ -1, -2, -1 } },
-
-	};
-
-	/*int arr[3][3][3] = { {
-			{ 1, 3, 1 },
-			{ 0, 0, 0 },
-			{ -1, -3, -1 } },
-
-
-			{
-				{ 3, 6, 3 },
-				{ 0, 0, 0 },
-				{ -3, -6, -3 } },
-
-				{
-					{ 1, 3, 1 },
-					{ 0, 0, 0 },
-					{ 1, 3, 1 } },
-
-	};*/
-
-	int acum = 0;
-
-	for (int i = 0; i < 3; i++){
-		for (int j = 0; j < 3; j++){
-			for (int k = 0; k < 3; k++){
-				acum += arr[i][j][k] * pixelData->getPixelValue(x - 1 + k, y + 1 - j, z - 1 + i);
-
-			}
-		}
-	}
-	return acum;
-
-
-
-}
-
-
-int AdaptiveCuber::convolveX(int x, int y, int z){
-
-	int arr[3][3][3] = { {
-			{ -1, 0, 1 },
-			{ -2, 0, 2 },
-			{ -1, 0, 1 } },
-
-
-			{
-				{ -2, 0, 2 },
-				{ -4, 0, 4 },
-				{ -2, 0, 2 } },
-
-				{
-					{ -1, 0, 1 },
-					{ -2, 0, 2 },
-					{ -1, 0, 1 } },
-
-	};
-
-
-	/*int arr[3][3][3] = { {
-			{ -1, -3, -1 },
-			{ -3, -6, -3 },
-			{ -1, -3, -1 } },
-
-
-			{
-				{ 0, 0, 0 },
-				{ 0, 0, 0 },
-				{ 0, 0, 0 } },
-
-				{
-					{ 1, 3, 1 },
-					{ 3, 6, 3 },
-					{ 1, 3, 1 } },
-
-	};*/
-
-	int acum = 0;
-
-	for (int i = 0; i < 3; i++){
-		for (int j = 0; j < 3; j++){
-			for (int k = 0; k < 3; k++){
-				//acum += arr[i][j][k] * pixelData->getPixelValue(x - 1 + k, y + 1 - j, z + 1 - i);
-				acum += arr[i][j][k] * pixelData->getPixelValue(x - 1 + k, y + 1 - j, z - 1 + i);
-				//std::cout << "val is" << arr[i][j][k] << std::endl;
-			}
-		}
-	}
-	return acum;
-
-
-
-}
 
 
 /*! \brief Crea el cubo inicial del octree, el cubo raiz.
@@ -1643,7 +1478,7 @@ int AdaptiveCuber::readPointsFromOctree(OctreeCube* root){
 		//Grab the current cube and polygonise it f it's leaf
 		if (currentCube->points != NULL){
 			for (int i = 0; i < currentCube->points->size(); i++){
-				verts->push_back(currentCube->points->at(i));
+				mesh->verts.push_back(currentCube->points->at(i));
 
 			}
 		}

@@ -1,27 +1,30 @@
-#include "Exporter.h"
+#include "Mesh.h"
 #include <stdlib.h>
 #include <iostream>
 #include <QTextStream>
 #include <QFile>
 
-Exporter::Exporter()
+
+Mesh::Mesh()
 {
+	width = 0;
+	height = 0;
+	frames = 0;
 }
 
 
-Exporter::~Exporter()
+Mesh::~Mesh()
 {
 }
 
-
-Exporter::Exporter(QObject *_parent)
+Mesh::Mesh(QObject *_parent)
 {
-
+	width = 0;
+	height = 0;
+	frames = 0;
 }
 
-
-void Exporter::writeToOBJ(QString filename, std::vector<glm::vec3> verts, std::vector<glm::vec3> normals, int width, int height, int frames){
-
+void Mesh::writeToOBJ(QString filename){
 
 	QFile f(filename);
 
@@ -53,4 +56,6 @@ void Exporter::writeToOBJ(QString filename, std::vector<glm::vec3> verts, std::v
 
 	f.close();
 	emit finishedWritingToFileSignal();
+
+
 }

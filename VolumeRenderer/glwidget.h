@@ -25,11 +25,10 @@ public:
 	void mousePressEvent(QMouseEvent *event);
 	void keyPressEvent(QKeyEvent *keyEvent);
 	void keyReleaseEvent(QKeyEvent *keyEvent);
-	void sendDataToGL();
-	void drawMesh();
-	void drawMesh2();
-	void drawCubes();
-	void drawCubes2();
+	void drawMesh(Mesh* mesh);
+	//void drawMesh2();
+	//void drawCubes();
+	//void drawCubes2();
 	void drawBackground();
 	void readBackgroundImage();
 	void setMatrices();
@@ -40,7 +39,11 @@ public:
 	int backgroundWidth;
 	int backgroundHeight;
 
-	Model* model;
+	//Model* model;
+
+	Mesh* mesh;
+	Mesh* mesh2;
+	std::vector< boost::unordered_map< std::pair<int, int>, glm::vec3> >* gradient;
 
 	double xRot;
 	double yRot;

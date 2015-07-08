@@ -13,6 +13,7 @@
 #include <unordered_map>
 #include <boost/functional/hash.hpp>
 #include <boost/unordered_map.hpp>
+#include <Mesh.h>
 
 
 
@@ -53,8 +54,7 @@ public:
 
 	int isoLevel;
 	//std::vector<glm::vec3> totalPoints;
-	std::vector<glm::vec3> verts;
-	std::vector<glm::vec3> normals;
+
 	int cellSizeX;
 	int cellSizeY;
 	int cellSizeZ;	
@@ -104,9 +104,11 @@ public:
 
 
 	bool showMesh2;
-	std::vector<glm::vec3> verts2;
-	std::vector<glm::vec3> normals2;
-
+	//std::vector<glm::vec3> verts2;
+	//std::vector<glm::vec3> normals2;
+	
+	Mesh* mesh;
+	Mesh* mesh2;
 	
 };
 

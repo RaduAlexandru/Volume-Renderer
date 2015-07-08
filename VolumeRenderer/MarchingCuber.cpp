@@ -22,7 +22,7 @@ MarchingCuber::MarchingCuber(QObject *_parent)
 {
 }
 
-MarchingCuber::MarchingCuber(PixelData* pixelData, std::vector<glm::vec3>* verts, std::vector<glm::vec3>* normals, int isoLevel, int cellSizeX, int cellSizeY, int cellSizeZ, int interpolateDepth)
+MarchingCuber::MarchingCuber(PixelData* pixelData, Mesh* mesh, int isoLevel, int cellSizeX, int cellSizeY, int cellSizeZ, int interpolateDepth)
 {
 	int v;
 
@@ -45,8 +45,7 @@ MarchingCuber::MarchingCuber(PixelData* pixelData, std::vector<glm::vec3>* verts
 	}
 
 	this->pixelData=pixelData;
-	this->verts = verts;
-	this->normals=normals;
+	this->mesh = mesh;
 
 	this->isoLevel=isoLevel;
 	this->frames=pixelData->frames;
@@ -69,8 +68,9 @@ MarchingCuber::~MarchingCuber()
 
 
 void MarchingCuber::run(){
-	verts->clear();
-	normals->clear();
+	mesh->verts.clear();
+	mesh->normals.clear();
+	
 	std::cout << "marching cubes algorithm" << std::endl;
 	const clock_t begin_time = clock();
 
@@ -294,9 +294,9 @@ int MarchingCuber::polygonise(CELL & cell){
 	for (int i = 0; triTable[cubeIndex][i] != -1; i += 3) {
 
 		
-		verts->push_back((vertlist[triTable[cubeIndex][i]]));
-		verts->push_back((vertlist[triTable[cubeIndex][i + 1]]));
-		verts->push_back((vertlist[triTable[cubeIndex][i + 2]]));
+		mesh->verts.push_back((vertlist[triTable[cubeIndex][i]]));
+		mesh->verts.push_back((vertlist[triTable[cubeIndex][i + 1]]));
+		mesh->verts.push_back((vertlist[triTable[cubeIndex][i + 2]]));
 
 
 	}
