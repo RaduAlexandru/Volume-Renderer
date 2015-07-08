@@ -784,10 +784,10 @@
     <widget class="QLabel" name="progressText">
      <property name="geometry">
       <rect>
-       <x>620</x>
+       <x>600</x>
        <y>30</y>
-       <width>121</width>
-       <height>16</height>
+       <width>161</width>
+       <height>20</height>
       </rect>
      </property>
      <property name="text">
@@ -1085,6 +1085,12 @@
    <slots>
     <slot>setFrame(int)</slot>
     <slot>opacityChangedSlot(int)</slot>
+    <slot>showWireframeSlot(bool)</slot>
+    <slot>showPerspectiveSlot(bool)</slot>
+    <slot>showMeshSlot(bool)</slot>
+    <slot>showCubesSlot(bool)</slot>
+    <slot>showGradientSlot(bool)</slot>
+    <slot>resetFigureSlot()</slot>
    </slots>
   </customwidget>
   <customwidget>
@@ -1094,6 +1100,7 @@
    <container>1</container>
    <slots>
     <slot>setTolerance(int)</slot>
+    <slot>setFrame(int)</slot>
    </slots>
   </customwidget>
  </customwidgets>
@@ -1226,6 +1233,118 @@
     <hint type="destinationlabel">
      <x>342</x>
      <y>505</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>showWireframeButton</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>glwidget</receiver>
+   <slot>showWireframeSlot(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1198</x>
+     <y>203</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1112</x>
+     <y>217</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>perspectiveButton</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>glwidget</receiver>
+   <slot>showPerspectiveSlot(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1230</x>
+     <y>135</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1147</x>
+     <y>114</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>showMeshButton</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>glwidget</receiver>
+   <slot>showMeshSlot(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1206</x>
+     <y>175</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1081</x>
+     <y>96</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>showCubesButton</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>glwidget</receiver>
+   <slot>showCubesSlot(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1225</x>
+     <y>228</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1053</x>
+     <y>105</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>showGradientButton</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>glwidget</receiver>
+   <slot>showGradientSlot(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1244</x>
+     <y>265</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1014</x>
+     <y>128</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_3</sender>
+   <signal>clicked()</signal>
+   <receiver>glwidget</receiver>
+   <slot>resetFigureSlot()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1270</x>
+     <y>101</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1302</x>
+     <y>97</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>frameSlider</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>dicomviewer2dgl</receiver>
+   <slot>setFrame(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1189</x>
+     <y>343</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1189</x>
+     <y>437</y>
     </hint>
    </hints>
   </connection>

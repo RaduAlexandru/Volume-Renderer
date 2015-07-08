@@ -16,17 +16,10 @@ Model::Model()
 	cellSizeZ=6;
 	//frames = 0;
 	
-	frame_to_display = 0;
 	//pixelDataHeight = 0;
 	//pixelDataWidth = 0;
 
 	
-	showWireframe = false;
-	perspectiveActivated = true;
-	showMesh = true;
-	showMesh2 = true;
-	showGradient = false;
-	showCubes = false;
 	tolerance = 60;
 	octreeMaxDepth = 8;
 	interpolateDepth = 50;

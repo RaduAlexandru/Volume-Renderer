@@ -24,13 +24,6 @@ class VolumeRenderer : public QMainWindow
 public:
 	VolumeRenderer(QWidget *parent = 0);
 	~VolumeRenderer();
-
-	
-
-	
-	
-
-	
 	
 
 public:
@@ -49,40 +42,14 @@ public:
 	void establishConnectionsNG();
 	void establishConnectionsREADER();
 
-
-	
-	//void showPixels(void* pixelData, std::vector<Model::POINTF>);
-	void load_image_data(const char*);
-	inline void interpolate(int, glm::vec3 point1, glm::vec3 point2, float, float, glm::vec3&, int depth=0);
-	int loadDICOMPixelData(const char*);
-	int loadDICOMPixelData(QStringList);
-
-	void calculateGradient();
-	inline bool cubeNeedsSubdivision(OctreeCube&);
-	int generateOctree(OctreeCube,int=0);	//The int=0 is the default value of the depth. We obviously start at 0
-	int generateOctree_tree_version(OctreeCube&, int = 0);
-	int polygoniseOctree(OctreeCube*,int=0);
-	int polygoniseOctree2(OctreeCube* );
-	int polygoniseAssignToCube(OctreeCube* );
-	int readPointsFromOctree(OctreeCube*);
-	//glm::vec3 pointOnLine(glm::vec3 , glm::vec3 , glm::vec3& );
-
-	void octree2CellPolygonise(OctreeCube&);
-	void generateHypercube();
-	void correctlyAssignLeafs(OctreeCube*);
-
 	void generateMesh(int force=0);
 	void generateNormals();
-	OctreeCube createInitialCube();
 	void ballPivot();
-	//void crackPatch(OctreeCube*);
-	//void crackPatch2(OctreeCube*);
-	
-	void marchingSquares();
+
 	void wipePoints();
 	void wipePixelData();
 
-	bool interactive;	//Need it
+	bool interactive;	
 	bool generatingMesh; //We need this to know if there the mesh is being generated, that means that there is already a thread working, in which case the generateMesh function doesnt do anything
 
 	boost::posix_time::ptime timeStart;
@@ -96,32 +63,19 @@ signals:
 	void dataFinishedReading();
 
 private slots:
-	//void on_addDICOMFiles_clicked();
 	void on_isoLevelSlider_valueChanged();
-	//void on_loadTestImageButton_clicked();
-	//void on_loadTestImage2Button_clicked();
-	//void on_loadDICOMButton_clicked();
-	//void on_loadMFDICOMButton_clicked();
 	void on_loadDICOMFromFile_clicked();
 	void on_resolutionSlider_valueChanged();
 	void on_linearInterpolationSlider_valueChanged();
-	void on_frameSlider_valueChanged();
-	void on_showWireframeButton_clicked();
 	void on_toleranceSlider_valueChanged();
 	void on_marchingCubesButton_clicked();
-	void on_adaptiveMarchingCubesButton_clicked();
 	void on_adaptiveMarchingCubes2Button_clicked();
 	void on_adaptiveMarchingCubes3Button_clicked();
-	void on_ballPivotButton_clicked();
-	void on_perspectiveButton_clicked();
 	void on_normalsPerTriangleButton_clicked();
 	void on_normalsPerVerticeButton_clicked();
-	void on_showMeshButton_clicked();
-	void on_showGradientButton_clicked();
 	void on_orientationZButton_clicked();
 	void on_orientationXButton_clicked();
 	void on_orientationYButton_clicked();
-	void on_showCubesButton_clicked();
 	void on_generateMeshButton_clicked();
 	void on_interactiveButton_clicked();
 	void on_octreeDepthSlider_valueChanged();

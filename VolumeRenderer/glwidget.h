@@ -61,18 +61,30 @@ private:
 	double mouseXPosEntered;
 	double mouseYPosEntered;
 
-	
+	bool showPerspective;
+	bool showMesh;
+	bool showWireframe;
+	bool showCubes;
+	bool showGradients;
 	
 /*private slots:
 	void rotate();*/
 	
 public slots:
-	void setFrame(int frame);
 	void dataFinishedReadingSlot();
 	void generatingFinishedSlot();
 	void generatingStartedSlot();
 	
 	void opacityChangedSlot(int value);
+
+
+
+	void showPerspectiveSlot(bool value);
+	void showMeshSlot(bool value);
+	void showWireframeSlot(bool value);
+	void showCubesSlot(bool value);
+	void showGradientSlot(bool value);
+	void resetFigureSlot();
 };
 
 #endif // GLWIDGET_H

@@ -19,8 +19,8 @@
 
 QT_BEGIN_MOC_NAMESPACE
 struct qt_meta_stringdata_GLWidget_t {
-    QByteArrayData data[9];
-    char stringdata[119];
+    QByteArrayData data[13];
+    char stringdata[202];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -30,20 +30,26 @@ struct qt_meta_stringdata_GLWidget_t {
 static const qt_meta_stringdata_GLWidget_t qt_meta_stringdata_GLWidget = {
     {
 QT_MOC_LITERAL(0, 0, 8), // "GLWidget"
-QT_MOC_LITERAL(1, 9, 8), // "setFrame"
-QT_MOC_LITERAL(2, 18, 0), // ""
-QT_MOC_LITERAL(3, 19, 5), // "frame"
-QT_MOC_LITERAL(4, 25, 23), // "dataFinishedReadingSlot"
-QT_MOC_LITERAL(5, 49, 22), // "generatingFinishedSlot"
-QT_MOC_LITERAL(6, 72, 21), // "generatingStartedSlot"
-QT_MOC_LITERAL(7, 94, 18), // "opacityChangedSlot"
-QT_MOC_LITERAL(8, 113, 5) // "value"
+QT_MOC_LITERAL(1, 9, 23), // "dataFinishedReadingSlot"
+QT_MOC_LITERAL(2, 33, 0), // ""
+QT_MOC_LITERAL(3, 34, 22), // "generatingFinishedSlot"
+QT_MOC_LITERAL(4, 57, 21), // "generatingStartedSlot"
+QT_MOC_LITERAL(5, 79, 18), // "opacityChangedSlot"
+QT_MOC_LITERAL(6, 98, 5), // "value"
+QT_MOC_LITERAL(7, 104, 19), // "showPerspectiveSlot"
+QT_MOC_LITERAL(8, 124, 12), // "showMeshSlot"
+QT_MOC_LITERAL(9, 137, 17), // "showWireframeSlot"
+QT_MOC_LITERAL(10, 155, 13), // "showCubesSlot"
+QT_MOC_LITERAL(11, 169, 16), // "showGradientSlot"
+QT_MOC_LITERAL(12, 186, 15) // "resetFigureSlot"
 
     },
-    "GLWidget\0setFrame\0\0frame\0"
-    "dataFinishedReadingSlot\0generatingFinishedSlot\0"
-    "generatingStartedSlot\0opacityChangedSlot\0"
-    "value"
+    "GLWidget\0dataFinishedReadingSlot\0\0"
+    "generatingFinishedSlot\0generatingStartedSlot\0"
+    "opacityChangedSlot\0value\0showPerspectiveSlot\0"
+    "showMeshSlot\0showWireframeSlot\0"
+    "showCubesSlot\0showGradientSlot\0"
+    "resetFigureSlot"
 };
 #undef QT_MOC_LITERAL
 
@@ -53,7 +59,7 @@ static const uint qt_meta_data_GLWidget[] = {
        7,       // revision
        0,       // classname
        0,    0, // classinfo
-       5,   14, // methods
+      10,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -61,18 +67,28 @@ static const uint qt_meta_data_GLWidget[] = {
        0,       // signalCount
 
  // slots: name, argc, parameters, tag, flags
-       1,    1,   39,    2, 0x0a /* Public */,
-       4,    0,   42,    2, 0x0a /* Public */,
-       5,    0,   43,    2, 0x0a /* Public */,
-       6,    0,   44,    2, 0x0a /* Public */,
-       7,    1,   45,    2, 0x0a /* Public */,
+       1,    0,   64,    2, 0x0a /* Public */,
+       3,    0,   65,    2, 0x0a /* Public */,
+       4,    0,   66,    2, 0x0a /* Public */,
+       5,    1,   67,    2, 0x0a /* Public */,
+       7,    1,   70,    2, 0x0a /* Public */,
+       8,    1,   73,    2, 0x0a /* Public */,
+       9,    1,   76,    2, 0x0a /* Public */,
+      10,    1,   79,    2, 0x0a /* Public */,
+      11,    1,   82,    2, 0x0a /* Public */,
+      12,    0,   85,    2, 0x0a /* Public */,
 
  // slots: parameters
-    QMetaType::Void, QMetaType::Int,    3,
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
-    QMetaType::Void, QMetaType::Int,    8,
+    QMetaType::Void, QMetaType::Int,    6,
+    QMetaType::Void, QMetaType::Bool,    6,
+    QMetaType::Void, QMetaType::Bool,    6,
+    QMetaType::Void, QMetaType::Bool,    6,
+    QMetaType::Void, QMetaType::Bool,    6,
+    QMetaType::Void, QMetaType::Bool,    6,
+    QMetaType::Void,
 
        0        // eod
 };
@@ -82,11 +98,16 @@ void GLWidget::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, vo
     if (_c == QMetaObject::InvokeMetaMethod) {
         GLWidget *_t = static_cast<GLWidget *>(_o);
         switch (_id) {
-        case 0: _t->setFrame((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 1: _t->dataFinishedReadingSlot(); break;
-        case 2: _t->generatingFinishedSlot(); break;
-        case 3: _t->generatingStartedSlot(); break;
-        case 4: _t->opacityChangedSlot((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 0: _t->dataFinishedReadingSlot(); break;
+        case 1: _t->generatingFinishedSlot(); break;
+        case 2: _t->generatingStartedSlot(); break;
+        case 3: _t->opacityChangedSlot((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 4: _t->showPerspectiveSlot((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 5: _t->showMeshSlot((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 6: _t->showWireframeSlot((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 7: _t->showCubesSlot((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 8: _t->showGradientSlot((*reinterpret_cast< bool(*)>(_a[1]))); break;
+        case 9: _t->resetFigureSlot(); break;
         default: ;
         }
     }
@@ -119,13 +140,13 @@ int GLWidget::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 5)
+        if (_id < 10)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 5;
+        _id -= 10;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 5)
+        if (_id < 10)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 5;
+        _id -= 10;
     }
     return _id;
 }

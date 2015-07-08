@@ -308,7 +308,7 @@ public:
         progressBar->setTextVisible(false);
         progressText = new QLabel(glwidget);
         progressText->setObjectName(QStringLiteral("progressText"));
-        progressText->setGeometry(QRect(620, 30, 121, 16));
+        progressText->setGeometry(QRect(600, 30, 161, 20));
         progressText->setAlignment(Qt::AlignCenter);
         showGradientButton = new QCheckBox(glwidget);
         showGradientButton->setObjectName(QStringLiteral("showGradientButton"));
@@ -499,6 +499,13 @@ public:
         QObject::connect(linearInterpolationSlider, SIGNAL(valueChanged(int)), label_12, SLOT(setNum(int)));
         QObject::connect(linearInterpolationSlider_2, SIGNAL(valueChanged(int)), label_13, SLOT(setNum(int)));
         QObject::connect(linearInterpolationSlider_2, SIGNAL(valueChanged(int)), glwidget, SLOT(opacityChangedSlot(int)));
+        QObject::connect(showWireframeButton, SIGNAL(clicked(bool)), glwidget, SLOT(showWireframeSlot(bool)));
+        QObject::connect(perspectiveButton, SIGNAL(clicked(bool)), glwidget, SLOT(showPerspectiveSlot(bool)));
+        QObject::connect(showMeshButton, SIGNAL(clicked(bool)), glwidget, SLOT(showMeshSlot(bool)));
+        QObject::connect(showCubesButton, SIGNAL(clicked(bool)), glwidget, SLOT(showCubesSlot(bool)));
+        QObject::connect(showGradientButton, SIGNAL(clicked(bool)), glwidget, SLOT(showGradientSlot(bool)));
+        QObject::connect(pushButton_3, SIGNAL(clicked()), glwidget, SLOT(resetFigureSlot()));
+        QObject::connect(frameSlider, SIGNAL(valueChanged(int)), dicomviewer2dgl, SLOT(setFrame(int)));
 
         QMetaObject::connectSlotsByName(VolumeRendererClass);
     } // setupUi

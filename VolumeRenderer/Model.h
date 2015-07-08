@@ -97,15 +97,10 @@ public:
 	//boost::any **  pixelData;
 	//void**  pixelData;
 	//int frames;
-	int frame_to_display;
 	//int numberOfBytes;
 
 
-	bool showWireframe;
-	bool perspectiveActivated;
-	bool showMesh;
-	bool showGradient;
-	bool showCubes;
+
 
 
 	bool showMesh2;

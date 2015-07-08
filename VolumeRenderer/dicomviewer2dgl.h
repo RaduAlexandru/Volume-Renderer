@@ -2,7 +2,7 @@
 #define DICOMVIEWER2DGL_H
 
 #include <QOpenGLWidget>
-#include "Model.h"
+#include "PixelData.h"
 #include <QOpenGLFunctions_4_3_Core>
 #include <vector>
 #include "OctreeCube.h"
@@ -17,22 +17,16 @@ public:
 	void initializeGL();
 	void paintGL();
 	void resizeGL(int w, int h);
-	Model* model;
-	std::vector<unsigned int>  gradient;
-	std::vector<OctreeCube> cubes;
-	OctreeCube selectedCube;
-	int tolerance;
-	//unsigned char * gradient;
+	PixelData* pixelData;
+	int orientation;
 	void displayFrame();
-	void displayGradient();
 	void displayBorderLines();
 	std::vector<unsigned int> localFrame; //!< Almacena los pixels data que se van a representar en la vista 2d. Va a cambiar segun la orientacion elegida
-
-private:
 	int frame_to_display;
+
+	
 public slots:
 	void setFrame(int frame);
-	
 };
 
 #endif // DICOMVIEWER2DGL_H

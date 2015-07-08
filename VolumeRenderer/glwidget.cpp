@@ -28,6 +28,13 @@ GLWidget::GLWidget(QWidget *parent)
 	shiftPressed = false;
 	ctrlPressed = false;
 	opacity = 1.0;
+
+	showPerspective = true;
+	showMesh = true;
+	showWireframe = false;
+	showCubes = false;
+	showGradients = false;
+
 	
 }
 
@@ -294,25 +301,25 @@ void GLWidget::paintGL()
 	//glColor4f(0.55f, 0.55f, 0.55f, 1.0f);
 	//glColor4f(1.0f, 0.9f, 0.55f, 1.0f);
 	glColor4f(1.0f, 0.9f, 0.65f, 1.0f);
-	if (model->showMesh2)
+	if (showMesh)
 		drawMesh2();
 	
 	
 	glColor4f(0.55f, 0.55f, 0.55f,float (opacity));
-	if (model->showMesh)
+	if (showMesh)
 		drawMesh();
 
 	
 
 	glColor3f(1.f, 0.f, 0.f);
-	if (model->showGradient)
+	if (showGradients)
 		displayGradient();
 
-	if (model->showCubes)
+	if (showCubes)
 		drawCubes2();
 
 
-	if (model->showWireframe){
+	if (showWireframe){
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		glLineWidth(1.5f);
 		glColor3f(1.f, 0.f, 0.f);
@@ -324,11 +331,11 @@ void GLWidget::paintGL()
 	}
 
 	//Draw the point for debugging
-	glPointSize(6.0f);
+	/*glPointSize(6.0f);
 	glColor3f(0.f, 0.f, 1.f);
 	glBegin(GL_POINTS);
 	glVertex3f(model->xPosPoint, model->yPosPoint, model->zPosPoint);
-	glEnd();
+	glEnd();*/
 
 	//240, 160, 48 of size 16
 
@@ -793,14 +800,7 @@ void GLWidget::resizeGL(int w, int h)
 
 }
 
-void GLWidget::setFrame(int frame)
-{
-	//std::cout << "we set the frame to " << frame << std::endl;
-	model->frame_to_display = frame;
-	frame_to_display = frame; //We actually have to make something like frameToDisplay=frame% model-> numberOfFrameInDicomFile
-	//std::cout << "the first few pixels have value" << (int)model->pixelData[frame_to_display][1] << std::endl;
-	
-}
+
 
 
 /*void GLWidget::rotate(){
@@ -882,7 +882,7 @@ void GLWidget::displayGradient(){
 */
 void GLWidget::setMatrices(){
 
-	if (model->perspectiveActivated){
+	if (showPerspective){
 		//glFrustum(0.0f, 1, 0.0f,1, 1.0f, 1024.0f);	//Also works but it would need some tweaking and also probably commenting the GlulookAt
 		gluPerspective(60.0, (float)width() / height(), 1.0, -1024.0); // Set perspective
 		glMatrixMode(GL_MODELVIEW);
@@ -1020,4 +1020,40 @@ void GLWidget::generatingStartedSlot(){
 
 void GLWidget::opacityChangedSlot(int value){
 	opacity = float(value / 100.0);
+}
+
+
+
+
+
+
+void GLWidget::showWireframeSlot(bool value){
+	showWireframe = value;
+	this->update();
+}
+
+void GLWidget::showPerspectiveSlot(bool value){
+	showPerspective = value;
+	this->update();
+}
+void GLWidget::showMeshSlot(bool value){
+	showMesh = value;
+	this->update();
+}
+void GLWidget::showCubesSlot(bool value){
+	showCubes = value;
+	this->update();
+}
+void GLWidget::showGradientSlot(bool value){
+	showGradients = value;
+	this->update();
+}
+
+void GLWidget::resetFigureSlot(){
+	xRot = -90;
+	yRot = 0;
+	xMove = 0;
+	yMove = 0;
+	zMove = 0;
+	this->update();
 }
