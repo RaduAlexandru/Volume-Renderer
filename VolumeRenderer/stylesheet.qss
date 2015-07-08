@@ -191,6 +191,20 @@ QPushButton::pressed {
         border: 1px solid #333333;
         background-color: #222222;
 	}
+
+
+QPushButton::toggled {
+        background-color: rgb(50,50,50);
+		background-color: rgb(68,200,230);
+		color: rgb(20,20,20);
+	}
+QPushButton::checked {
+        background-color: rgb(50,50,50);
+		background-color: rgb(68,200,230);
+		color: rgb(20,20,20);
+	}
+
+
 QPushButton::hover{
  background-color: rgb(50,50,50);
  background-color: rgb(68,200,230);
@@ -249,7 +263,7 @@ QLabel{
 color:white;
 font-size: 15px;
 font-weight: bold;
-border:white;
+/*border:white;*/
 }
 
 QLabel {

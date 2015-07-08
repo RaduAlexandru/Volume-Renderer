@@ -108,9 +108,9 @@ public:
 	bool showCubes;
 
 
-
-	std::vector<glm::vec3> verts;
-	std::vector<glm::vec3> normals;
+	bool showMesh2;
+	std::vector<glm::vec3> verts2;
+	std::vector<glm::vec3> normals2;
 
 	
 };

@@ -27,6 +27,7 @@ public:
 	void keyReleaseEvent(QKeyEvent *keyEvent);
 	void sendDataToGL();
 	void drawMesh();
+	void drawMesh2();
 	void drawCubes();
 	void drawCubes2();
 	void drawBackground();
@@ -45,9 +46,12 @@ public:
 	double yRot;
 	double mouseSpeed = 0.5;	//!<  Indica la velocidad de giro de la figura cuando el raton se arrastra por el visor 3D
 	double xMove, yMove, zMove;
+	float opacity;
 
 	bool generatingMesh;
 
+	bool shiftPressed;
+	bool ctrlPressed;
 
 private:
 	int frame_to_display;
@@ -57,8 +61,7 @@ private:
 	double mouseXPosEntered;
 	double mouseYPosEntered;
 
-	bool shiftPressed;
-	bool ctrlPressed;
+	
 	
 /*private slots:
 	void rotate();*/
@@ -69,6 +72,7 @@ public slots:
 	void generatingFinishedSlot();
 	void generatingStartedSlot();
 	
+	void opacityChangedSlot(int value);
 };
 
 #endif // GLWIDGET_H

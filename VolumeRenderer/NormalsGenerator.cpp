@@ -26,7 +26,7 @@ void NormalsGenerator::normalsPerTriangle(PixelData* pixelData, std::vector<glm:
 	glm::vec3 u, v, n;
 
 
-	for (int i = 0; i < verts.size() - 3; i = i + 3){
+	for (int i = 0; i < verts.size() ; i = i + 3){
 
 		if (i % (verts.size()/10) == 0) //Update 10 times in total
 			emit progressValueChangedSignal(i * 100 / verts.size());

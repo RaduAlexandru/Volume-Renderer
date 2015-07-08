@@ -13,6 +13,7 @@
 #include "NormalsGenerator.h"
 #include "Exporter.h"
 #include <glm/glm.hpp>
+#include <boost/date_time.hpp>
 
 
 
@@ -48,21 +49,18 @@ public:
 	void establishConnectionsNG();
 	void establishConnectionsREADER();
 
-	int readPixelData(QString, void*&, int, int);
-	int getRepresentation(QString , int& , int& , int& , int& ,int&, int&, int&);
+
+	
 	//void showPixels(void* pixelData, std::vector<Model::POINTF>);
 	void load_image_data(const char*);
 	inline void interpolate(int, glm::vec3 point1, glm::vec3 point2, float, float, glm::vec3&, int depth=0);
 	int loadDICOMPixelData(const char*);
 	int loadDICOMPixelData(QStringList);
 
-	int adaptiveMarchingCubes();
 	void calculateGradient();
 	inline bool cubeNeedsSubdivision(OctreeCube&);
 	int generateOctree(OctreeCube,int=0);	//The int=0 is the default value of the depth. We obviously start at 0
 	int generateOctree_tree_version(OctreeCube&, int = 0);
-	int adaptiveMarchingCubes2();
-	int adaptiveMarchingCubes3();
 	int polygoniseOctree(OctreeCube*,int=0);
 	int polygoniseOctree2(OctreeCube* );
 	int polygoniseAssignToCube(OctreeCube* );
@@ -84,8 +82,11 @@ public:
 	void wipePoints();
 	void wipePixelData();
 
-	bool interactive;
+	bool interactive;	//Need it
 	bool generatingMesh; //We need this to know if there the mesh is being generated, that means that there is already a thread working, in which case the generateMesh function doesnt do anything
+
+	boost::posix_time::ptime timeStart;
+	boost::posix_time::ptime timeFinish;
 
 
 signals:
@@ -121,9 +122,6 @@ private slots:
 	void on_orientationXButton_clicked();
 	void on_orientationYButton_clicked();
 	void on_showCubesButton_clicked();
-	void on_xPosText_editingFinished();
-	void on_yPosText_editingFinished();
-	void on_zPosText_editingFinished();
 	void on_generateMeshButton_clicked();
 	void on_interactiveButton_clicked();
 	void on_octreeDepthSlider_valueChanged();
@@ -140,6 +138,12 @@ private slots:
 	void finishedNormalsSlot();
 	void dataFinishedReadingSlot();
 
+
+	void on_saveToSecondaryButton_clicked();
+	void on_clearPinButton_clicked();
+
+	void on_moveButton_clicked();
+	void on_scaleButton_clicked();
 	
 };
 

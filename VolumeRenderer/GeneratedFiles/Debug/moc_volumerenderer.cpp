@@ -19,8 +19,8 @@
 
 QT_BEGIN_MOC_NAMESPACE
 struct qt_meta_stringdata_VolumeRenderer_t {
-    QByteArrayData data[45];
-    char stringdata[1266];
+    QByteArrayData data[46];
+    char stringdata[1286];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -57,23 +57,24 @@ QT_MOC_LITERAL(24, 680, 29), // "on_orientationZButton_clicked"
 QT_MOC_LITERAL(25, 710, 29), // "on_orientationXButton_clicked"
 QT_MOC_LITERAL(26, 740, 29), // "on_orientationYButton_clicked"
 QT_MOC_LITERAL(27, 770, 26), // "on_showCubesButton_clicked"
-QT_MOC_LITERAL(28, 797, 27), // "on_xPosText_editingFinished"
-QT_MOC_LITERAL(29, 825, 27), // "on_yPosText_editingFinished"
-QT_MOC_LITERAL(30, 853, 27), // "on_zPosText_editingFinished"
-QT_MOC_LITERAL(31, 881, 29), // "on_generateMeshButton_clicked"
-QT_MOC_LITERAL(32, 911, 28), // "on_interactiveButton_clicked"
-QT_MOC_LITERAL(33, 940, 33), // "on_octreeDepthSlider_valueCha..."
-QT_MOC_LITERAL(34, 974, 35), // "on_borderYBottomSlider_valueC..."
-QT_MOC_LITERAL(35, 1010, 32), // "on_borderYTopSlider_valueChanged"
-QT_MOC_LITERAL(36, 1043, 33), // "on_borderXLeftSlider_valueCha..."
-QT_MOC_LITERAL(37, 1077, 34), // "on_borderXRightSlider_valueCh..."
-QT_MOC_LITERAL(38, 1112, 24), // "on_loadObjButton_clicked"
-QT_MOC_LITERAL(39, 1137, 25), // "on_writeObjButton_clicked"
-QT_MOC_LITERAL(40, 1163, 24), // "progressValueChangedSlot"
-QT_MOC_LITERAL(41, 1188, 16), // "progressTextSlot"
-QT_MOC_LITERAL(42, 1205, 16), // "finishedMeshSlot"
-QT_MOC_LITERAL(43, 1222, 19), // "finishedNormalsSlot"
-QT_MOC_LITERAL(44, 1242, 23) // "dataFinishedReadingSlot"
+QT_MOC_LITERAL(28, 797, 29), // "on_generateMeshButton_clicked"
+QT_MOC_LITERAL(29, 827, 28), // "on_interactiveButton_clicked"
+QT_MOC_LITERAL(30, 856, 33), // "on_octreeDepthSlider_valueCha..."
+QT_MOC_LITERAL(31, 890, 35), // "on_borderYBottomSlider_valueC..."
+QT_MOC_LITERAL(32, 926, 32), // "on_borderYTopSlider_valueChanged"
+QT_MOC_LITERAL(33, 959, 33), // "on_borderXLeftSlider_valueCha..."
+QT_MOC_LITERAL(34, 993, 34), // "on_borderXRightSlider_valueCh..."
+QT_MOC_LITERAL(35, 1028, 24), // "on_loadObjButton_clicked"
+QT_MOC_LITERAL(36, 1053, 25), // "on_writeObjButton_clicked"
+QT_MOC_LITERAL(37, 1079, 24), // "progressValueChangedSlot"
+QT_MOC_LITERAL(38, 1104, 16), // "progressTextSlot"
+QT_MOC_LITERAL(39, 1121, 16), // "finishedMeshSlot"
+QT_MOC_LITERAL(40, 1138, 19), // "finishedNormalsSlot"
+QT_MOC_LITERAL(41, 1158, 23), // "dataFinishedReadingSlot"
+QT_MOC_LITERAL(42, 1182, 32), // "on_saveToSecondaryButton_clicked"
+QT_MOC_LITERAL(43, 1215, 25), // "on_clearPinButton_clicked"
+QT_MOC_LITERAL(44, 1241, 21), // "on_moveButton_clicked"
+QT_MOC_LITERAL(45, 1263, 22) // "on_scaleButton_clicked"
 
     },
     "VolumeRenderer\0progressValueChangedSignal\0"
@@ -100,9 +101,6 @@ QT_MOC_LITERAL(44, 1242, 23) // "dataFinishedReadingSlot"
     "on_orientationXButton_clicked\0"
     "on_orientationYButton_clicked\0"
     "on_showCubesButton_clicked\0"
-    "on_xPosText_editingFinished\0"
-    "on_yPosText_editingFinished\0"
-    "on_zPosText_editingFinished\0"
     "on_generateMeshButton_clicked\0"
     "on_interactiveButton_clicked\0"
     "on_octreeDepthSlider_valueChanged\0"
@@ -114,7 +112,10 @@ QT_MOC_LITERAL(44, 1242, 23) // "dataFinishedReadingSlot"
     "on_writeObjButton_clicked\0"
     "progressValueChangedSlot\0progressTextSlot\0"
     "finishedMeshSlot\0finishedNormalsSlot\0"
-    "dataFinishedReadingSlot"
+    "dataFinishedReadingSlot\0"
+    "on_saveToSecondaryButton_clicked\0"
+    "on_clearPinButton_clicked\0"
+    "on_moveButton_clicked\0on_scaleButton_clicked"
 };
 #undef QT_MOC_LITERAL
 
@@ -124,7 +125,7 @@ static const uint qt_meta_data_VolumeRenderer[] = {
        7,       // revision
        0,       // classname
        0,    0, // classinfo
-      42,   14, // methods
+      43,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -132,50 +133,51 @@ static const uint qt_meta_data_VolumeRenderer[] = {
        4,       // signalCount
 
  // signals: name, argc, parameters, tag, flags
-       1,    1,  224,    2, 0x06 /* Public */,
-       4,    0,  227,    2, 0x06 /* Public */,
-       5,    0,  228,    2, 0x06 /* Public */,
-       6,    0,  229,    2, 0x06 /* Public */,
+       1,    1,  229,    2, 0x06 /* Public */,
+       4,    0,  232,    2, 0x06 /* Public */,
+       5,    0,  233,    2, 0x06 /* Public */,
+       6,    0,  234,    2, 0x06 /* Public */,
 
  // slots: name, argc, parameters, tag, flags
-       7,    0,  230,    2, 0x08 /* Private */,
-       8,    0,  231,    2, 0x08 /* Private */,
-       9,    0,  232,    2, 0x08 /* Private */,
-      10,    0,  233,    2, 0x08 /* Private */,
-      11,    0,  234,    2, 0x08 /* Private */,
-      12,    0,  235,    2, 0x08 /* Private */,
-      13,    0,  236,    2, 0x08 /* Private */,
-      14,    0,  237,    2, 0x08 /* Private */,
-      15,    0,  238,    2, 0x08 /* Private */,
-      16,    0,  239,    2, 0x08 /* Private */,
-      17,    0,  240,    2, 0x08 /* Private */,
-      18,    0,  241,    2, 0x08 /* Private */,
-      19,    0,  242,    2, 0x08 /* Private */,
-      20,    0,  243,    2, 0x08 /* Private */,
-      21,    0,  244,    2, 0x08 /* Private */,
-      22,    0,  245,    2, 0x08 /* Private */,
-      23,    0,  246,    2, 0x08 /* Private */,
-      24,    0,  247,    2, 0x08 /* Private */,
-      25,    0,  248,    2, 0x08 /* Private */,
-      26,    0,  249,    2, 0x08 /* Private */,
-      27,    0,  250,    2, 0x08 /* Private */,
-      28,    0,  251,    2, 0x08 /* Private */,
-      29,    0,  252,    2, 0x08 /* Private */,
-      30,    0,  253,    2, 0x08 /* Private */,
-      31,    0,  254,    2, 0x08 /* Private */,
-      32,    0,  255,    2, 0x08 /* Private */,
-      33,    0,  256,    2, 0x08 /* Private */,
-      34,    0,  257,    2, 0x08 /* Private */,
-      35,    0,  258,    2, 0x08 /* Private */,
-      36,    0,  259,    2, 0x08 /* Private */,
-      37,    0,  260,    2, 0x08 /* Private */,
-      38,    0,  261,    2, 0x08 /* Private */,
-      39,    0,  262,    2, 0x08 /* Private */,
-      40,    1,  263,    2, 0x08 /* Private */,
-      41,    1,  266,    2, 0x08 /* Private */,
-      42,    0,  269,    2, 0x08 /* Private */,
-      43,    0,  270,    2, 0x08 /* Private */,
-      44,    0,  271,    2, 0x08 /* Private */,
+       7,    0,  235,    2, 0x08 /* Private */,
+       8,    0,  236,    2, 0x08 /* Private */,
+       9,    0,  237,    2, 0x08 /* Private */,
+      10,    0,  238,    2, 0x08 /* Private */,
+      11,    0,  239,    2, 0x08 /* Private */,
+      12,    0,  240,    2, 0x08 /* Private */,
+      13,    0,  241,    2, 0x08 /* Private */,
+      14,    0,  242,    2, 0x08 /* Private */,
+      15,    0,  243,    2, 0x08 /* Private */,
+      16,    0,  244,    2, 0x08 /* Private */,
+      17,    0,  245,    2, 0x08 /* Private */,
+      18,    0,  246,    2, 0x08 /* Private */,
+      19,    0,  247,    2, 0x08 /* Private */,
+      20,    0,  248,    2, 0x08 /* Private */,
+      21,    0,  249,    2, 0x08 /* Private */,
+      22,    0,  250,    2, 0x08 /* Private */,
+      23,    0,  251,    2, 0x08 /* Private */,
+      24,    0,  252,    2, 0x08 /* Private */,
+      25,    0,  253,    2, 0x08 /* Private */,
+      26,    0,  254,    2, 0x08 /* Private */,
+      27,    0,  255,    2, 0x08 /* Private */,
+      28,    0,  256,    2, 0x08 /* Private */,
+      29,    0,  257,    2, 0x08 /* Private */,
+      30,    0,  258,    2, 0x08 /* Private */,
+      31,    0,  259,    2, 0x08 /* Private */,
+      32,    0,  260,    2, 0x08 /* Private */,
+      33,    0,  261,    2, 0x08 /* Private */,
+      34,    0,  262,    2, 0x08 /* Private */,
+      35,    0,  263,    2, 0x08 /* Private */,
+      36,    0,  264,    2, 0x08 /* Private */,
+      37,    1,  265,    2, 0x08 /* Private */,
+      38,    1,  268,    2, 0x08 /* Private */,
+      39,    0,  271,    2, 0x08 /* Private */,
+      40,    0,  272,    2, 0x08 /* Private */,
+      41,    0,  273,    2, 0x08 /* Private */,
+      42,    0,  274,    2, 0x08 /* Private */,
+      43,    0,  275,    2, 0x08 /* Private */,
+      44,    0,  276,    2, 0x08 /* Private */,
+      45,    0,  277,    2, 0x08 /* Private */,
 
  // signals: parameters
     QMetaType::Void, QMetaType::Int,    3,
@@ -214,11 +216,12 @@ static const uint qt_meta_data_VolumeRenderer[] = {
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
-    QMetaType::Void,
-    QMetaType::Void,
-    QMetaType::Void,
     QMetaType::Void, QMetaType::Int,    3,
     QMetaType::Void, QMetaType::QString,    2,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
@@ -256,23 +259,24 @@ void VolumeRenderer::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _
         case 22: _t->on_orientationXButton_clicked(); break;
         case 23: _t->on_orientationYButton_clicked(); break;
         case 24: _t->on_showCubesButton_clicked(); break;
-        case 25: _t->on_xPosText_editingFinished(); break;
-        case 26: _t->on_yPosText_editingFinished(); break;
-        case 27: _t->on_zPosText_editingFinished(); break;
-        case 28: _t->on_generateMeshButton_clicked(); break;
-        case 29: _t->on_interactiveButton_clicked(); break;
-        case 30: _t->on_octreeDepthSlider_valueChanged(); break;
-        case 31: _t->on_borderYBottomSlider_valueChanged(); break;
-        case 32: _t->on_borderYTopSlider_valueChanged(); break;
-        case 33: _t->on_borderXLeftSlider_valueChanged(); break;
-        case 34: _t->on_borderXRightSlider_valueChanged(); break;
-        case 35: _t->on_loadObjButton_clicked(); break;
-        case 36: _t->on_writeObjButton_clicked(); break;
-        case 37: _t->progressValueChangedSlot((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 38: _t->progressTextSlot((*reinterpret_cast< QString(*)>(_a[1]))); break;
-        case 39: _t->finishedMeshSlot(); break;
-        case 40: _t->finishedNormalsSlot(); break;
-        case 41: _t->dataFinishedReadingSlot(); break;
+        case 25: _t->on_generateMeshButton_clicked(); break;
+        case 26: _t->on_interactiveButton_clicked(); break;
+        case 27: _t->on_octreeDepthSlider_valueChanged(); break;
+        case 28: _t->on_borderYBottomSlider_valueChanged(); break;
+        case 29: _t->on_borderYTopSlider_valueChanged(); break;
+        case 30: _t->on_borderXLeftSlider_valueChanged(); break;
+        case 31: _t->on_borderXRightSlider_valueChanged(); break;
+        case 32: _t->on_loadObjButton_clicked(); break;
+        case 33: _t->on_writeObjButton_clicked(); break;
+        case 34: _t->progressValueChangedSlot((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 35: _t->progressTextSlot((*reinterpret_cast< QString(*)>(_a[1]))); break;
+        case 36: _t->finishedMeshSlot(); break;
+        case 37: _t->finishedNormalsSlot(); break;
+        case 38: _t->dataFinishedReadingSlot(); break;
+        case 39: _t->on_saveToSecondaryButton_clicked(); break;
+        case 40: _t->on_clearPinButton_clicked(); break;
+        case 41: _t->on_moveButton_clicked(); break;
+        case 42: _t->on_scaleButton_clicked(); break;
         default: ;
         }
     } else if (_c == QMetaObject::IndexOfMethod) {
@@ -330,13 +334,13 @@ int VolumeRenderer::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 42)
+        if (_id < 43)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 42;
+        _id -= 43;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 42)
+        if (_id < 43)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 42;
+        _id -= 43;
     }
     return _id;
 }

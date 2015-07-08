@@ -22,6 +22,7 @@
 #include <QtWidgets/QApplication>
 #include <QDebug>
 #include <QFileDialog>
+#include <QGraphicsDropShadowEffect>
 
 
 #include <GLFW/glfw3.h>
@@ -33,6 +34,7 @@
 #include <boost/math/special_functions/round.hpp>
 #include <boost/thread.hpp>
 #include <queue>
+
 
 
 //#include <boost/variant.hpp>
@@ -360,6 +362,7 @@ VolumeRenderer::VolumeRenderer(QWidget *parent)
 	connect(this, SIGNAL(generatingStartedSignal()), ui.glwidget, SLOT(generatingStartedSlot()));
 	connect(this, SIGNAL(generatingFinishedSignal()), ui.glwidget, SLOT(generatingFinishedSlot()));
 
+
 	QFile File("stylesheet.qss");
 	File.open(QFile::ReadOnly);
 	QString StyleSheet = QLatin1String(File.readAll());
@@ -372,7 +375,63 @@ VolumeRenderer::VolumeRenderer(QWidget *parent)
 
 	ui.progressText->setStyleSheet("QLabel { color: black }");
 	
-	
+	QPixmap pixmap("./images/move_icon2.png");
+	QIcon ButtonIcon(pixmap);
+	ui.moveButton->setIcon(ButtonIcon);
+
+	QPixmap pixmap2("./images/scale_icon2.png");
+	QIcon ButtonIcon2(pixmap2);
+	ui.scaleButton->setIcon(ButtonIcon2);
+	this->setCentralWidget(ui.glwidget);
+	ui.glwidget->lower();
+
+	//ui.moveButton->setIcon(QIcon("<imagePath>"));
+	//ui.moveButton->setIconSize(QSize(65, 65));
+
+
+
+	QGraphicsDropShadowEffect* effect = new QGraphicsDropShadowEffect(this);
+	effect->setBlurRadius(1);
+	effect->setColor(QColor("#060409"));
+	effect->setOffset(1, 1);
+
+	ui.label->setGraphicsEffect(effect);
+
+	QGraphicsDropShadowEffect* effect2 = new QGraphicsDropShadowEffect(this);
+	effect2->setBlurRadius(1);
+	effect2->setColor(QColor("#060409"));
+	effect2->setOffset(1, 1);
+	ui.label_3->setGraphicsEffect(effect2);
+
+	QGraphicsDropShadowEffect* effect3 = new QGraphicsDropShadowEffect(this);
+	effect3->setBlurRadius(1);
+	effect3->setColor(QColor("#060409"));
+	effect3->setOffset(1, 1);
+	ui.label_8->setGraphicsEffect(effect3);
+	//ui.label_8->setGraphicsEffect(effect);
+
+	QGraphicsDropShadowEffect* effect4 = new QGraphicsDropShadowEffect(this);
+	effect4->setBlurRadius(1);
+	effect4->setColor(QColor("#060409"));
+	effect4->setOffset(1, 1);
+	ui.label_9->setGraphicsEffect(effect4);
+
+	QGraphicsDropShadowEffect* effect5 = new QGraphicsDropShadowEffect(this);
+	effect5->setBlurRadius(1);
+	effect5->setColor(QColor("#060409"));
+	effect5->setOffset(1, 1);
+	ui.label_7->setGraphicsEffect(effect5);
+
+	QGraphicsDropShadowEffect* effect6 = new QGraphicsDropShadowEffect(this);
+	effect6->setBlurRadius(1);
+	effect6->setColor(QColor("#060409"));
+	effect6->setOffset(1, 1);
+	ui.label_14->setGraphicsEffect(effect6);
+
+
+
+	ui.moveButton->setToolTip("Left Shift");
+	ui.scaleButton->setToolTip("Left Ctrl");
 
 }
 
@@ -695,11 +754,11 @@ void VolumeRenderer::on_marchingCubesButton_clicked(){
 }
 
 void VolumeRenderer::on_adaptiveMarchingCubesButton_clicked(){
-	if (ui.adaptiveMarchingCubesButton->isChecked()){
+	/*if (ui.adaptiveMarchingCubesButton->isChecked()){
 		model->algorithmChosen = 2;
 		//wipePoints();
 		generateMesh();
-	}
+	}*/
 }
 void VolumeRenderer::on_adaptiveMarchingCubes2Button_clicked(){
 	if (ui.adaptiveMarchingCubes2Button->isChecked()){
@@ -716,11 +775,11 @@ void VolumeRenderer::on_adaptiveMarchingCubes3Button_clicked(){
 	}
 }
 void VolumeRenderer::on_ballPivotButton_clicked(){
-	if (ui.ballPivotButton->isChecked()){
+	/*if (ui.ballPivotButton->isChecked()){
 		model->algorithmChosen = 5;
 		//wipePoints();
 		generateMesh();
-	}
+	}*/
 }
 void VolumeRenderer::on_perspectiveButton_clicked(){
 	if (ui.perspectiveButton->isChecked()){
@@ -1011,6 +1070,7 @@ void VolumeRenderer::generateMesh(int force){
 		return;
 
 	wipePoints();
+	timeStart = boost::posix_time::microsec_clock::universal_time();
 
 	std::cout << "generating mesh with" << model->algorithmChosen << std::endl;
 
@@ -1059,10 +1119,7 @@ void VolumeRenderer::generateMesh(int force){
 
 
 	//qWarning() << QString("%L1").arg(i);
-	QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedStates));
-	QLocale aEnglish;
-	//qWarning() << aEnglish.toString(i);
-	ui.numberOfTrianglesLabel->setText(aEnglish.toString(model->verts.size()/3));
+	
 
 
 	/*QPalette palette;
@@ -1117,6 +1174,32 @@ void VolumeRenderer::finishedNormalsSlot(){
 	ui.progressBar->setValue(0);
 	generatingMesh = false;
 	ui.glwidget->update();
+
+
+	QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedStates));
+	QLocale aEnglish;
+	//qWarning() << aEnglish.toString(i);
+
+	QString string;
+	string = aEnglish.toString(model->verts.size() / 3);
+	string.append(" triangles");
+
+	ui.numberOfTrianglesLabel->setText(string);
+
+
+	timeFinish = boost::posix_time::microsec_clock::universal_time();
+	boost::posix_time::time_duration duration = timeFinish - timeStart;
+	duration.seconds();
+
+	std::stringstream durationString;
+	durationString << duration;
+
+	std::string stringStd;
+	stringStd = durationString.str();
+
+
+	ui.timeLabel->setText(QString(stringStd.c_str()));
+
 }
 
 //************************************
@@ -1208,34 +1291,7 @@ void VolumeRenderer::progressTextSlot(QString text){
 }
 
 
-void VolumeRenderer::on_xPosText_editingFinished(){
-	//std::cout << "the text is" << ui.interpolateDepthText->text().toUtf8().constData() << std::endl;
-	if (model->xPosPoint == ui.xPosText->text().toInt())
-		return;
-	model->xPosPoint = ui.xPosText->text().toInt();
-	std::cout << "setting x to " << model->xPosPoint << std::endl;
-	//wipePoints();
-	//generateMesh();
-}
-void VolumeRenderer::on_yPosText_editingFinished(){
-	//std::cout << "the text is" << ui.interpolateDepthText->text().toUtf8().constData() << std::endl;
-	if (model->yPosPoint == ui.yPosText->text().toInt())
-		return;
-	model->yPosPoint = ui.yPosText->text().toInt();
-	std::cout << "setting y to " << model->yPosPoint << std::endl;
-	//wipePoints();
-	//generateMesh();
-}
 
-void VolumeRenderer::on_zPosText_editingFinished(){
-	//std::cout << "the text is" << ui.interpolateDepthText->text().toUtf8().constData() << std::endl;
-	if (model->zPosPoint == ui.zPosText->text().toInt())
-		return;
-	model->zPosPoint = ui.zPosText->text().toInt();
-	std::cout << "setting z to " << model->zPosPoint << std::endl;
-	//wipePoints();
-	//generateMesh();
-}
 
 void VolumeRenderer::on_linearInterpolationSlider_valueChanged(){
 	model->interpolateDepth = ui.linearInterpolationSlider->value();
@@ -1394,4 +1450,45 @@ void VolumeRenderer::on_writeObjButton_clicked(){
 
 	boost::thread workerThread(boost::bind(&Exporter::writeToOBJ, exporter, filename, model->verts, model->normals, model->pixelData->width, model->pixelData->height, model->pixelData->frames));
 
+}
+
+
+void VolumeRenderer::on_saveToSecondaryButton_clicked(){
+	std::cout << "Copying from mesh 1 to secondary" << std::endl;
+
+	model->verts2.clear();
+	model->normals2.clear();
+
+	for (int i = 0; i < model->verts.size(); i++){
+		model->verts2.push_back( model->verts[i]);
+		model->normals2.push_back(model->normals[i]);
+	}
+}
+
+void VolumeRenderer::on_clearPinButton_clicked(){
+	std::cout << "Clearing pined mesh" << std::endl;
+	model->verts2.clear();
+	model->normals2.clear();
+}
+
+
+void VolumeRenderer::on_moveButton_clicked(){
+	if (ui.moveButton->isChecked()){
+		ui.scaleButton->setChecked(false);
+		ui.glwidget->ctrlPressed = false;
+		ui.glwidget->shiftPressed = true;
+	}
+	else{
+		ui.glwidget->shiftPressed = false;
+	}
+}
+void VolumeRenderer::on_scaleButton_clicked(){
+	if (ui.scaleButton->isChecked()){
+		ui.moveButton->setChecked(false);
+		ui.glwidget->shiftPressed = false;
+		ui.glwidget->ctrlPressed = true;
+	}
+	else{
+		ui.glwidget->ctrlPressed = false;
+	}
 }

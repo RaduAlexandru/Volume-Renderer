@@ -17,8 +17,12 @@ int main(int argc, char *argv[])
 	std::cout << "..." << std::endl;
 	std::cout << "..." << std::endl;
 	VolumeRenderer w;
-	w.show();
+	w.showMaximized();
 	std::cout << "..." << std::endl;
+	//w.setCentralWidget(Ui->)
+
+	//w.setWindowState(w.windowState() ^ Qt::WindowFullScreen);
+	//w.showMaximized();
 	return a.exec();
 	
 }

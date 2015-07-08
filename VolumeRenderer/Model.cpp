@@ -24,6 +24,7 @@ Model::Model()
 	showWireframe = false;
 	perspectiveActivated = true;
 	showMesh = true;
+	showMesh2 = true;
 	showGradient = false;
 	showCubes = false;
 	tolerance = 60;

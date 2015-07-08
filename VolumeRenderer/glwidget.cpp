@@ -27,6 +27,7 @@ GLWidget::GLWidget(QWidget *parent)
 	zMove = 0;
 	shiftPressed = false;
 	ctrlPressed = false;
+	opacity = 1.0;
 	
 }
 
@@ -155,9 +156,13 @@ void GLWidget::initializeGL()
 	glShadeModel(GL_SMOOTH);
 
 	generatingMesh = false;
+	
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glClearColor(0.0, 0.0, 0.0, 0);
+	//glBlendFunc(GL_ZERO, GL_SRC_COLOR);
+	//glBlendFunc(GL_ONE, GL_ONE);
 	
 }
 
@@ -285,9 +290,19 @@ void GLWidget::paintGL()
 
 	
 	//glDrawArrays(GL_TRIANGLES, 0, model->verts.size());
-	glColor4f(0.55f, 0.55f, 0.55f, 0.5f);
+
+	//glColor4f(0.55f, 0.55f, 0.55f, 1.0f);
+	//glColor4f(1.0f, 0.9f, 0.55f, 1.0f);
+	glColor4f(1.0f, 0.9f, 0.65f, 1.0f);
+	if (model->showMesh2)
+		drawMesh2();
+	
+	
+	glColor4f(0.55f, 0.55f, 0.55f,float (opacity));
 	if (model->showMesh)
 		drawMesh();
+
+	
 
 	glColor3f(1.f, 0.f, 0.f);
 	if (model->showGradient)
@@ -570,6 +585,40 @@ void GLWidget::drawMesh(){
 	
 
 }
+
+
+
+void GLWidget::drawMesh2(){
+	//glColor3f(1.f, 0.f, 0.f);
+
+	//glDrawArrays(GL_TRIANGLES, 0, model->verts.size());
+	if (model->verts2.empty() || model->normals2.empty())
+		return;
+
+
+	//std::cout << "gneralting mesh is " << model->generatingMesh << std::endl;
+	if (generatingMesh == true)
+		return;
+
+	int normalIndex = 0;
+
+	glBegin(GL_TRIANGLES);
+	for (int i = 0; i < model->verts2.size() - 3; i = i + 3){
+
+		if (i >= model->normals2.size())
+			break;
+
+		glNormal3f(model->normals2[i].x, model->normals2[i].y, model->normals2[i].z);
+		glVertex3f(model->verts2[i].x, model->verts2[i].y, model->verts2[i].z);
+
+		glNormal3f(model->normals2[i + 1].x, model->normals2[i + 1].y, model->normals2[i + 1].z);
+		glVertex3f(model->verts2[i + 1].x, model->verts2[i + 1].y, model->verts2[i + 1].z);
+
+		glNormal3f(model->normals2[i + 2].x, model->normals2[i + 2].y, model->normals2[i + 2].z);
+		glVertex3f(model->verts2[i + 2].x, model->verts2[i + 2].y, model->verts2[i + 2].z);
+	}
+	glEnd();
+}
 void GLWidget::drawCubes(){
 	//Draw the cubes now The cube configuracion can be found as a comment in the adaptiveMarchingCubes function
 	
@@ -697,7 +746,7 @@ void GLWidget::drawCubes2(){
 /*! \brief Lee un bitmap para representarlo como fondo del vison en 3D
 */
 void GLWidget::readBackgroundImage(){
-	FILE *f = fopen("test9_background3.bmp", "rb");
+	FILE *f = fopen("./images/test9_background3.bmp", "rb");
 	if (!f) {
 		printf("failed to open file\n");
 		exit(0);
@@ -966,4 +1015,9 @@ void GLWidget::generatingFinishedSlot(){
 */
 void GLWidget::generatingStartedSlot(){
 	generatingMesh = true;
+}
+
+
+void GLWidget::opacityChangedSlot(int value){
+	opacity = float(value / 100.0);
 }
