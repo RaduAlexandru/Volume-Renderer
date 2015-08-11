@@ -26,52 +26,43 @@ public:
 	void keyPressEvent(QKeyEvent *keyEvent);
 	void keyReleaseEvent(QKeyEvent *keyEvent);
 	void drawMesh(Mesh* mesh);
-	//void drawMesh2();
-	//void drawCubes();
-	//void drawCubes2();
 	void drawBackground();
 	void readBackgroundImage();
 	void setMatrices();
 	void displayGradient();
 
-	int dataSended;
 	unsigned char* background;
 	int backgroundWidth;
 	int backgroundHeight;
 
-	//Model* model;
 
-	Mesh* mesh;
-	Mesh* mesh2;
-	std::vector< boost::unordered_map< std::pair<int, int>, glm::vec3> >* gradient;
+	Mesh* mesh; //!< El mallado principal a mostrar en 3D
+	Mesh* mesh2;//!< El mallado secundario a mostrar (el que se usa para hacer un pin)
+	std::vector< boost::unordered_map< std::pair<int, int>, glm::vec3> >* gradient; //!< Puntero a los gradientes, para mostrarlos mapeados a RGB
 
-	double xRot;
-	double yRot;
-	double mouseSpeed = 0.5;	//!<  Indica la velocidad de giro de la figura cuando el raton se arrastra por el visor 3D
-	double xMove, yMove, zMove;
-	float opacity;
+	double xRot;	//!< El valor del giro de la figura en el eje X
+	double yRot;	//!< El valor del giro de la figura en el eje Y
+	double mouseSpeed = 0.5;	//!<  Indica la velocidad de giro o movimiento de la figura cuando el raton se arrastra por el visor 3D. A mas valor, mas rapido girara, o se movera la figura
+	double xMove, yMove, zMove;	//!< Lo que se ha movido la figura en el eje X, Y, Z
+	float opacity;	//!<La opacidad de la figura principal. La de la secundario (la del pin) no se puede cambiar
 
-	bool generatingMesh;
-
-	bool shiftPressed;
-	bool ctrlPressed;
+	
+	bool generatingMesh;	/*!< Indica que en este momento se esta generando un mallado asi que no va a representar nada por pantalla para no provocar colisiones al recorrer el vector sobre el que se esta escribiendo en otro hilo. Los algoritmos de reconstruccion emitiran una señal para poner este valor a true, y despues de crear el mallado lo volveran a poner a false para dejar a la vista 3D leer los puntos del mesh */
+	
+	bool movingFigure;	//!<Indica que los movimientos del raton sobre la vista van a realizar un movimiento de la figura
+	bool scalingFigure;	//!<Indica que los movimientos del raton sobre la vista van a realizar un escalado de la figura
 
 private:
-	int frame_to_display;
-	QTimer timer;
-	double angle;
 
-	double mouseXPosEntered;
-	double mouseYPosEntered;
+	double mouseXPosEntered;	//!<La posiciones dentro de la ventana en la que se ha hecho click. Se usa para saber en que dirrecion se ha movido el raton y por lo tanto donde tiene que girar la figura
+	double mouseYPosEntered;	//!<La posiciones dentro de la en la que se ha empezado a arrastrar. Se usa para saber en que dirrecion hay que girar , mover o escalar la figura
 
-	bool showPerspective;
-	bool showMesh;
-	bool showWireframe;
-	bool showCubes;
-	bool showGradients;
+	bool showPerspective;	//!<Indica si hay que mostrar el entorno 3D en perspectiva (true) o ortografia (false)
+	bool showMesh;			//!<Indica si hay que mostrar los mallados
+	bool showWireframe;		//!<Indica si hay que mostrar el wireframe, es decir los bordes entre los poligonos del mallado
+	bool showCubes;			//!<Indica si hay que mostrar los cubos del octree
+	bool showGradients;		//!<Indica si hay que mostrar los gradientes
 	
-/*private slots:
-	void rotate();*/
 	
 public slots:
 	void dataFinishedReadingSlot();

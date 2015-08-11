@@ -14,27 +14,21 @@ Model::Model()
 	cellSizeX=6;
 	cellSizeY=6;
 	cellSizeZ=6;
-	//frames = 0;
-	
-	//pixelDataHeight = 0;
-	//pixelDataWidth = 0;
 
-	
 	tolerance = 60;
 	octreeMaxDepth = 8;
 	interpolateDepth = 50;
 
 	algorithmChosen=1;
 	normalsAlgChosen = 1;
-	orientation = 1;
 	generatingMesh = false;
 
 
-	xPosPoint = 0;
-	yPosPoint = 0;
-	zPosPoint = 0;
+	
 
 	pixelData = new PixelData();
+	mesh = new Mesh;
+	mesh2 = new Mesh;
 
 	int v;
 
@@ -56,8 +50,7 @@ Model::Model()
 			std::istream_iterator<int>()));
 		}
 
-	mesh = new Mesh;
-	mesh2 = new Mesh;
+	
 }
 
 
@@ -66,23 +59,3 @@ Model::~Model()
 }
 
 
-
-int Model::getSmoothPixelValue(int x, int y, int z){
-
-	//kernel is this one http://mathforum.org/mathimages/imgUpload/math/8/f/4/8f4eb18c8c35a55c00629e7dde0480f9.png
-
-	int value = 0;
-
-	
-
-	value = 4 * pixelData->getPixelValue(x, y, z) + 2 * pixelData->getPixelValue(x + 1, y, z) + 2 * pixelData->getPixelValue(x - 1, y, z) +
-		2 * pixelData->getPixelValue(x, y + 1, z) + 2 * pixelData->getPixelValue(x, y - 1, z)
-		+ 1 * pixelData->getPixelValue(x - 1, y + 1, z) + 1 * pixelData->getPixelValue(x + 1, y + 1, z) + 1 * pixelData->getPixelValue(x - 1, y - 1, z) + 1 * pixelData->getPixelValue(x + 1, y - 1, z)
-
-		+ 2 * pixelData->getPixelValue(x, y, z - 1) + 1 * pixelData->getPixelValue(x - 1, y, z - 1) + 1 * pixelData->getPixelValue(x, y + 1, z - 1) + 1 * pixelData->getPixelValue(x, y - 1, z - 1) + 1 * pixelData->getPixelValue(x + 1, y, z - 1)
-		+ 2 * pixelData->getPixelValue(x, y, z + 1) + 1 * pixelData->getPixelValue(x - 1, y, z + 1) + 1 * pixelData->getPixelValue(x, y + 1, z + 1) + 1 * pixelData->getPixelValue(x, y - 1, z + 1) + 1 * pixelData->getPixelValue(x + 1, y, z + 1);
-
-	value = value / 28;
-	return value;
-
-}

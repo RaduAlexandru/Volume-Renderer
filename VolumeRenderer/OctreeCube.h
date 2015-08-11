@@ -7,27 +7,23 @@ class OctreeCube
 public:
 	OctreeCube();
 	~OctreeCube();
-	glm::vec3 pos[8];
 
-	glm::vec3 origin;
-	int sizeX, sizeY, sizeZ;
+
+	glm::vec3 origin;			//!< El punto de origen del cubo coincide con la esquina inferior izquierda
+	int sizeX, sizeY, sizeZ;	//!< EL tamaño del cubo en las 3 dirrecciones;
 
 	bool isLeaf;
-	bool needsChecking;
+	bool needsChecking;			//!< Si se ha descubierto que el cubo no contiene una superficie, se descarta de cualquier otro calculo posterior como crack patch
 	bool polygonised;
 	bool containsVerts;
 
 	OctreeCube* children[8];
 	OctreeCube* parent;
-	std::vector<glm::vec3> *points;
+	std::vector<glm::vec3> *points;		//!< Referencia a los puntos (los triangulos) creados dentro de el
 
-	int depth;
+	int depth;	//!< La profundidad a la que se encuentra en el arbol, usada para calcular los vecinos
 
-	std::vector<int> locationalCode;
-
-	int needsSubdivision( int, std::vector< boost::unordered_map< std::pair<int, int>, glm::vec3> > &  );
-	int subdivide(std::vector <OctreeCube> &);
-
-	int subdivide_tree_version();
+	std::vector<int> locationalCode;//!< Codigo de localizacion, usado para el calculo de vecinos
+	int subdivide();
 };
 

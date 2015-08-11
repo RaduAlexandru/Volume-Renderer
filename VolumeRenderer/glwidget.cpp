@@ -15,18 +15,15 @@ GLWidget::GLWidget(QWidget *parent)
 	: QOpenGLWidget(parent)
 {
 	this->setFocusPolicy(Qt::StrongFocus);
-	frame_to_display = 0;
-	/*angle = 0.0f;
-	connect(&timer, SIGNAL(timeout()), this, SLOT(rotate()));
-	timer.start(16);*/
+
 	xRot = -90;
 	yRot = 0;
 	mouseSpeed = 0.5;
 	xMove = 0;
 	yMove = 0;
 	zMove = 0;
-	shiftPressed = false;
-	ctrlPressed = false;
+	movingFigure = false;
+	scalingFigure = false;
 	opacity = 1.0;
 
 	showPerspective = true;
@@ -50,8 +47,7 @@ void GLWidget::initializeGL()
 	initializeOpenGLFunctions();
 	glClearColor(0.8, 0.8, 0.8, 0);
 	glEnable(GL_DEPTH_TEST);
-	dataSended = 0;
-	//sendDataToGL();
+	
 	glFrontFace(GL_CW);
 	
 
@@ -59,8 +55,7 @@ void GLWidget::initializeGL()
 	glEnable(GL_NORMALIZE);
 
 	glEnable(GL_COLOR_MATERIAL);
-	//glColorMaterial(GL_BACK, GL_AMBIENT_AND_DIFFUSE);
-	//glLightModelf(GL_LIGHT_MODEL_TWO_SIDE, 1);
+	
 	
 
 	//WE ADD THE LIGHTS
@@ -109,19 +104,18 @@ void GLWidget::initializeGL()
 
 	generatingMesh = false;
 	
-
+	//Activar el calculo de transparencias
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glClearColor(0.0, 0.0, 0.0, 0);
-	//glBlendFunc(GL_ZERO, GL_SRC_COLOR);
-	//glBlendFunc(GL_ONE, GL_ONE);
+	
 	
 }
 
 void GLWidget::paintGL()
 {
 	
-
+	//si se esta generando un mallado no podemos recorrer o representar ningun mallado ya que algun algoritmo está escribiendo en el vector de pixels
 	if (generatingMesh)
 		return;
 
@@ -137,43 +131,15 @@ void GLWidget::paintGL()
 
 
 
-	//if ((boost::get<unsigned short**>(model->pixelData)) != NULL)
-	/*if (model->pixelDataHeight != 0){
-		if (model->numberOfBytes==1)
-			glDrawPixels(model->pixelDataWidth, model->pixelDataHeight, GL_LUMINANCE, GL_UNSIGNED_BYTE, ((model->pixelData))[frame_to_display]);
-		if (model->numberOfBytes==2)
-			glDrawPixels(model->pixelDataWidth, model->pixelDataHeight, GL_LUMINANCE, GL_UNSIGNED_SHORT, ((model->pixelData))[frame_to_display]);
-		if (model->numberOfBytes==3)
-			glDrawPixels(model->pixelDataWidth, model->pixelDataHeight, GL_LUMINANCE, GL_UNSIGNED_INT, ((model->pixelData))[frame_to_display]);
-
-	}*/
+	
 	
 	drawBackground();
 
-	/*glTranslatef((model->pixelDataWidth / 2), (model->pixelDataHeight / 2), -(510.0f));
-	glRotatef(-xRot, 1, 0, 0);
-	glTranslatef(-(model->pixelDataWidth / 2), -(model->pixelDataHeight / 2), 0.0f);
 
-	glTranslatef((model->pixelDataWidth / 2), (model->pixelDataHeight / 2), 0.0f);
-	glRotatef(yRot, 0, 0, 1);	//We put it to minus so that the rotation is reversed
-	glTranslatef(-(model->pixelDataWidth / 2), -(model->pixelDataHeight / 2), 0.0f - (model->frames / 2));*/
-	
-	//THe above one is the one that works for rotation, the below one sorta works but only in some directions, I don't know it'w weird
-	/*glTranslatef((model->pixelDataWidth / 2 +  xMoveOld), (model->pixelDataHeight / 2 + yMoveOld), -(510.0f+ zMoveOld));
-	glRotatef(-xRot, 1, 0, 0);
-	glTranslatef(-(model->pixelDataWidth / 2 + xMove + xMoveOld ), -(model->pixelDataHeight / 2 + yMove + yMoveOld), 0.0f +zMove);
-
-	glTranslatef((model->pixelDataWidth / 2 + xMove), (model->pixelDataHeight / 2 + yMove), 0.0f + zMove);
-	glRotatef(yRot, 0, 0, 1);	//We put it to minus so that the rotation is reversed
-	glTranslatef(-(model->pixelDataWidth / 2 + xMove), -(model->pixelDataHeight / 2 + yMove), 0.0f - (model->frames/2 + zMove));*/
-
-
-	//std::cout << "xrot is" << xRot << std::endl;
 
 	
-
+	//Rotar, girar y escalar la figura
 	glTranslatef((mesh->width / 2), (mesh->height / 2 - yMove), -(510.0f) + zMove);
-	//glScalef(scale, scale, scale);
 	glRotatef(xRot, 1, 0, 0);
 	glTranslatef(-(mesh->width / 2 - xMove), -(mesh->height / 2), 0.0f);
 
@@ -183,27 +149,11 @@ void GLWidget::paintGL()
 
 	
 	
-	//glPointSize(1.5f);
-
-	/*FLOAT LightAmbient[4] = { 0, 0, 0, 1 };
-	FLOAT LightDiffuse[4] = { 1, 1, 1, 1 };
-	FLOAT LightPosition[4] = { 0, 0, 1, 0 };
-
-	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT1);
-
-	glLightfv(GL_LIGHT1, GL_AMBIENT, LightAmbient);
-	glLightfv(GL_LIGHT1, GL_DIFFUSE, LightDiffuse);
-	glLightfv(GL_LIGHT1, GL_POSITION, LightPosition);
-
-	glEnable(GL_LIGHTING);
-
-
-	glShadeModel(GL_SMOOTH);*/
+	
 
 
 	
-	//If you copy all these position in the lines before the rotations (after draw background), the liths will rotate with the camera (like if you are holding a flashlight). not with the mesh
+	//If you copy all these position in the lines before the rotations (after draw background), the lights will rotate with the camera (like if you are holding a flashlight). not with the mesh
 	//Position of light 1
 	float lightPosition[4] = { 0, 0, 0, 1 };
 	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
@@ -219,25 +169,10 @@ void GLWidget::paintGL()
 
 
 	float lightPosition3[4] = { mesh->width / 2, mesh->height / 1.1, 0, 0 };
-	//float lightPosition3[4] = { 0, 0, 0, 0 };
 	glLightfv(GL_LIGHT3, GL_POSITION, lightPosition3);
 
 
-
-	/*glColor3f(1.f, 0.f, 0.f);
-	glPointSize(1.0);
-	glBegin(GL_POINTS);
-	if (!model->gradientPoints.empty())
-		for (int i = 0; i < model->gradientPoints.size() - 3; i = i + 3){
-		glVertex3f(model->gradientPoints[i], model->gradientPoints[i + 1], model->gradientPoints[i + 2]);
-		}
-	glEnd();*/
-
-	
-	//glDrawArrays(GL_TRIANGLES, 0, model->verts.size());
-
-	//glColor4f(0.55f, 0.55f, 0.55f, 1.0f);
-	//glColor4f(1.0f, 0.9f, 0.55f, 1.0f);
+	//Dibujar la figura secundaria primero ya que la primaria se tiene que dibujar después para que transparente sobre la otra
 	glColor4f(1.0f, 0.9f, 0.65f, 1.0f);
 	if (showMesh)
 		drawMesh(mesh2);
@@ -253,9 +188,6 @@ void GLWidget::paintGL()
 	if (showGradients)
 		displayGradient();
 
-	//if (showCubes)
-		//drawCubes2();
-
 
 	if (showWireframe){
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -268,192 +200,7 @@ void GLWidget::paintGL()
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 
-	//Draw the point for debugging
-	/*glPointSize(6.0f);
-	glColor3f(0.f, 0.f, 1.f);
-	glBegin(GL_POINTS);
-	glVertex3f(model->xPosPoint, model->yPosPoint, model->zPosPoint);
-	glEnd();*/
-
-	//240, 160, 48 of size 16
-
-	//another cube with problems cube
-	//x=320-8
-	//y=192
-	//z=32
-	//size=8
-
-	//another cube with problems cube
-	//x=256
-	//y=168
-	//z=56
-	//size=8
- 
-	//The one on the side, almost on the bottom of the foot
-	//x = 240;
-	//y = 160;
-	//z = 32;
-	//size = 8;
-
-	//Draw the cube for debugging
-	/*int x, y, z, size;
-	x = 256;
-	y = 168;
-	z = 56;
-	size = 8;
-
-	glColor3f(0.f, 0.f, 1.f);
-	glLineWidth(2.5f);
-	glBegin(GL_LINES);
-
 	
-
-		glVertex3f(x, y, z);
-		glVertex3f(x + size, y, z);
-
-		glVertex3f(x, y, z);
-		glVertex3f(x, y + size, z);
-
-		glVertex3f(x, y, z);
-		glVertex3f(x, y, z + size);
-
-
-		glVertex3f(x + size, y + size, z + size);
-		glVertex3f(x, y + size, z +size);
-
-		glVertex3f(x + size, y + size, z + size);
-		glVertex3f(x + size, y, z + size);
-
-		glVertex3f(x + size, y + size, z + size);
-		glVertex3f(x +size, y + size, z);
-
-
-
-
-		glVertex3f(x, y + size, z);
-		glVertex3f(x, y + size, z + size);
-
-		glVertex3f(x, y + size, z + size);
-		glVertex3f(x, y, z + size);
-
-		glVertex3f(x + size, y, z);
-		glVertex3f(x + size, y, z + size);
-
-		glVertex3f(x + size, y,z + size);
-		glVertex3f(x, y, z + size);
-
-		glVertex3f(x + size, y, z);
-		glVertex3f(x + size,y + size, z);
-
-		glVertex3f(x, y + size,z);
-		glVertex3f(x + size, y + size, z);
-
-	glEnd();
-
-
-
-
-
-	x = 256;
-	y = 168;
-	z = 56 - 8;
-	size = 8;
-
-	glColor3f(0.f, 1.f, 0.f);
-	glLineWidth(2.5f);
-	glBegin(GL_LINES);
-
-
-
-	glVertex3f(x, y, z);
-	glVertex3f(x + size, y, z);
-
-	glVertex3f(x, y, z);
-	glVertex3f(x, y + size, z);
-
-	glVertex3f(x, y, z);
-	glVertex3f(x, y, z + size);
-
-
-	glVertex3f(x + size, y + size, z + size);
-	glVertex3f(x, y + size, z + size);
-
-	glVertex3f(x + size, y + size, z + size);
-	glVertex3f(x + size, y, z + size);
-
-	glVertex3f(x + size, y + size, z + size);
-	glVertex3f(x + size, y + size, z);
-
-
-
-
-	glVertex3f(x, y + size, z);
-	glVertex3f(x, y + size, z + size);
-
-	glVertex3f(x, y + size, z + size);
-	glVertex3f(x, y, z + size);
-
-	glVertex3f(x + size, y, z);
-	glVertex3f(x + size, y, z + size);
-
-	glVertex3f(x + size, y, z + size);
-	glVertex3f(x, y, z + size);
-
-	glVertex3f(x + size, y, z);
-	glVertex3f(x + size, y + size, z);
-
-	glVertex3f(x, y + size, z);
-	glVertex3f(x + size, y + size, z);
-
-	glEnd();*/
-
-	//Draw face for debugging
-
-	/*x = 240;
-	y = 160;
-	z = 48 ;
-	size = 16;
-
-	glColor3f(0.f, 1.f, 0.f);
-	glLineWidth(2.5f);
-	glBegin(GL_LINES);
-
-	glVertex3f(x, y, z);
-	glVertex3f(x + size, y, z);
-
-	glVertex3f(x + size, y, z);
-	glVertex3f(x + size, y + size, z);
-
-	glVertex3f(x + size, y + size, z);
-	glVertex3f(x, y + size, z);
-
-	glVertex3f(x, y + size, z);
-	glVertex3f(x, y, z);
-
-	glEnd();*/
-	
-
-	/*glBegin(GL_TRIANGLES);
-	glColor3f(1.f, 0.f, 0.f);
-	glVertex3f(model->pixelDataWidth/2, 0.0f, 0.0f);
-	glColor3f(0.f, 1.f, 0.f);
-	glVertex3f(model->pixelDataWidth, model->pixelDataHeight, 0.0f);
-	glColor3f(0.f, 0.f, 1.f);
-	glVertex3f(0.0f, model->pixelDataHeight, 0.0f);
-
-	glVertex3f(model->pixelDataWidth / 2, 0.0f, 0.0f);
-	glVertex3f(model->pixelDataWidth / 2+50, 50.0f, -50.0f);
-	glVertex3f(model->pixelDataWidth, model->pixelDataHeight, 0.0f);
-
-	glEnd();*/
-
-	/*glColor3f(0.f, 1.f, 0.f);
-	glBegin(GL_LINES);
-	for (int i = 0; i < model->normals.size(); i=i+6){
-		glVertex3f(model->normals[i], model->normals[i+1], model->normals[i+2]);
-		glVertex3f(model->normals[i+3], model->normals[i + 4], model->normals[i + 5]);
-	}
-	glEnd();*/
 	
 }
 
@@ -495,139 +242,11 @@ void GLWidget::drawMesh(Mesh* meshtoDraw){
 	glEnd();
 
 
-
-	/*if (model->normalsAlgChosen == 1){
-		glBegin(GL_TRIANGLES);
-		for (int i = 0; i < model->verts.size() - 9; i = i + 9){
-
-			if (normalIndex >= model->normals.size()){
-				break;
-			}
-
-			glNormal3f(model->normals[normalIndex], model->normals[normalIndex + 1], model->normals[normalIndex + 2]);
-			normalIndex = normalIndex + 3;
-			//glNormal3f(0, 0, 1);
-			glVertex3f(model->verts[i], model->verts[i + 1], model->verts[i + 2]);
-			glVertex3f(model->verts[i + 3], model->verts[i + 4], model->verts[i + 5]);
-			glVertex3f(model->verts[i + 6], model->verts[i + 7], model->verts[i + 8]);
-		}
-		glEnd();
-	}
-
-	//Representation with normal for each vertice
-	if (model->normalsAlgChosen == 2){
-		glBegin(GL_TRIANGLES);
-		for (int i = 0; i < model->verts.size() - 9; i = i + 9){
-			glNormal3f(model->normals[i], model->normals[i + 1], model->normals[i + 2]);
-			glVertex3f(model->verts[i], model->verts[i + 1], model->verts[i + 2]);
-
-			glNormal3f(model->normals[i + 3], model->normals[i + 4], model->normals[i + 5]);
-			glVertex3f(model->verts[i + 3], model->verts[i + 4], model->verts[i + 5]);
-
-			glNormal3f(model->normals[i + 6], model->normals[i + 7], model->normals[i + 8]);
-			glVertex3f(model->verts[i + 6], model->verts[i + 7], model->verts[i + 8]);
-		}
-		glEnd();
-	}*/
-
-	
-
 }
 
 
 
-/*void GLWidget::drawMesh2(){
-	//glColor3f(1.f, 0.f, 0.f);
 
-	if (mesh2 == NULL)
-		return;
-
-	//glDrawArrays(GL_TRIANGLES, 0, model->verts.size());
-	if (mesh2->verts.empty() || mesh2->normals.empty())
-		return;
-
-
-	//std::cout << "gneralting mesh is " << model->generatingMesh << std::endl;
-	if (generatingMesh == true)
-		return;
-
-	int normalIndex = 0;
-
-	glBegin(GL_TRIANGLES);
-	for (int i = 0; i < mesh2->verts.size() - 3; i = i + 3){
-
-		if (i >= mesh2->normals.size())
-			break;
-
-		glNormal3f(mesh2->normals[i].x, mesh2->normals[i].y, mesh2->normals[i].z);
-		glVertex3f(mesh2->verts[i].x, mesh2->verts[i].y, mesh2->verts[i].z);
-
-		glNormal3f(mesh2->normals[i + 1].x, mesh2->normals[i + 1].y, mesh2->normals[i + 1].z);
-		glVertex3f(mesh2->verts[i + 1].x, mesh2->verts[i + 1].y, mesh2->verts[i + 1].z);
-
-		glNormal3f(mesh2->normals[i + 2].x, mesh2->normals[i + 2].y, mesh2->normals[i + 2].z);
-		glVertex3f(mesh2->verts[i + 2].x, mesh2->verts[i + 2].y, mesh2->verts[i + 2].z);
-	}
-	glEnd();
-}
-/*void GLWidget::drawCubes(){
-	//Draw the cubes now The cube configuracion can be found as a comment in the adaptiveMarchingCubes function
-	
-	glLineWidth(1.0f);
-	glBegin(GL_LINES);
-	for (int i = 0; i < model->cubes.size(); i = i + 1){
-
-		if (!model->cubes[i].isLeaf){
-			continue;
-		}
-		//240, 160, 48 of size 16
-
-		
-
-		glVertex3f(model->cubes[i].origin.x, model->cubes[i].origin.y, model->cubes[i].origin.z);
-		glVertex3f(model->cubes[i].origin.x + model->cubes[i].sizeX, model->cubes[i].origin.y, model->cubes[i].origin.z);
-
-		glVertex3f(model->cubes[i].origin.x, model->cubes[i].origin.y, model->cubes[i].origin.z);
-		glVertex3f(model->cubes[i].origin.x, model->cubes[i].origin.y + model->cubes[i].sizeY, model->cubes[i].origin.z);
-
-		glVertex3f(model->cubes[i].origin.x, model->cubes[i].origin.y, model->cubes[i].origin.z);
-		glVertex3f(model->cubes[i].origin.x, model->cubes[i].origin.y, model->cubes[i].origin.z + model->cubes[i].sizeZ);
-
-
-		glVertex3f(model->cubes[i].origin.x + model->cubes[i].sizeX, model->cubes[i].origin.y + model->cubes[i].sizeY, model->cubes[i].origin.z + model->cubes[i].sizeZ);
-		glVertex3f(model->cubes[i].origin.x, model->cubes[i].origin.y + model->cubes[i].sizeY, model->cubes[i].origin.z + model->cubes[i].sizeZ);
-
-		glVertex3f(model->cubes[i].origin.x + model->cubes[i].sizeX, model->cubes[i].origin.y + model->cubes[i].sizeY, model->cubes[i].origin.z + model->cubes[i].sizeZ);
-		glVertex3f(model->cubes[i].origin.x + model->cubes[i].sizeX, model->cubes[i].origin.y, model->cubes[i].origin.z + model->cubes[i].sizeZ);
-
-		glVertex3f(model->cubes[i].origin.x + model->cubes[i].sizeX, model->cubes[i].origin.y + model->cubes[i].sizeY, model->cubes[i].origin.z + model->cubes[i].sizeZ);
-		glVertex3f(model->cubes[i].origin.x + model->cubes[i].sizeX, model->cubes[i].origin.y + model->cubes[i].sizeY, model->cubes[i].origin.z);
-
-
-
-
-		glVertex3f(model->cubes[i].origin.x, model->cubes[i].origin.y + model->cubes[i].sizeY, model->cubes[i].origin.z);
-		glVertex3f(model->cubes[i].origin.x, model->cubes[i].origin.y + model->cubes[i].sizeY, model->cubes[i].origin.z + model->cubes[i].sizeZ);
-
-		glVertex3f(model->cubes[i].origin.x, model->cubes[i].origin.y + model->cubes[i].sizeY, model->cubes[i].origin.z + model->cubes[i].sizeZ);
-		glVertex3f(model->cubes[i].origin.x, model->cubes[i].origin.y, model->cubes[i].origin.z + model->cubes[i].sizeZ);
-
-		glVertex3f(model->cubes[i].origin.x + model->cubes[i].sizeX, model->cubes[i].origin.y, model->cubes[i].origin.z);
-		glVertex3f(model->cubes[i].origin.x + model->cubes[i].sizeX, model->cubes[i].origin.y, model->cubes[i].origin.z + model->cubes[i].sizeZ);
-
-		glVertex3f(model->cubes[i].origin.x + model->cubes[i].sizeX, model->cubes[i].origin.y, model->cubes[i].origin.z + model->cubes[i].sizeZ);
-		glVertex3f(model->cubes[i].origin.x, model->cubes[i].origin.y, model->cubes[i].origin.z + model->cubes[i].sizeZ);
-
-		glVertex3f(model->cubes[i].origin.x + model->cubes[i].sizeX, model->cubes[i].origin.y, model->cubes[i].origin.z);
-		glVertex3f(model->cubes[i].origin.x + model->cubes[i].sizeX, model->cubes[i].origin.y + model->cubes[i].sizeY, model->cubes[i].origin.z);
-
-		glVertex3f(model->cubes[i].origin.x, model->cubes[i].origin.y + model->cubes[i].sizeY, model->cubes[i].origin.z);
-		glVertex3f(model->cubes[i].origin.x + model->cubes[i].sizeX, model->cubes[i].origin.y + model->cubes[i].sizeY, model->cubes[i].origin.z);
-
-
-	}
-	glEnd();
-}*/
 
 
 //This one get the octreecubes from octreevector which is the one that gets used when adaptivemarchingvubes3
@@ -783,18 +402,7 @@ void GLWidget::displayGradient(){
 	}
 
 	
-	/*glDisable(GL_LIGHTING);
-	int valsIndex = 0;
-	for (int i = 0; i < keys.size(); i=i+3){
-		glColor3f((sin(vals[valsIndex].x *PI / 180) + 1) / 2, (sin(vals[valsIndex].y *PI / 180) + 1) / 2, (sin(vals[valsIndex].z *PI / 180) + 1) / 2);	//The input for sin is in radians so we do *PI / 180. The output os sin is from -1 to 1. So we add 1 and then divide by 2 so we get a value from 0 to 1
-		glPointSize(3.0f);
-		glBegin(GL_POINTS);
-		glVertex3f(keys[i], keys[i+1], keys[i+2]);
-		glEnd();
-		valsIndex++;
-	}
-	glEnable(GL_LIGHTING);
-	return;*/
+	
 
 	int skip=0;
 
@@ -802,22 +410,14 @@ void GLWidget::displayGradient(){
 	glPointSize(2.0f);
 	glBegin(GL_POINTS);
 	for (int i = 0; i < keys.size(); i++){
-		/*if (skip != 5){
-			skip++;
-			continue;
-		}*/
 		glColor3f((sin(vals[i].x  *PI / 180) + 1) / 2, (sin(vals[i].y *PI / 180) + 1) / 2, (sin(vals[i].z *PI / 180) + 1) / 2);
 		
 		glVertex3f(keys[i].x, keys[i].y, keys[i].z);
-		
-		//skip = 0;
+
 	}
 	glEnd();
 	glEnable(GL_LIGHTING);
 
-	///////////////
-
-	
 	
 
 }
@@ -837,12 +437,7 @@ void GLWidget::setMatrices(){
 			0.0, 1.0, 0.0);
 	}
 	else{
-		//glOrtho(0.0f, model->pixelDataWidth, 0.0f,  model->pixelDataHeight, -1024.0f, 1024.0f);	//When you do the 3d one you will need to change the last parameter to be the depth of the image (number of frames)
-		//glMatrixMode(GL_MODELVIEW);
-		//glLoadIdentity();
-
-
-
+	
 		float aspectRatio = (GLfloat)width() / (GLfloat)height();
 		if (width() <= height())
 			glOrtho(0.0f, mesh->width, 0.0f - (mesh->height* (aspectRatio - 1)), mesh->height / aspectRatio, -1024.0f, 1024.0f);
@@ -858,9 +453,7 @@ void GLWidget::setMatrices(){
 	}
 }
 
-//Whenever the mouse is dragged over the glwidget, we calculate the position in that widget and we 
-//make the difference between where you dragged to and where originally clicked. Multiply it by the 
-//mouseSpeed that controls the speed of rotations and then we update the point where we originally clicked (mouseEntered)
+
 /*! \brief Recoge los eventos del raton
 *
 *	Cada vez que se mueve el raton, se resta la posicion actual de la anterior. Esa diferencia nos indica lo que se ha movido en cada direccion.
@@ -873,9 +466,8 @@ void GLWidget::mouseMoveEvent(QMouseEvent * event){
 	ypos = event->y();
 	int incX=1, incY=1;
 	
-	//std::cout << "Moving mouse and value of CTRL is "  << ctrlPressed << std::endl;
-	if (shiftPressed){
-		//std::cout << "Moving mouse while shift is pressed" << std::endl;
+	//si estamos en el modo de mover la figura, se actualizan los las posicones de la figura
+	if (movingFigure){
 		xMove += (xpos - mouseXPosEntered);
 		yMove += (ypos - mouseYPosEntered);
 		mouseXPosEntered = xpos;
@@ -884,12 +476,8 @@ void GLWidget::mouseMoveEvent(QMouseEvent * event){
 		return;
 	}
 
-	if (ctrlPressed){
-		//std::cout << "Moving mouse while ctrl is pressed" << std::endl;
-		//incX += (xpos - mouseXPosEntered);
-		//incY += (ypos - mouseYPosEntered);
-		//scale = sqrt(incX*incX + incY*incY)*0.1;
-		//scale = incX*0.1;
+	//si estamoe en modo de escalado se actualzia el zMove, es decir lo cerca o lo lejos que esta la figura
+	if (scalingFigure){
 		zMove += (xpos - mouseXPosEntered);
 		mouseXPosEntered = xpos;
 		mouseYPosEntered = ypos;
@@ -908,40 +496,47 @@ void GLWidget::mouseMoveEvent(QMouseEvent * event){
 		xRot -= 360;
 	}
 	
-	//std::cout << "xrot is " << xRot << " yrot is " << yRot << std::endl;
 
 	mouseXPosEntered = xpos;
 	mouseYPosEntered = ypos;
 	update();
 }
 
+
+/*! \brief Recoge la posicion en la que se ha hecho click con el raton
+*/
 void GLWidget::mousePressEvent(QMouseEvent *event){
 	mouseXPosEntered = event->x();
 	mouseYPosEntered = event->y();
 }
 
 
-
+/*! \brief REcoe la tecla que se esta pulsando en el momento. Si mantenemos presionado Ctrl=escalado o Shift=movimiento
+*/
 void GLWidget::keyPressEvent(QKeyEvent *keyEvent)
 {
 	std::cout << "Pressed key: " << keyEvent->key() << std::endl;
 	//keyEvent->ignore();
 	if (keyEvent->key() == SHIFT)
-		shiftPressed = true;
+		movingFigure = true;
 	if (keyEvent->key() == CTRL)
-		ctrlPressed = true;
+		scalingFigure = true;
 		
 }
 
+/*! \brief Cuando dejamos de presionar la tecla se vuele al modo por defecto, es decir cuando se arrastra el raton, la figura gira
+*/
 void GLWidget::keyReleaseEvent(QKeyEvent *keyEvent)
 {
 	std::cout << "Released key: " << keyEvent->key() << std::endl;
 	if (keyEvent->key() == SHIFT)
-		shiftPressed = false;
+		movingFigure = false;
 	if (keyEvent->key() == CTRL)
-		ctrlPressed = false;
+		scalingFigure = false;
 }
 
+/*! \brief Cuando una figura se ha acabado de leer de dicom o de obj, se avisa para poner la posicion por defecto
+*/
 void  GLWidget::dataFinishedReadingSlot(){
 	std::cout << "received the signal that all the data was read so we set the rotation to xrot-90" << std::endl;
 	xRot = -90;
@@ -962,6 +557,9 @@ void GLWidget::generatingStartedSlot(){
 }
 
 
+
+/*! \brief Se ha cambiado la opacidad de la figura principal
+*/
 void GLWidget::opacityChangedSlot(int value){
 	opacity = float(value / 100.0);
 }
@@ -970,29 +568,43 @@ void GLWidget::opacityChangedSlot(int value){
 
 
 
-
+/*! \brief Slot: Cuando se pulsa el boton en la interfaz, se avisa a este slot para representar los triangulso del mallao
+*/
 void GLWidget::showWireframeSlot(bool value){
 	showWireframe = value;
 	this->update();
 }
 
+/*! \brief Slot mostrar perspectiva o ortografia
+*/
 void GLWidget::showPerspectiveSlot(bool value){
 	showPerspective = value;
 	this->update();
 }
+
+/*! \brief Slot mostrar mallado
+*/
 void GLWidget::showMeshSlot(bool value){
 	showMesh = value;
 	this->update();
 }
+
+/*! \brief Slot mostrar cubos octree
+*/
 void GLWidget::showCubesSlot(bool value){
 	showCubes = value;
 	this->update();
 }
+
+/*! \brief Slot mostrar gradientes
+*/
 void GLWidget::showGradientSlot(bool value){
 	showGradients = value;
 	this->update();
 }
 
+/*! \brief DEja la figura en el punto inicial y mirando de cara hacia la cámara
+*/
 void GLWidget::resetFigureSlot(){
 	xRot = -90;
 	yRot = 0;

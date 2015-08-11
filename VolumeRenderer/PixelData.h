@@ -10,7 +10,8 @@ public:
 	
 
 
-	unsigned char** data;
+	unsigned char** data;	//!< El volumen de datos en un array 2D. Cada capa se guarda en un indice difernte como un array
+
 
 	
 
@@ -21,7 +22,8 @@ public:
 
 
 
-	int borderXRight, borderXLeft, borderZCloser, borderZFurther, borderYTop, borderYBottom;
+	int borderXRight, borderXLeft, borderZCloser, borderZFurther, borderYTop, borderYBottom; //!< Representa los planos de corte
+
 
 	int getPixelValue(int x, int y, int z);
 	int getSmoothPixelValue(int x, int y, int z);
@@ -29,10 +31,6 @@ public:
 	int convolveX(int x, int y, int z);
 	int convolveY(int x, int y, int z);
 	int convolveZ(int x, int y, int z);
-
-	/*int getWidthWithBorder();
-	int getHeightWithBorder();
-	int getFramesWithBorder();*/
 
 	
 };

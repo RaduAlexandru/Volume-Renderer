@@ -60,7 +60,6 @@ VolumeRenderer::VolumeRenderer(QWidget *parent)
 
 	ui.setupUi(this);
 	model = new Model();
-	//ui.glwidget->model = model;
 	ui.glwidget->mesh = model->mesh;
 	ui.glwidget->mesh2 = model->mesh2;
 	ui.glwidget->gradient = &(model->gradient);
@@ -94,10 +93,6 @@ VolumeRenderer::VolumeRenderer(QWidget *parent)
 	ui.scaleButton->setIcon(ButtonIcon2);
 	this->setCentralWidget(ui.glwidget);
 	ui.glwidget->lower();
-
-	//ui.moveButton->setIcon(QIcon("<imagePath>"));
-	//ui.moveButton->setIconSize(QSize(65, 65));
-
 
 
 	QGraphicsDropShadowEffect* effect = new QGraphicsDropShadowEffect(this);
@@ -189,7 +184,8 @@ void VolumeRenderer::establishConnectionsREADER(){
 
 
 
- 
+/*! \brief Principio de un intento de implementar el algoritmo de Ball pivot para triangulacion Delaunay
+*/
 void VolumeRenderer::ballPivot(){
 	std::cout << "creating mesh with ball pivot algorithm" << std::endl;
 
@@ -282,12 +278,9 @@ void VolumeRenderer::on_isoLevelSlider_valueChanged(){
 		return;
 
 	model->isoLevel=ui.isoLevelSlider->value();
-	//Now we should march all the cubes again, and refresh the openglwidget
-	//wipePoints();
+	//Now we should generate another mesh with the new isolevel, and refresh the openglwidget
 	generateMesh();
-	ui.glwidget->dataSended = 0;
 	ui.glwidget->update();
-	//on_marchingSquares_clicked();
 	
 }
 
@@ -319,11 +312,8 @@ void VolumeRenderer::on_loadDICOMFromFile_clicked(){
 	ui.progressText->setText("Reading DICOM Files");
 	reader = new FileReader;
 	establishConnectionsREADER();
-	//reader->loadDICOMPixelData(fileNames, model->pixelData);
 	
-
 	boost::thread workerThread(boost::bind(&FileReader::loadDICOMPixelData, reader,fileNames,model->pixelData));
-	//loadDICOMPixelData(fileNames);
 
 	ui.frameSlider->setMaximum(fileNames.size() - 1);
 	
@@ -331,6 +321,9 @@ void VolumeRenderer::on_loadDICOMFromFile_clicked(){
 	
 
 }
+
+/*! \brief Slot asociado al final de la lectura de un archivo Dicom, actualiza el visor 2d y el valor maximo del umbral dependiendo de la profundidad de bits
+*/
 
 void VolumeRenderer::dataFinishedReadingSlot(){
 	ui.progressText->setText("");
@@ -346,29 +339,26 @@ void VolumeRenderer::dataFinishedReadingSlot(){
 
 	generateMesh(1);
 	ui.dicomviewer2dgl->setFrame(model->pixelData->frames / 2);
-	//ui.glwidget->sendDataToGL();
+
 	ui.glwidget->update();
 	emit dataFinishedReading();
 
 }
 
+/*! \brief Cambio en el tamaño de los cubos de Marching Cubes
+*/
 void VolumeRenderer::on_resolutionSlider_valueChanged(){
 	cout << "Change the resolution to " << ui.resolutionSlider->value() << endl;
 	model->cellSizeX = ui.resolutionSlider->value();
 	model->cellSizeY = ui.resolutionSlider->value();
 	model->cellSizeZ = ui.resolutionSlider->value();
 
-	//wipePoints();
+
 	generateMesh();
-	ui.glwidget->dataSended = 0;
 	ui.glwidget->update();
 }
 
 
-
-
-/*! \brief Establece el frame para ser visualizado en el visor dicom 2d
-*/
 
 
 
@@ -376,16 +366,13 @@ void VolumeRenderer::on_resolutionSlider_valueChanged(){
 void VolumeRenderer::on_toleranceSlider_valueChanged(){
 	model->tolerance = ui.toleranceSlider->value();
 	cout << "tolerance set to " << model->tolerance;
-	model->cubes.clear();
-	//wipePoints();
-	//adaptiveMarchingCubes();
+	//model->cubes.clear();
 	generateMesh();
 }
 
 void VolumeRenderer::on_marchingCubesButton_clicked(){
 	if (ui.marchingCubesButton->isChecked()){
 		model->algorithmChosen = 1;
-		//wipePoints();
 		generateMesh();
 	}
 }
@@ -394,14 +381,12 @@ void VolumeRenderer::on_marchingCubesButton_clicked(){
 void VolumeRenderer::on_adaptiveMarchingCubes2Button_clicked(){
 	if (ui.adaptiveMarchingCubes2Button->isChecked()){
 		model->algorithmChosen = 3;
-		//wipePoints();
 		generateMesh();
 	}
 }
 void VolumeRenderer::on_adaptiveMarchingCubes3Button_clicked(){
 	if (ui.adaptiveMarchingCubes3Button->isChecked()){
 		model->algorithmChosen = 4;
-		//wipePoints();
 		generateMesh();
 	}
 }
@@ -435,7 +420,12 @@ void VolumeRenderer::on_normalsPerVerticeButton_clicked(){
 
 
 
-
+/*! \brief Cambia la orientacion en la que se visualzia el volumen de datos
+*
+*  Cada vez que se cambia la orientacion en la que se observa el mallado hay que modificar el tamaño de los sliders para reflejar el tamaño correspondiente en esa dirrection
+*  Por ejemplo visto desde el eje Z un volumen de 512x512x10 tendrá los sliders al maximo. Pero cuando se visualiza desde el X o Y, uno de los sliders se tiene que modificar
+*  para quedar mucho mas pequeño (el 10 en el eje correspondiente).
+*/
 void VolumeRenderer::on_orientationZButton_clicked(){
 	if (ui.orientationZButton->isChecked()){
 		ui.dicomviewer2dgl->orientation = 1;
@@ -574,8 +564,6 @@ void VolumeRenderer::on_orientationYButton_clicked(){
 		ui.frameSlider->setMaximum(model->pixelData->height);
 		ui.dicomviewer2dgl->setFrame(model->pixelData->height / 2);
 
-		//std::cout << "pixels have border closer " << model->pixelData->borderZCloser << " and border further " << model->pixelData->borderZFurther << std::endl;
-
 
 		ui.borderYTopSlider->setValue(model->pixelData->borderZFurther);
 		ui.borderYTopSlider->setMaximum(model->pixelData->frames);
@@ -677,72 +665,33 @@ void VolumeRenderer::generateMesh(int force){
 	emit generatingStartedSignal();
 	generatingMesh = true;
 	if (model->algorithmChosen == 1){
-		//boost::thread workerThread(boost::bind(&VolumeRenderer::marchingSquares, this));
+	
 		ui.progressText->setText("<font color='black'>Generating Mesh</font>");
 		mc = new MarchingCuber((model->pixelData), model->mesh, model->isoLevel, model->cellSizeX, model->cellSizeY, model->cellSizeZ, model->interpolateDepth);
 		establishConnectionsMC();
-		//mc->run();
+
 		boost::thread workerThread(boost::bind(&MarchingCuber::run, mc));
 		
-		
-		//generateNormals();
 
-		//workerThread.join();
-		//marchingSquares();
 	}
 		
 	if (model->algorithmChosen == 2){
-
-		
 
 		launch_kernel(model->edgeTable,model->triTable);
 	}
 	if (model->algorithmChosen == 3){
 		amc = new AdaptiveCuber((model->pixelData), model->mesh, model->isoLevel, model->cellSizeX, model->cellSizeY, model->cellSizeZ, model->interpolateDepth, model->octreeMaxDepth, &(model->gradient), model->tolerance);
 		establishConnectionsAMC();
-		//amc->runWithCracks();
 		boost::thread workerThread(boost::bind(&AdaptiveCuber::runWithCracks, amc));
-		//generateNormals();
 	}
 	if (model->algorithmChosen == 4){
-		//adaptiveMarchingCubes3();
+	
 		amc = new AdaptiveCuber((model->pixelData), model->mesh, model->isoLevel, model->cellSizeX, model->cellSizeY, model->cellSizeZ, model->interpolateDepth, model->octreeMaxDepth, &(model->gradient), model->tolerance);
 		establishConnectionsAMC();
-		//amc->run();
 		boost::thread workerThread(boost::bind(&AdaptiveCuber::run, amc));
-		//generateNormals();
 	}
 
-	//model->generatingMesh = true;
-	//boost::thread workerThread(boost::bind(&VolumeRenderer::generateNormals, this));
-	//generateNormals();
-
-
-	//qWarning() << QString("%L1").arg(i);
 	
-
-
-	/*QPalette palette;
-
-	//white text
-	QBrush brush(QColor(255, 255, 255, 255));
-	brush.setStyle(Qt::SolidPattern);
-
-	//black background
-	QBrush brush1(QColor(0, 0, 0, 255));
-	brush1.setStyle(Qt::SolidPattern);
-
-	//set white text    
-	palette.setBrush(QPalette::Active, QPalette::WindowText, brush);
-	palette.setBrush(QPalette::Inactive, QPalette::WindowText, brush);
-
-	//set black background
-	palette.setBrush(QPalette::Active, QPalette::Window, brush1);
-	palette.setBrush(QPalette::Inactive, QPalette::Window, brush1);
-
-	//set palette    
-	textLabel->setPalette(palette);*/
-
 	QPalette plt;
 	plt.setColor(QPalette::WindowText, Qt::white);
 	ui.numberOfTrianglesLabel->setPalette(plt);
@@ -753,14 +702,6 @@ void VolumeRenderer::generateMesh(int force){
 */
 void VolumeRenderer::finishedMeshSlot(){
 
-	//Copy the octree vector over to the model
-	/*if (amc!=NULL)
-	for (int i = 0; i < amc->octreeVector.size(); i++){
-		model->octreeVector.push_back(amc->octreeVector[i]);
-	}*/
-
-
-	//std::cout << "entered in finished mesh slot" << std::endl;
 	ui.progressText->setText("<font color='black'>Generating Normals</font>");
 	generateNormals();
 }
@@ -768,7 +709,7 @@ void VolumeRenderer::finishedMeshSlot(){
 /*! \brief Slot indicando que NormalsGenerator ha acabado por lo tanto el mallado esta listo para representarse asi que se emite la señal correspondiente al visor en 3D.
 */
 void VolumeRenderer::finishedNormalsSlot(){
-	//std::cout << "entered in finished normals slot" << std::endl;
+
 	model->mesh->height = model->pixelData->height;
 	model->mesh->width = model->pixelData->width;
 	model->mesh->frames = model->pixelData->frames;
@@ -778,36 +719,27 @@ void VolumeRenderer::finishedNormalsSlot(){
 	generatingMesh = false;
 	ui.glwidget->update();
 
-
+	//Write the number of triangles
 	QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedStates));
 	QLocale aEnglish;
-	//qWarning() << aEnglish.toString(i);
-
 	QString string;
 	string = aEnglish.toString(model->mesh->verts.size() / 3);
 	string.append(" triangles");
-
 	ui.numberOfTrianglesLabel->setText(string);
 
-
+	//Write the time 
 	timeFinish = boost::posix_time::microsec_clock::universal_time();
 	boost::posix_time::time_duration duration = timeFinish - timeStart;
 	duration.seconds();
-
 	std::stringstream durationString;
 	durationString << duration;
-
 	std::string stringStd;
 	stringStd = durationString.str();
-
-
 	ui.timeLabel->setText(QString(stringStd.c_str()));
 
 }
 
-//************************************
-//After the triangles are created we generate the normals for them, either one per triangle or one per vertice
-//************************************
+
 
 /*! \brief Funcion que crea el objeto NormalsGenerator y genera un hilo para ejecutar su funcion (normales por triangulos o por vertices dependiendo del algoritmo seleccionado)
 */
@@ -832,22 +764,20 @@ void VolumeRenderer::generateNormals(){
 		boost::thread workerThread(boost::bind(&NormalsGenerator::normalsPerVertex, ng, model->pixelData, model->mesh));
 	}
 
-	//model->generatingMesh = false;
-
 }
 
 
 
 
 
-/*! \brief Borra todos los puntos del mallado, sus normales y los cubos que se han creado, dejando listo el modelo para un nuevo mallado
+/*! \brief Borra todos los puntos del mallado, sus normales y los cubos que se han creado, dejando listo el mesh para un nuevo mallado
 */
 void VolumeRenderer::wipePoints(){
 	
-	model->cubes.clear();
+	//model->cubes.clear();
 	model->mesh->verts.clear();
 	model->mesh->normals.clear();
-	model->octreeVector.clear();
+	//model->octreeVector.clear();
 }
 
 /*! \brief Borra todos los datos de los pixels, dejando listo al modelo para la carga de otros archivos DICOM
@@ -883,12 +813,9 @@ void VolumeRenderer::progressValueChangedSlot(int newValue){
 	ui.progressBar->setValue(newValue);
 }
 
-
+/*! \brief Slots que recibirá las señales con el texto indicando la fase en la que se encuentra cada modulo. Escribe el texto en la UI
+*/
 void VolumeRenderer::progressTextSlot(QString text){
-	//ui.progressText->setText("<font color='black'>Some text</font>");
-	//ui.progressText->setText(text);
-
-
 
 	ui.progressText->setText(text);
 }
@@ -899,9 +826,7 @@ void VolumeRenderer::progressTextSlot(QString text){
 void VolumeRenderer::on_linearInterpolationSlider_valueChanged(){
 	model->interpolateDepth = ui.linearInterpolationSlider->value();
 	cout << "interpolate set to " << model->interpolateDepth;
-	model->cubes.clear();
-	//wipePoints();
-	//adaptiveMarchingCubes();
+	//model->cubes.clear();
 	generateMesh();
 }
 
@@ -926,15 +851,13 @@ void VolumeRenderer::on_interactiveButton_clicked(){
 void  VolumeRenderer::on_octreeDepthSlider_valueChanged(){
 	model->octreeMaxDepth = ui.octreeDepthSlider->value();
 	cout << "octree depth set to " << model->octreeMaxDepth;
-	//model->cubes.clear();
-	//wipePoints();
-	//adaptiveMarchingCubes();
 	generateMesh();
 }
 
 
 
-
+/*! \brief Cada vez que se mueve uno de los sliders, el pixel data actualiza sus planos de corte en la dirreccion indicada
+*/
 void VolumeRenderer::on_borderYBottomSlider_valueChanged(){
 
 	if (ui.dicomviewer2dgl->orientation == 1){
@@ -994,12 +917,12 @@ void VolumeRenderer::on_borderXRightSlider_valueChanged(){
 
 }
 
+
+/*! \brief Recoge el fichero a obj leer y lo envia al modulo FileReader para que se lean los vertices y normales en el nuevo malaldo
+*/
 void VolumeRenderer::on_loadObjButton_clicked(){
 	std::cout << "loading obj file" << std::endl;
 	
-
-
-
 
 	QString fileName=NULL;
 	fileName = QFileDialog::getOpenFileName(this,
@@ -1008,11 +931,8 @@ void VolumeRenderer::on_loadObjButton_clicked(){
 	if (fileName == NULL)
 		return;
 
-	//send the signal so stop rendering. The generating mesh signal
-	//then when we are finished send the one that sais, finished generating
-	//also have to read the pixelwidht, height and frames
+	//sends a signal to stop rendering the mesh because we are updating its points.
 	emit generatingStartedSignal();
-	//wipePixelData();
 	wipePoints();
 
 	ui.progressText->setText("Reading OBJ File");
@@ -1020,19 +940,15 @@ void VolumeRenderer::on_loadObjButton_clicked(){
 	establishConnectionsREADER();
 	boost::thread workerThread(boost::bind(&FileReader::loadOBJFile, reader, fileName, model->pixelData, model->mesh));
 
-	
-
-	
-	//emit generatingFinishedSignal();
 
 }
+
+/*! \brief Se recoge el fichero donde se quiere guardar y se lanza en un nuevo hilo la funcion de exportacion del mallado.
+*/
 void VolumeRenderer::on_writeObjButton_clicked(){
 	std::cout << "writing obj file" << std::endl;
 	
 	
-
-
-
 	QString filters("OBJ files (*.obj);;Text files (*.txt);;All files (*.*)");
 	QString defaultFilter("OBJ files (*.obj)");
 
@@ -1046,16 +962,17 @@ void VolumeRenderer::on_writeObjButton_clicked(){
 
 	ui.progressText->setText("Exporting to OBJ");
 
-	//Exporter* exporter = new Exporter;
+
 	connect(model->mesh, SIGNAL(progressValueChangedSignal(int)), this, SLOT(progressValueChangedSlot(int)));
 	connect(model->mesh, SIGNAL(finishedWritingToFileSignal()), this, SLOT(finishedNormalsSlot()));
-	//exporter->writeToOBJ(filename, model->verts, model->normals, model->pixelData->width, model->pixelData->height, model->pixelData->frames);
-
+	
 	boost::thread workerThread(boost::bind(&Mesh::writeToOBJ, model->mesh, filename));
 
 }
 
 
+/*! \brief Copia el mesh principal en el secundario
+*/
 void VolumeRenderer::on_saveToSecondaryButton_clicked(){
 	std::cout << "Copying from mesh 1 to secondary" << std::endl;
 
@@ -1068,6 +985,8 @@ void VolumeRenderer::on_saveToSecondaryButton_clicked(){
 	}
 }
 
+/*! \brief Borra el mesh secundario
+*/
 void VolumeRenderer::on_clearPinButton_clicked(){
 	std::cout << "Clearing pined mesh" << std::endl;
 	model->mesh2->verts.clear();
@@ -1075,23 +994,26 @@ void VolumeRenderer::on_clearPinButton_clicked(){
 }
 
 
+
+/*! \brief Toggle para el movimiento de la figura. Usado como alternativa a los atajos de Ctrl y Shift
+*/
 void VolumeRenderer::on_moveButton_clicked(){
 	if (ui.moveButton->isChecked()){
 		ui.scaleButton->setChecked(false);
-		ui.glwidget->ctrlPressed = false;
-		ui.glwidget->shiftPressed = true;
+		ui.glwidget->scalingFigure = false;
+		ui.glwidget->movingFigure = true;
 	}
 	else{
-		ui.glwidget->shiftPressed = false;
+		ui.glwidget->movingFigure = false;
 	}
 }
 void VolumeRenderer::on_scaleButton_clicked(){
 	if (ui.scaleButton->isChecked()){
 		ui.moveButton->setChecked(false);
-		ui.glwidget->shiftPressed = false;
-		ui.glwidget->ctrlPressed = true;
+		ui.glwidget->movingFigure = false;
+		ui.glwidget->scalingFigure = true;
 	}
 	else{
-		ui.glwidget->ctrlPressed = false;
+		ui.glwidget->scalingFigure = false;
 	}
 }

@@ -107,15 +107,6 @@
     <ClCompile Include="GeneratedFiles\Release\moc_MarchingCuber.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="Exporter.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_Exporter.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_Exporter.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
     <ClCompile Include="Mesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -149,9 +140,6 @@
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="MarchingCuber.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="Exporter.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="Mesh.h">

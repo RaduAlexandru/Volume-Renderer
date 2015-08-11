@@ -11,7 +11,6 @@
 #include "AdaptiveCuber.h"
 #include "FileReader.h"
 #include "NormalsGenerator.h"
-#include "Exporter.h"
 #include <glm/glm.hpp>
 #include <boost/date_time.hpp>
 

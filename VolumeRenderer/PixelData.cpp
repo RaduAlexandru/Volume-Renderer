@@ -30,6 +30,9 @@ PixelData::~PixelData()
 {
 }
 
+
+/*! \brief Dada la posicion x,y,z devuelve el pixel de esa posicion.
+*/
 int PixelData::getPixelValue(int x, int y, int z){
 
 	if (x<0 || x>width || y<0 || y>height || z < 0 || z >= frames)
@@ -53,26 +56,16 @@ int PixelData::getPixelValue(int x, int y, int z){
 }
 
 
-
+/*! \brief Dada la posicion x,y,z devuelve el pixel de esa posicion pero filtreado con un kernel gausiano
+*
+* Se utiliza como prueba para ver el cambio en los gradientes cuando el volumen de datos está difuminado con un filtro gausiano de 5x5x5. 
+* El tiempo computacion empleado en difuminar tal cantidad de datos no justifica la mejora en las direcciones de los gradientes.
+*/
 int PixelData::getSmoothPixelValue(int x, int y, int z){
 
-	//kernel is this one http://mathforum.org/mathimages/imgUpload/math/8/f/4/8f4eb18c8c35a55c00629e7dde0480f9.png
+	
 
-	/*int value = 0;
-
-
-
-	value = 4 *getPixelValue(x, y, z) + 2 * getPixelValue(x + 1, y, z) + 2 * getPixelValue(x - 1, y, z) +
-		2 * getPixelValue(x, y + 1, z) + 2 * getPixelValue(x, y - 1, z)
-		+ 1 * getPixelValue(x - 1, y + 1, z) + 1 * getPixelValue(x + 1, y + 1, z) + 1 * getPixelValue(x - 1, y - 1, z) + 1 * getPixelValue(x + 1, y - 1, z)
-
-		+ 2 * getPixelValue(x, y, z - 1) + 1 * getPixelValue(x - 1, y, z - 1) + 1 * getPixelValue(x, y + 1, z - 1) + 1 * getPixelValue(x, y - 1, z - 1) + 1 *getPixelValue(x + 1, y, z - 1)
-		+ 2 * getPixelValue(x, y, z + 1) + 1 * getPixelValue(x - 1, y, z + 1) + 1 * getPixelValue(x, y + 1, z + 1) + 1 * getPixelValue(x, y - 1, z + 1) + 1 * getPixelValue(x + 1, y, z + 1);
-
-	value = value / 28;
-	return value;*/
-
-	//////Gausain filtern of 5x5
+	//////Gausain filtern of 5x5x5
 
 
 	int arr[5][5][5] = { {
@@ -134,7 +127,10 @@ int PixelData::getSmoothPixelValue(int x, int y, int z){
 
 
 
-
+/*! \brief Convolucion Sobel en la dirrecion Z
+*
+* Comentado está otro kernel sobel que da resultados parecidos
+*/
 int PixelData::convolveZ(int x, int y, int z){
 
 	int arr[3][3][3] = { {
@@ -190,6 +186,8 @@ int PixelData::convolveZ(int x, int y, int z){
 }
 
 
+/*! \brief Convolucion Sobel en la dirrecion Y
+*/
 int PixelData::convolveY(int x, int y, int z){
 
 	int arr[3][3][3] = { {
@@ -244,7 +242,8 @@ int PixelData::convolveY(int x, int y, int z){
 
 }
 
-
+/*! \brief Convolucion Sobel en la dirrecion X
+*/
 int PixelData::convolveX(int x, int y, int z){
 
 	int arr[3][3][3] = { {

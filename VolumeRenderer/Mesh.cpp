@@ -24,6 +24,9 @@ Mesh::Mesh(QObject *_parent)
 	frames = 0;
 }
 
+
+/*! \brief recibiendo al ruta de un archivo, escribe los datos del mallado en un fichero obj para que sea leido por software de terceros
+*/
 void Mesh::writeToOBJ(QString filename){
 
 	QFile f(filename);

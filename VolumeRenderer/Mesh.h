@@ -15,7 +15,7 @@ public:
 
 	std::vector<glm::vec3> verts;
 	std::vector<glm::vec3> normals;
-	int height;
+	int height;	//!< El height, width y frames representa el tamaño del mallado
 	int width;
 	int frames;
 

@@ -17,12 +17,12 @@ public:
 	void initializeGL();
 	void paintGL();
 	void resizeGL(int w, int h);
-	PixelData* pixelData;
-	int orientation;
+	PixelData* pixelData;	//!< Referencia al volumen de datos de pixeles
+	int orientation;	//!< Orientacion (x, y o z) en la que se va a recorrer ese volumen
 	void displayFrame();
 	void displayBorderLines();
-	std::vector<unsigned int> localFrame; //!< Almacena los pixels data que se van a representar en la vista 2d. Va a cambiar segun la orientacion elegida
-	int frame_to_display;
+	std::vector<unsigned int> localFrame; //!< Almacena los pixels que se van a representar en la vista 2d. Va a cambiar segun la orientacion elegida
+	int frame_to_display;	//!< Número de la capa que se está mostrando
 
 	
 public slots:

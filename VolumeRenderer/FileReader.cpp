@@ -61,22 +61,12 @@ int FileReader::loadDICOMPixelData(QStringList fileNames,PixelData*pixelData){
 
 		emit progressValueChangedSignal(i * 100 / fileNames.size());
 		cout << "reading file" << fileNames[i].toStdString() << endl;
-		//DicomImage *img = new DicomImage(fileNames[i].toStdString().c_str(), 0);
-		/*DcmFileFormat fileformat;
-		OFCondition status = fileformat.loadFile(fileNames[i].toStdString().c_str());
-		DcmDataset *data = fileformat.getDataset();
-		data->chooseRepresentation(EXS_LittleEndianImplicit, NULL);*/ //Not really necesarry because the dicomImage class already does tha
-		//DicomImage* img = new DicomImage(data, data->getOriginalXfer(), CIF_UsePartialAccessToPixelData, i, 1);	//Get the img
-		DicomImage *img = new DicomImage(fileNames[i].toStdString().c_str(), CIF_MayDetachPixelData, 0, 1);	//WatchOut. If you put CIF_UsePartialAccessToPixelData as the flag it seems to work but on the 510th frame it stops reading it. If you leave it at 0 it works correctly but it may not work well for multiframe dicomfiles (like the heart) more teasting needed
-		//img->setMinMaxWindow();
+		DicomImage *img = new DicomImage(fileNames[i].toStdString().c_str(), CIF_MayDetachPixelData, 0, 1);	
 		double center=0.0, width=0.0;
 		img->getWindow(center, width);
 		img->setWindow(400, 2000);
-		//cout << "window is " << center << "  " << width << endl;
-		//cout << "copying pixel data" << endl;
-		//(boost::get<unsigned char**>(model->pixelData))[i] = (unsigned char*)img->getOutputData(bitsAllocated, 0, 0);
-		unsigned char* outputPointer = NULL;
-		//(model->pixelData)[i] = (unsigned char*)img->getOutputData(bitsAllocated, 0, 0);		//WatchOut you are asinging pixel data to the output of that image which is made on the stack. when the function terminates, the data may not exist anymore
+		
+		unsigned char* outputPointer = NULL; //Se obtiene el puntero a la zona de memoria de los pixels y se empieza a copiar desde alli 
 		outputPointer = (unsigned char*)img->getOutputData(bitsAllocated, 0, 0);
 		(pixelData->data)[i] = (unsigned char*)malloc(pixelData->width*pixelData->height*bitsAllocated / 8);
 		for (int j = 0; j < pixelData->width*pixelData->height*bitsAllocated / 8; j++){
@@ -84,9 +74,6 @@ int FileReader::loadDICOMPixelData(QStringList fileNames,PixelData*pixelData){
 		}
 
 		
-
-
-
 		img->deleteOutputData();
 		delete(img);
 		cout << "done" << endl;
@@ -137,7 +124,8 @@ int FileReader::getRepresentation(QString fileName, int& bitsAllocated, int& bit
 	return 0;
 }
 
-
+/*! \brief Carga el valor de los vertice y normales de un fichero OBJ. Tambien es necesario leer la representacion, es decir al alto, ancho y grueso de la figura para representarlo correctamente
+*/
 int FileReader::loadOBJFile(QString fileName, PixelData*pixelData, Mesh* mesh){
 
 
@@ -149,8 +137,6 @@ int FileReader::loadOBJFile(QString fileName, PixelData*pixelData, Mesh* mesh){
 		std::string token;
 		while (iss >> token)
 		{
-			// do something with token
-			//std::cout << "token is" << token << std::endl;
 
 			if (token.compare("v") == 0){
 				//std::cout << "token is vertice"  << std::endl;
@@ -172,8 +158,6 @@ int FileReader::loadOBJFile(QString fileName, PixelData*pixelData, Mesh* mesh){
 
 				mesh->verts.push_back(point);
 
-				//std::cout << "created point with " << point.x << "  " << point.y << "  " << point.z << std::endl;
-
 			}
 			if (token.compare("vn") == 0){
 				//std::cout << "token is normal" << std::endl;
@@ -193,7 +177,6 @@ int FileReader::loadOBJFile(QString fileName, PixelData*pixelData, Mesh* mesh){
 				normal.z = temp;
 
 				mesh->normals.push_back(normal);
-				//std::cout << "created normal with " << normal.x << "  " << normal.y << "  " << normal.z << std::endl;
 
 			}
 
@@ -204,25 +187,17 @@ int FileReader::loadOBJFile(QString fileName, PixelData*pixelData, Mesh* mesh){
 
 				iss >> token;
 				temp = ::atof(token.c_str());
-				//pixelData->width = temp;
 				mesh->width = temp;
 
 				iss >> token;
 				temp = ::atof(token.c_str());
-				//pixelData->height = temp;
 				mesh->height = temp;
 
 				iss >> token;
 				temp = ::atof(token.c_str());
-				//pixelData->frames = temp;
 				mesh->frames = temp;
 
-				//std::cout << "loaded representation" << model->pixelData->width << "  " << model->pixelData->height << "  " << model->pixelData->frames << std::endl;
-
 			}
-
-
-
 
 		}
 	}

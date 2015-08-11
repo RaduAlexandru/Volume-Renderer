@@ -54,9 +54,8 @@ MarchingCuber::MarchingCuber(PixelData* pixelData, Mesh* mesh, int isoLevel, int
 	this->cellSizeX=cellSizeX;
 	this->cellSizeY=cellSizeY;
 	this->cellSizeZ=cellSizeZ;
-	this->pointerOffset = pixelData->numberOfBytes;
 	this->interpolateDepth=interpolateDepth;
-	this->linearInterpolation=linearInterpolation;
+	//this->linearInterpolation=linearInterpolation;
 
 
 }
@@ -66,7 +65,8 @@ MarchingCuber::~MarchingCuber()
 }
 
 
-
+/*! \brief Inicial el algoritmo de Marching Cubes
+*/
 void MarchingCuber::run(){
 	mesh->verts.clear();
 	mesh->normals.clear();
@@ -76,27 +76,14 @@ void MarchingCuber::run(){
 
 	cout << "frame is " << frames << endl;
 
-	//cout << "we march the cubes and write the points in the model" << endl;
+	
 	CELL cell;
-	/*int cellSizeX, cellSizeY, cellSizeZ, frame;
-	cellSizeX = model->cellSizeX;
-	cellSizeY = model->cellSizeY;
-	cellSizeZ = model->cellSizeZ;*/
-	//frame = model->frame_to_display;
 	unsigned char* dataPointer;
 	int value = 0;
-	//int pointerOffset = model->numberOfBytes;
 
-	std::ofstream outputFile;
-	outputFile.open("PixelsValues.txt");
 
 	
-
-	//Now we make a square and march it
-	//i is the y axis and j is the x axis
-	//Since the bitmap is stored in reverse, we shall asign the y position to height-i insted of just i, thus mirroring the position
-	//WE also put - CellsizeY insted of + because we consider the coordinated in the y acis as going from bottom to top insted of top to bottom like usual. Maybe in the dicom files you will change the y position to be only equals to i
-	for (int i = 0 + pixelData->borderYBottom; i < pixelDataHeight - cellSizeY -pixelData->borderYTop; i = i + cellSizeY){	//WE make it to be till height -cellsizez because otherwise the last cube will be out of bound
+	for (int i = 0 + pixelData->borderYBottom; i < pixelDataHeight - cellSizeY -pixelData->borderYTop; i = i + cellSizeY){	
 
 		
 		if (i % (pixelDataHeight/10) == 0)
@@ -104,12 +91,7 @@ void MarchingCuber::run(){
 		for (int j = 0 + pixelData->borderXLeft; j < pixelDataWidth - cellSizeX - pixelData->borderXRight; j = j + cellSizeX){
 			for (int k = 0 + pixelData->borderZCloser; k < frames - cellSizeZ - pixelData->borderZFurther; k = k + cellSizeZ){
 
-				//cout << "k is" << k << endl;
-				//if (model->getPixelValue(j, i, k)!=0)
-				//cout << model->getPixelValue(j, i, k) << endl;
-
-		
-
+				
 				/*
 				7---------6
 				/			 !
@@ -163,55 +145,32 @@ void MarchingCuber::run(){
 
 
 				//now we have that cell and we have to polygonise it
-				//polygonise(cell, model->isoLevel, model->totalPoints);
 				polygonise(cell);
 
 			}
 		}
 	}
 
-	//boost::thread workerThread(boost::bind(&VolumeRenderer::generateNormals, this));
-	//model->generatingMesh = false;
-	outputFile.close();
-
-	//ui.glwidget->setFrame(5);
-	//ui.glwidget->setDataToDisplay(output_pixels, model->totalPoints, width_image, height_image);
-
-	//showPixels(output_pixels,totalPoints);
+	
+	
 	std::cout << "Elapsed Time: " << float(clock() - begin_time) / CLOCKS_PER_SEC << endl;
 
 	emit finishedMeshSignal();
-	//Now we write to obj file
-	/*long numberOfVertsWritten = 0;
-	ofstream myfile;
-	myfile.open("feetWithSkin.obj");
-	myfile << "Writing this to a file.\n";
-	for (int i = 0; i < model->verts.size()-3; i=i+3){
-	myfile << "v " << model->verts[i] << " " << model->verts[i + 1] << " " << model->verts[i + 2] << "\n";
-	numberOfVertsWritten++;
-	if (numberOfVertsWritten == 3){
-	myfile << "f " << -3 << " " << -2 << " " << -1 << "\n\n";
-	numberOfVertsWritten = 0;
-	}
-	}
-	//for (int i = 0; i < model->verts.size() - 3; i = i + 3){
-	//	myfile << "f " << i+1 << " " << i+2 << " " << i+3 << "\n";
-	//}
-	myfile.close(); */
+	
 }
 
 
 
 
 
-
+/*! \brief Dado un cubo, te crea triangulos dentro de él para aproximar la superficie
+*/
 int MarchingCuber::polygonise(CELL & cell){
 
-	//std::cout << "we are poligonizisng" << std::endl;
-	//vector<Model::POINTF> points;
+	
 	glm::vec3 vertlist[12];
 
-	//int isoLevel = model->isoLevel;
+	
 
 	int cubeIndex = 0;
 
@@ -282,12 +241,6 @@ int MarchingCuber::polygonise(CELL & cell){
 		vertlist[11] = point;
 	}
 
-
-	glm::vec3 normal;
-	unsigned char* dataPointer;
-	//int pointerOffset = model->numberOfBytes;
-	int value1 = 0, value2 = 0;
-
 	/* Create the triangles */
 
 	glm::vec3 point1, point2, point3;
@@ -312,10 +265,11 @@ int MarchingCuber::polygonise(CELL & cell){
 
 
 
-/*! \brief Brief description.
-Interpolate es un algoritmo recursivo que recibe como parametro la posicion de los dos puntos que definen una arista 
-y sus respectivos valores y devuelve la posicion del punto que mas se aproxima a la superficie. Si el valor de la interpolacion esta puesto a 0,
-no se realzia ningun calculo y se devuelve el punto que esta en medio de la arista. De esta manera produce resultados rapidos pero no supone una buena aproximacion de la superficie del volumen
+/*! \brief Interpolacion lineal entre los vertices de una artista y el valor umbral para detectar el punto de interseccion
+*
+* Interpolate es un algoritmo recursivo que recibe como parametro la posicion de los dos puntos que definen una arista 
+* y sus respectivos valores y devuelve la posicion del punto que mas se aproxima a la superficie. Si el valor de la interpolacion esta puesto a 0,
+* no se realzia ningun calculo y se devuelve el punto que esta en medio de la arista. De esta manera produce resultados rapidos pero no supone una buena aproximacion de la superficie del volumen
 */
 inline void MarchingCuber::interpolate(int isoLevel, glm::vec3 point1, glm::vec3 point2, float val1, float val2, glm::vec3& resultPoint, int depth){
 

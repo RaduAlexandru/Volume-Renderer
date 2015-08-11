@@ -35,13 +35,12 @@ MarchingCuber(pixelData,  mesh,  isoLevel,  cellSizeX,  cellSizeY,  cellSizeZ,  
 
 }
 
-
+/*! \brief Ejecuta el agoritmo de AMC
+*/
 int AdaptiveCuber::run(){
 	mesh->verts.clear();
 	mesh->normals.clear();
 	octreeVector.clear();
-	octreeLevels.clear();
-	octreeLevels.resize(octreeMaxDepth +  1);
 	std::cout << "Starting adaptive marching cubes 3" << std::endl;
 	//Calculate the gradients
 	//Create the original cube
@@ -75,18 +74,15 @@ int AdaptiveCuber::run(){
 	generateOctree_tree_version(*initial);
 	std::cout << "finished generateing octree" << std::endl;
 
-	//correctlyAssignLeafs(initial);
 
 	//Grab each octreebube in our octree and polygonise it
-	//polygoniseOctree(initial);
+
 	emit progressTextSignal("Polygonise Octree");
-	polygoniseOctree2(initial);	//Polygonise octree will polygonise each octree but assign the points to the cube itself an not to the model->verts
+	polygoniseOctree2(initial);	//Polygonise octree will polygonise each octree but assign the points to the cube itself an not to the verts in the mesh
 
 	emit progressTextSignal("Patch Cracks");
 	std::cout << "starting patch cracks" << std::endl;
 	crackPatch(initial);
-	//crackPatch(initial);
-	//crackPatch(initial);
 	std::cout << "finished patching cracks" << std::endl;
 
 	emit progressTextSignal("Reading Points");
@@ -95,11 +91,7 @@ int AdaptiveCuber::run(){
 
 
 
-
-	//boost::thread workerThread(boost::bind(&VolumeRenderer::generateNormals, this));
-	//model->generatingMesh = false;
-
-	//Need to delete the cube or oterwise we will leek memory
+	//Need to delete the cube or otherwise we will leek memory
 	for (int i = 1; i < octreeVector.size(); i++){
 		delete octreeVector[i];
 	}
@@ -112,14 +104,13 @@ int AdaptiveCuber::run(){
 }
 
 
-
+/*! \brief Ejecuta el algoritmo de AMC pero dejando que se formen agujeros ya que no usa la funcion de crackPatch. Solo se usa para demonstraciones
+*/
 int AdaptiveCuber::runWithCracks(){
 	std::cout << "Starting adaptive marching cubes 3 with cracks" << std::endl;
 	mesh->verts.clear();
 	mesh->normals.clear();
 	octreeVector.clear();
-	octreeLevels.clear();
-	octreeLevels.resize(octreeMaxDepth + 1);
 	//Calculate the gradients
 	//Create the original cube
 	/*
@@ -153,28 +144,17 @@ int AdaptiveCuber::runWithCracks(){
 	generateOctree_tree_version(*initial);
 	std::cout << "finished generateing octree" << std::endl;
 
-	//correctlyAssignLeafs(initial);
 
-	//Grab each octreebube in our octree and polygonise it
-	//polygoniseOctree(initial);
 	emit progressTextSignal("Polygonise Octree");
 	polygoniseOctree2(initial);	//Polygonise octree will polygonise each octree but assign the points to the cube itself an not to the model->verts
 
 
 	std::cout << "starting patch cracks" << std::endl;
 	//crackPatch(initial);
-	//crackPatch(initial);
-	//crackPatch(initial);
 	std::cout << "finished patching cracks" << std::endl;
 
 	readPointsFromOctree(initial);
 
-
-
-
-
-	//boost::thread workerThread(boost::bind(&VolumeRenderer::generateNormals, this));
-	//model->generatingMesh = false;
 
 	//Need to delete the cube or oterwise we will leek memory
 	for (int i = 1; i < octreeVector.size(); i++){
@@ -190,26 +170,15 @@ int AdaptiveCuber::runWithCracks(){
 
 /*! \brief Calcula los gradientes del volumen usando un operador Sobel
 *
-* Calcula los gradientes del volumen usando un kernel Sobel 3x3x3. 
-* A partir de las 3 derivadas halladas se calculan las 3 orientaciones del vector que luego se normaliza y se guarda en un mapa cuya clave es la posicion del punto y el valor el vector gradiente.
+*  Halla los puntos de la superficie del volumen (superficie definida por el valor isoLevel). 
+*  Despues para cada uno de estos puntos situados en la frontera o la superficie, se convoluciona un filtro Sobel para hallar el gradiente.
 */
 void AdaptiveCuber::calculateGradient(){
 
 
-	//Sobel kernel on page 15 of http://www.diva-portal.se/smash/get/diva2:515510/FULLTEXT01.pdf
-
-	unsigned char* dataPointer;
-	int value = 0;
-	int dx = 0, dy = 0, dz = 0, magnitude = 0, left = 0, right = 0, top = 0, bottom = 0, closev = 0, farv = 0, center = 0;
+	int dx = 0, dy = 0, dz = 0, magnitude = 0;
 	float angle = -1;
 	glm::vec3  gradientAtPoint;
-
-
-	//std::ofstream outputFile;
-	//outputFile.open("GradientAtFrame100.txt");
-
-	/*if (!model->gradient.empty())
-	return;*/
 
 
 	//Create as many gradients frames as the number of frames in the dicom file
@@ -218,9 +187,7 @@ void AdaptiveCuber::calculateGradient(){
 		return;
 
 
-
-	//now we make it with a new method
-	std::vector<glm::vec3> border;
+	std::vector<glm::vec3> border; //Puntos de la frontera 
 
 	for (int i = 0; i < pixelDataHeight-1; i = i + 1){
 		for (int j = 0; j < pixelDataWidth-1; j = j + 1){
@@ -231,7 +198,7 @@ void AdaptiveCuber::calculateGradient(){
 					//si todos sus vecinos en las 6 dirreciones, tambien estan dentro del isolevel, es que es un punto interior
 					//Si no es el caso, significa que un vecino esta fuera por lo tanto este punto tiene una ventana fuera de la superficie y se consiera como un contorno
 
-					//Nose si considerar 6 vecinos o tambien los vecinos en diagonal, es decir las dirreciones j+1,i+1,k+1, etc
+					//No se si considerar 6 vecinos o tambien los vecinos en diagonal, es decir las dirreciones j+1,i+1,k+1, etc
 
 					if (pixelData->getPixelValue(j + 1, i, k) > isoLevel &&
 						pixelData->getPixelValue(j, i + 1, k) > isoLevel &&
@@ -258,16 +225,7 @@ void AdaptiveCuber::calculateGradient(){
 
 
 	//Go through all the points in border al convolver them
-
 	for (int i = 0; i < border.size(); i++){
-
-		//The one that woked correctly is y,z,x
-		//when using smooth pixel in all GEt pixels, the probelms diminishes a little
-
-	
-
-
-
 
 		dx = pixelData->convolveX(border[i].x, border[i].y, border[i].z);
 		dy = pixelData->convolveY(border[i].x, border[i].y, border[i].z);
@@ -285,201 +243,12 @@ void AdaptiveCuber::calculateGradient(){
 		gradientAtPoint.z = atan2(dz, dy) * 180 / PI + 180;
 
 
-		gradient->at(border[i].z)[std::make_pair(border[i].x, border[i].y)] = gradientAtPoint;
+		gradient->at(border[i].z)[std::make_pair(round(border[i].x), round(border[i].y))] = gradientAtPoint;
 	}
 
 
 	return;
 
-	//Here i is y axis and j is the x axis
-	for (int i = 0; i < pixelDataHeight; i = i + 1){
-		if (i % 10 == 0)
-			emit progressValueChangedSignal(i * 100 / pixelDataHeight);
-		for (int j = 0; j < pixelDataWidth; j = j + 1){
-			for (int k = 0; k < frames; k = k + 1){			//You need to check why it doesnt work without the -1 in the frames
-
-				if (i == 0 || i == pixelDataHeight - 1 || j == 0 || j == pixelDataWidth - 1 || k == 0 || k == frames - 1){		//If we are in a border we just put it at 0
-					//model->gradient[k].push_back(glm::vec3(-1,-1,-1));
-					//model->gradient[k].insert((j,i), (-1, -1, -1));
-					continue;
-				}
-
-				//std::cout << "values are" << i  << "  "<< j << "  " << k  << std::endl;
-
-
-
-
-				//Now we take the values
-				dataPointer = &((pixelData->data)[k][0]);
-				dataPointer = dataPointer + (j + i*pixelDataWidth)*pointerOffset;
-				memcpy(&center, dataPointer, pointerOffset);
-
-				/*if (abs(center - model->isoLevel)>500)
-				continue;*/
-
-
-				dataPointer = &((pixelData->data)[k][0]);
-				dataPointer = dataPointer + (j - 1 + i*pixelDataWidth)*pointerOffset;
-				memcpy(&left, dataPointer, pointerOffset);
-
-				dataPointer = &((pixelData->data)[k][0]);
-				dataPointer = dataPointer + (j + 1 + i*pixelDataWidth)*pointerOffset;
-				memcpy(&right, dataPointer, pointerOffset);
-
-				dataPointer = &((pixelData->data)[k][0]);
-				dataPointer = dataPointer + (j + (i - 1)*pixelDataWidth)*pointerOffset;
-				memcpy(&top, dataPointer, pointerOffset);
-
-				dataPointer = &((pixelData->data)[k][0]);
-				dataPointer = dataPointer + (j + (i + 1)*pixelDataWidth)*pointerOffset;
-				memcpy(&bottom, dataPointer, pointerOffset);
-
-				dataPointer = &((pixelData->data)[k - 1][0]);
-				dataPointer = dataPointer + (j + i*pixelDataWidth)*pointerOffset;
-				memcpy(&closev, dataPointer, pointerOffset);
-
-				dataPointer = &((pixelData->data)[k + 1][0]);
-				dataPointer = dataPointer + (j + i*pixelDataWidth)*pointerOffset;
-				memcpy(&farv, dataPointer, pointerOffset);
-
-
-				if (center < isoLevel && left < isoLevel && right < isoLevel &&top <isoLevel && bottom < isoLevel&& farv < isoLevel&&closev < isoLevel)
-					continue;
-				if (center > isoLevel && left > isoLevel && right > isoLevel &&top > isoLevel && bottom > isoLevel&& farv >isoLevel&&closev > isoLevel)
-					continue;
-				/*dy = left - right;
-				dx = top - bottom;
-				dz = closev - farv;*/
-
-
-				
-
-				/*dx = -1 * (pixelData->getPixelValue(j - 1, i + 1, k - 1)) + 1 * (pixelData->getPixelValue(j + 1, i + 1, k - 1)) -
-					2 * (pixelData->getPixelValue(j - 1, i, k - 1)) + 2 * (pixelData->getPixelValue(j + 1, i, k - 1)) -
-					1 * (pixelData->getPixelValue(j - 1, i - 1, k - 1)) + 1 * (pixelData->getPixelValue(j + 1, i - 1, k - 1)) -
-
-					2 * (pixelData->getPixelValue(j - 1, i + 1, k)) + 2 * (pixelData->getPixelValue(j + 1, i + 1, k)) -
-					4 * (pixelData->getPixelValue(j - 1, i, k)) + 2 * (pixelData->getPixelValue(j + 1, i, k)) -
-					2 * (pixelData->getPixelValue(j - 1, i - 1, k)) + 2 * (pixelData->getPixelValue(j + 1, i - 1, k)) -
-
-					1 * (pixelData->getPixelValue(j - 1, i + 1, k + 1)) + 1 * (pixelData->getPixelValue(j + 1, i + 1, k + 1)) -
-					2 * (pixelData->getPixelValue(j - 1, i, k + 1)) + 2 * (pixelData->getPixelValue(j + 1, i, k + 1)) -
-					1 * (pixelData->getPixelValue(j - 1, i - 1, k + 1)) + 1 * (pixelData->getPixelValue(j + 1, i - 1, k + 1));
-
-				dy = 1 * (pixelData->getPixelValue(j - 1, i + 1, k - 1)) + 2 * (pixelData->getPixelValue(j, i + 1, k - 1)) + 1 * (pixelData->getPixelValue(j + 1, i + 1, k - 1)) -
-					1 * (pixelData->getPixelValue(j - 1, i - 1, k - 1)) - 2 * (pixelData->getPixelValue(j, i - 1, k - 1)) - 1 * (pixelData->getPixelValue(j + 1, i - 1, k - 1)) +
-
-					2 * (pixelData->getPixelValue(j - 1, i + 1, k)) + 4 * (pixelData->getPixelValue(j, i + 1, k)) + 2 * (pixelData->getPixelValue(j + 1, i + 1, k)) -
-					2 * (pixelData->getPixelValue(j - 1, i - 1, k)) - 4 * (pixelData->getPixelValue(j, i - 1, k)) - 2 * (pixelData->getPixelValue(j + 1, i - 1, k)) +
-
-					1 * (pixelData->getPixelValue(j - 1, i + 1, k + 1)) + 2 * (pixelData->getPixelValue(j, i + 1, k + 1)) + 1 * (pixelData->getPixelValue(j + 1, i + 1, k + 1)) -
-					1 * (pixelData->getPixelValue(j - 1, i - 1, k + 1)) - 2 * (pixelData->getPixelValue(j, i - 1, k + 1)) - 1 * (pixelData->getPixelValue(j + 1, i - 1, k + 1));
-
-				dz = -1 * (pixelData->getPixelValue(j - 1, i + 1, k - 1)) - 2 * (pixelData->getPixelValue(j, i + 1, k - 1)) - 1 * (pixelData->getPixelValue(j + 1, i + 1, k - 1)) -
-					2 * (pixelData->getPixelValue(j - 1, i, k - 1)) - 4 * (pixelData->getPixelValue(j, i, k - 1)) - 2 * (pixelData->getPixelValue(j + 1, i, k - 1)) -
-					1 * (pixelData->getPixelValue(j - 1, i - 1, k - 1)) - 2 * (pixelData->getPixelValue(j, i - 1, k - 1)) - 1 * (pixelData->getPixelValue(j + 1, i - 1, k - 1)) +
-
-					1 * (pixelData->getPixelValue(j - 1, i + 1, k + 1)) + 2 * (pixelData->getPixelValue(j, i + 1, k + 1)) + 1 * (pixelData->getPixelValue(j + 1, i + 1, k + 1)) -
-					2 * (pixelData->getPixelValue(j - 1, i, k + 1)) + 4 * (pixelData->getPixelValue(j, i, k + 1)) + 2 * (pixelData->getPixelValue(j + 1, i, k + 1)) -
-					1 * (pixelData->getPixelValue(j - 1, i - 1, k + 1)) + 2 * (pixelData->getPixelValue(j, i - 1, k + 1)) + 1 * (pixelData->getPixelValue(j + 1, i - 1, k + 1));
-					
-				*/
-
-
-				/*dx = -1 * (pixelData->getSmoothPixelValue(j - 1, i + 1, k - 1)) + 1 * (pixelData->getSmoothPixelValue(j + 1, i + 1, k - 1)) -
-					2 * (pixelData->getSmoothPixelValue(j - 1, i, k - 1)) + 2 * (pixelData->getSmoothPixelValue(j + 1, i, k - 1)) -
-					1 * (pixelData->getSmoothPixelValue(j - 1, i - 1, k - 1)) + 1 * (pixelData->getSmoothPixelValue(j + 1, i - 1, k - 1)) -
-
-					2 * (pixelData->getSmoothPixelValue(j - 1, i + 1, k)) + 2 * (pixelData->getSmoothPixelValue(j + 1, i + 1, k)) -
-					4 * (pixelData->getSmoothPixelValue(j - 1, i, k)) + 2 * (pixelData->getSmoothPixelValue(j + 1, i, k)) -
-					2 * (pixelData->getSmoothPixelValue(j - 1, i - 1, k)) + 2 * (pixelData->getSmoothPixelValue(j + 1, i - 1, k)) -
-
-					1 * (pixelData->getSmoothPixelValue(j - 1, i + 1, k + 1)) + 1 * (pixelData->getSmoothPixelValue(j + 1, i + 1, k + 1)) -
-					2 * (pixelData->getSmoothPixelValue(j - 1, i, k + 1)) + 2 * (pixelData->getSmoothPixelValue(j + 1, i, k + 1)) -
-					1 * (pixelData->getSmoothPixelValue(j - 1, i - 1, k + 1)) + 1 * (pixelData->getSmoothPixelValue(j + 1, i - 1, k + 1));
-
-				dy = 1 * (pixelData->getSmoothPixelValue(j - 1, i + 1, k - 1)) + 2 * (pixelData->getSmoothPixelValue(j, i + 1, k - 1)) + 1 * (pixelData->getSmoothPixelValue(j + 1, i + 1, k - 1)) -
-					1 * (pixelData->getSmoothPixelValue(j - 1, i - 1, k - 1)) - 2 * (pixelData->getSmoothPixelValue(j, i - 1, k - 1)) - 1 * (pixelData->getSmoothPixelValue(j + 1, i - 1, k - 1)) +
-
-					2 * (pixelData->getSmoothPixelValue(j - 1, i + 1, k)) + 4 * (pixelData->getSmoothPixelValue(j, i + 1, k)) + 2 * (pixelData->getSmoothPixelValue(j + 1, i + 1, k)) -
-					2 * (pixelData->getSmoothPixelValue(j - 1, i - 1, k)) - 4 * (pixelData->getSmoothPixelValue(j, i - 1, k)) - 2 * (pixelData->getSmoothPixelValue(j + 1, i - 1, k)) +
-
-					1 * (pixelData->getSmoothPixelValue(j - 1, i + 1, k + 1)) + 2 * (pixelData->getSmoothPixelValue(j, i + 1, k + 1)) + 1 * (pixelData->getSmoothPixelValue(j + 1, i + 1, k + 1)) -
-					1 * (pixelData->getSmoothPixelValue(j - 1, i - 1, k + 1)) - 2 * (pixelData->getSmoothPixelValue(j, i - 1, k + 1)) - 1 * (pixelData->getSmoothPixelValue(j + 1, i - 1, k + 1));
-
-				dz = -1 * (pixelData->getSmoothPixelValue(j - 1, i + 1, k - 1)) - 2 * (pixelData->getSmoothPixelValue(j, i + 1, k - 1)) - 1 * (pixelData->getSmoothPixelValue(j + 1, i + 1, k - 1)) -
-					2 * (pixelData->getSmoothPixelValue(j - 1, i, k - 1)) - 4 * (pixelData->getSmoothPixelValue(j, i, k - 1)) - 2 * (pixelData->getSmoothPixelValue(j + 1, i, k - 1)) -
-					1 * (pixelData->getSmoothPixelValue(j - 1, i - 1, k - 1)) - 2 * (pixelData->getSmoothPixelValue(j, i - 1, k - 1)) - 1 * (pixelData->getSmoothPixelValue(j + 1, i - 1, k - 1)) +
-
-					1 * (pixelData->getSmoothPixelValue(j - 1, i + 1, k + 1)) + 2 * (pixelData->getSmoothPixelValue(j, i + 1, k + 1)) + 1 * (pixelData->getSmoothPixelValue(j + 1, i + 1, k + 1)) -
-					2 * (pixelData->getSmoothPixelValue(j - 1, i, k + 1)) + 4 * (pixelData->getSmoothPixelValue(j, i, k + 1)) + 2 * (pixelData->getSmoothPixelValue(j + 1, i, k + 1)) -
-					1 * (pixelData->getSmoothPixelValue(j - 1, i - 1, k + 1)) + 2 * (pixelData->getSmoothPixelValue(j, i - 1, k + 1)) + 1 * (pixelData->getSmoothPixelValue(j + 1, i - 1, k + 1));
-				*/
-				dx = pixelData->convolveX(j, i, k);
-				dy = pixelData->convolveY(j, i, k);
-				dz = pixelData->convolveZ(j, i, k);
-
-				/*
-				xyz
-
-				xzy
-				zyx
-				yxz---made thill here
-
-
-				yzx--Make is almost good but has a hole
-				zxy--also hole
-
-
-				
-				*/
-
-				if (dx == 0)
-					dx = 1;
-				if (dy == 0)
-					dy = 1;
-				if (dz == 0)
-					dz = 1;
-
-				/*THe 3 possible axis
-				dx-dy
-				dx-dz
-				dy-dz
-				*/
-
-
-				magnitude = sqrt(pow(dx, 2) + pow(dy, 2) + pow(dz, 2));
-				if (magnitude < 2500)
-					continue;
-				gradientAtPoint.x = atan2(dy, dx) * 180 / PI + 180;
-				gradientAtPoint.y = atan2(dx, dz) * 180 / PI + 180;
-				gradientAtPoint.z = atan2(dz, dy) * 180 / PI + 180;
-
-				if (gradientAtPoint.x < 0 || gradientAtPoint.y < 0 || gradientAtPoint.z < 0)
-					std::cout << "gradient is lower than 0" << std::endl;
-
-				/*gradientAtPoint.x = (gradientAtPoint.x > 0.0 ? gradientAtPoint.x : (360.0 + gradientAtPoint.x));
-				gradientAtPoint.y = (gradientAtPoint.y > 0.0 ? gradientAtPoint.y : (360.0 + gradientAtPoint.y));
-				gradientAtPoint.z = (gradientAtPoint.z > 0.0 ? gradientAtPoint.z : (360.0 + gradientAtPoint.z));*/
-
-				gradient->at(k)[std::make_pair(j, i)] = gradientAtPoint;
-				/*model->gradientPoints.push_back(j);
-				model->gradientPoints.push_back(i);
-				model->gradientPoints.push_back(k);*/
-				//model->m[k].push_back(j,i,gradientAtPoint) ;
-
-
-
-				/*if (k == 100){
-				outputFile << " Values are "  << "Magnitude "  << magnitude << "Angles " << gradientAtPoint.x << " " << gradientAtPoint.y << " " << gradientAtPoint.z << endl;
-				}*/
-
-
-
-			}
-
-		}
-	}
 }
 
 
@@ -498,7 +267,7 @@ OctreeCube* AdaptiveCuber::createInitialCube(){
 	cube->origin.z = 0 ;
 
 
-	int cubeSize = (std::max)((std::max)(pixelDataWidth , pixelDataHeight ), frames - 1 );	//WE get the maximum value
+	int cubeSize = (std::max)((std::max)(pixelDataWidth , pixelDataHeight ), frames - 1 );	//We get the maximum value
 	cubeSize = pow(2, ceil(log(cubeSize) / log(2)));	// we round it up to the neerest power of 2
 
 	cube->sizeX = cubeSize;
@@ -517,17 +286,19 @@ OctreeCube* AdaptiveCuber::createInitialCube(){
 }
 
 /*! \brief Genera el arbol octree mediante un algoritmo recursivo, recibiendo como parametro el cubo raiz y la profundidad actual.
+*
+*	Crea el octree que particiona el volumen de datos en zonas dependiendo de la complejidad de la region. Es el corazon del algoritmo AMC
 */
 int AdaptiveCuber::generateOctree_tree_version(OctreeCube& currentCube, int currentDepth){
 
 
 	octreeVector.push_back(&currentCube);
-	octreeLevels[currentCube.depth].push_back(&currentCube);
+
 
 	//Grab the initial one and see if it needs subdivision and if we are also below the maximum octree depth, if it needs subdiviosn, sundivid it, and also recursivelly call the same function for the children
 
 	if (currentDepth < octreeMaxDepth && cubeNeedsSubdivision(currentCube) && currentCube.needsChecking){
-		currentCube.subdivide_tree_version();
+		currentCube.subdivide();
 		currentCube.isLeaf = false;
 		
 		generateOctree_tree_version(*(currentCube.children[0]), currentDepth + 1);
@@ -540,7 +311,7 @@ int AdaptiveCuber::generateOctree_tree_version(OctreeCube& currentCube, int curr
 		generateOctree_tree_version(*(currentCube.children[7]), currentDepth + 1);
 	}
 	else{
-		currentCube.isLeaf = true;	// we need to check if this value is set correctly
+		currentCube.isLeaf = true;	
 		currentCube.needsChecking = false;
 		return 0;
 	}
@@ -556,11 +327,6 @@ int AdaptiveCuber::generateOctree_tree_version(OctreeCube& currentCube, int curr
 */
 inline bool AdaptiveCuber::cubeNeedsSubdivision(OctreeCube &cube){
 
-
-	//return (int)rand % 2;
-
-	//std::ofstream outputFile;
-	//outputFile.open("GradientsFromSubdivision1.txt");
 
 
 	glm::vec3 firstAngle(-1, -1, -1);
@@ -584,9 +350,6 @@ inline bool AdaptiveCuber::cubeNeedsSubdivision(OctreeCube &cube){
 	//From now on all the cubes will be totally within the volume
 	
 
-	if (cube.origin.x == 256 && cube.origin.y == 168 && cube.origin.z == 56 && cube.sizeX==8){
-		std::cout << "found the cube" << std::endl;
-	}
 	float angleDifX = 0.0;
 	float angleDifY = 0.0;
 	float angleDifZ = 0.0;
@@ -597,10 +360,6 @@ inline bool AdaptiveCuber::cubeNeedsSubdivision(OctreeCube &cube){
 			for (int j = cube.origin.x; j < cube.sizeX + cube.origin.x; j = j + 1){
 
 
-
-
-
-
 				glm::vec3 actualValue(-1, -1, -1);
 				it = gradient->at(k).find(std::make_pair(j, i));
 				if (it != gradient->at(k).end())
@@ -608,11 +367,7 @@ inline bool AdaptiveCuber::cubeNeedsSubdivision(OctreeCube &cube){
 					//gradient found;
 					actualValue = it->second;
 					if (!gotReference){
-						firstAngle = actualValue;
-						//Map the first angle to rgb 255
-						//int r = 0 + (255 - 0)* (((sin(firstAngle.x  *PI / 180) + 1) / 2) / (1- 0));
-						//int g = 0 + (255 - 0)* (((sin(firstAngle.y  *PI / 180) + 1) / 2) / (1 - 0));
-						//int b = 0 + (255 - 0)* (((sin(firstAngle.z  *PI / 180) + 1) / 2) / (1 - 0));
+						firstAngle = actualValue; //Valor de referencia
 						gotReference = true;
 					}
 				}
@@ -620,182 +375,39 @@ inline bool AdaptiveCuber::cubeNeedsSubdivision(OctreeCube &cube){
 					//We didn´t find a gradient at this position
 					continue;
 				}
-				//actualValue = model->gradient[k].find(std::make_pair(j,i));
-
-
-				
-
-				/*if (firstAngle.x == -1 && firstAngle.y == -1 && firstAngle.z == -1 && actualValue.x != -1 && actualValue.y != -1 && actualValue.z != -1){
-				firstAngle.x = actualValue.x;
-				firstAngle.y = actualValue.y;
-				firstAngle.z = actualValue.z;
-				}*/
-
-				//std::cout << "i= " << i << " j= " << j << " k= " << k << std::endl;
-				//if (cubesSubdivided < 2 && firstAngleGiven==1)
-				//outputFile << " " << firstAngle.x << " " << firstAngle.y << " " << firstAngle.z << " -- " << actualValue.x << " " << actualValue.y << " " << actualValue.z << std::endl;
+			
 
 
 
-				//Now I will try to make a different way of seeing diference between angles. This time by looking at all the angles at the same time, and seeing the total magnitude of change in angles
+				//Calculate differencia between the firstAngle that we encountered and the one that we found now
 				angleDifX = 180 - abs(abs(firstAngle.x - actualValue.x) - 180);
 				angleDifY = 180 - abs(abs(firstAngle.y - actualValue.y) - 180);
 				angleDifZ = 180 - abs(abs(firstAngle.z - actualValue.z) - 180);
 
 				angleMagnitude = sqrt(angleDifX*angleDifX + angleDifY*angleDifY + angleDifZ*angleDifZ);
-				/*if (angleMagnitude > 180 && firstAngle != glm::vec3(-1, -1, -1) && actualValue != glm::vec3(-1, -1, -1) && gotReference)
-					return false;*/
 
+				//If the angle changes more than the tolerance and we actually have a reference value and an actual value to compare, return true
 				if (angleMagnitude > tolerance && firstAngle != glm::vec3(-1, -1, -1) && actualValue != glm::vec3(-1, -1, -1) && gotReference){
-					//int r = 0 + (255 - 0)* (((sin(actualValue.x  *PI / 180) + 1) / 2) / (1 - 0));
-					//int g = 0 + (255 - 0)* (((sin(actualValue.y  *PI / 180) + 1) / 2) / (1 - 0));
-					//int b = 0 + (255 - 0)* (((sin(actualValue.z  *PI / 180) + 1) / 2) / (1 - 0));
 					return true;
 				}
 
 				
 				
-				/*if (actualValue == glm::vec3(-1, -1, -1))
-					continue;
-
-				float dif = ((sin(firstAngle.x  *PI / 180) + 1) / 2) - ((sin(actualValue.x  *PI / 180) + 1) / 2);
-				dif = dif * 100;
-				if (dif > tolerance && firstAngle != glm::vec3(-1, -1, -1) && actualValue != glm::vec3(-1, -1, -1)){
-					return true;
-				}
-
-				dif = ((sin(firstAngle.y  *PI / 180) + 1) / 2) - ((sin(actualValue.y  *PI / 180) + 1) / 2);
-				dif = dif * 100;
-				if (dif > tolerance && firstAngle != glm::vec3(-1, -1, -1) && actualValue != glm::vec3(-1, -1, -1)){
-					return true;
-				}
-
-				dif = ((sin(firstAngle.z  *PI / 180) + 1) / 2) - ((sin(actualValue.z  *PI / 180) + 1) / 2);
-				dif = dif * 100;
-				if (dif > tolerance && firstAngle != glm::vec3(-1, -1, -1) && actualValue != glm::vec3(-1, -1, -1)){
-					return true;
-				}*/
-
-				/*int angleDif;
-				angleDif = 180 - abs(abs(firstAngle.x - actualValue.x) - 180);
-
-
-				if (angleDif > tolerance && firstAngle != glm::vec3(-1, -1, -1) && actualValue != glm::vec3(-1, -1, -1)){
-				return true;
-				}
-				angleDif = 180 - abs(abs(firstAngle.y - actualValue.y) - 180);
-				if (angleDif > tolerance && firstAngle != glm::vec3(-1, -1, -1) && actualValue != glm::vec3(-1, -1, -1)){
-				//cout << "Subdivide because Y" << endl;
-				return true;
-				}
-				angleDif = 180 - abs(abs(firstAngle.z - actualValue.z) - 180);
-				if (angleDif > tolerance && firstAngle != glm::vec3(-1, -1, -1) && actualValue != glm::vec3(-1, -1, -1)){
-				//cout << "Subdivide because Z" << endl;
-				return true;
-				}*/
-
-
-				/*if (abs(firstAngle.x - actualValue.x) > tolerance && firstAngle.x != -1 && firstAngle.y != -1 && firstAngle.z != -1){
-				return true;
-				}
-				if (abs(firstAngle.y - actualValue.y) > tolerance && firstAngle.x != -1 && firstAngle.y != -1 && firstAngle.z != -1){
-				return true;
-				}
-				if (abs(firstAngle.y - actualValue.y) > tolerance && firstAngle.x != -1 && firstAngle.y != -1 && firstAngle.z != -1){
-				return true;
-				}*/
 
 			}
 		}
 	}
-	//outputFile << "cube finished with NO subdivision" << endl;
-	//cube.isLeaf=false;	//If it doesnt need subdivision we just mark it as a non-leaf (as a father of no cubes) just so we don't recheck it later 
 	cube.needsChecking = false;
 	return false;
 }
 
 
-/*void AdaptiveCuber::correctlyAssignLeafs(OctreeCube* root){
-	OctreeCube* currentCube;
-	std::queue<OctreeCube*> queue;
-	queue.push(root);
-	while (!queue.empty()){
-		currentCube = queue.front();
-		queue.pop();
-		if (currentCube->children[0] != NULL){
-			queue.push(currentCube->children[0]);
-			queue.push(currentCube->children[1]);
-			queue.push(currentCube->children[2]);
-			queue.push(currentCube->children[3]);
-			queue.push(currentCube->children[4]);
-			queue.push(currentCube->children[5]);
-			queue.push(currentCube->children[6]);
-			queue.push(currentCube->children[7]);
-		}
 
-
-		if (currentCube->children[0] == NULL){
-			currentCube->isLeaf = true;
-		}
-		else{
-			currentCube->isLeaf = false;
-		}
-	}
-
-}*/
-
-/*Not being used*/
-//int AdaptiveCuber::polygoniseOctree(OctreeCube* currentCube, int currentDepth){
-
-	//Recursive alrogithm, we go to all the children of current cube and if the children is null, we go back in the recursive stack and polygonise the current cube
-	/*
-	if (currentCube != NULL){
-		polygoniseOctree((currentCube->children[0]));
-		if (currentCube->isLeaf  && !currentCube->polygonised == true)  //We check if the current cube is a left (children is null) and has not been polygonised yet
-			octree2CellPolygonise(*currentCube);
-		currentCube->polygonised = true;
-		polygoniseOctree((currentCube->children[1]));
-		if (currentCube->isLeaf  && !currentCube->polygonised == true)
-			octree2CellPolygonise(*currentCube);
-		currentCube->polygonised = true;
-		polygoniseOctree((currentCube->children[2]));
-		if (currentCube->isLeaf  && !currentCube->polygonised == true)
-			octree2CellPolygonise(*currentCube);
-		currentCube->polygonised = true;
-		polygoniseOctree((currentCube->children[3]));
-		if (currentCube->isLeaf  && !currentCube->polygonised == true)
-			octree2CellPolygonise(*currentCube);
-		currentCube->polygonised = true;
-		polygoniseOctree((currentCube->children[4]));
-		if (currentCube->isLeaf  && !currentCube->polygonised == true)
-			octree2CellPolygonise(*currentCube);
-		currentCube->polygonised = true;
-		polygoniseOctree((currentCube->children[5]));
-		if (currentCube->isLeaf  && !currentCube->polygonised == true)
-			octree2CellPolygonise(*currentCube);
-		currentCube->polygonised = true;
-		polygoniseOctree((currentCube->children[6]));
-		if (currentCube->isLeaf  && !currentCube->polygonised == true)
-			octree2CellPolygonise(*currentCube);
-		currentCube->polygonised = true;
-		polygoniseOctree((currentCube->children[7]));
-		if (currentCube->isLeaf  && !currentCube->polygonised == true)
-			octree2CellPolygonise(*currentCube);
-		currentCube->polygonised = true;
-	}
-	else{
-		return 0;
-	}
-	*/
-
-//	return 0;
-
-//}
-
-
-/*! \brief Extrae los triangulos, poligonizando los cubos del octree
+/*! \brief Extrae los triangulos, poligonizando los cubos del octree pero asigna los puntos al cubo en si en vez de meterlos en el mallado
 *
-*  Se recorre el octree por amplitud y por cada cubo que sea hoja, se polygoniza para descubrir que triangulos se forman dentro de el
+*  Se recorre el octree por amplitud y por cada cubo que sea hoja, se polygoniza para descubrir que triangulos se forman dentro de el. Despues los puntos de los trinagulo
+*  se asiagnan como un vector al cubo en si y no al mesh todavia. Se necesita que los cubos tengan informacion de los puntos formados dentro para poder moverlos con el
+*  algoritmo de crack patching. Despues la funcion readPointsFromOctree leeran los puntos de todo el arbol y los asignara al mallado
 */
 int AdaptiveCuber::polygoniseOctree2(OctreeCube* root){
 
@@ -975,7 +587,7 @@ int AdaptiveCuber::polygoniseAssignToCube(OctreeCube* currentCube){
 
 	/* Create the triangles */
 
-	//WE create a vector with the points and we assignt it to the cube
+	//We create a vector with the points and we assignt it to the cube
 	vector<glm::vec3> *points = new vector<glm::vec3>;
 
 	glm::vec3 point1, point2, point3;
@@ -997,9 +609,6 @@ int AdaptiveCuber::polygoniseAssignToCube(OctreeCube* currentCube){
 		points->push_back(point2);
 		points->push_back(point3);
 
-		/*verts.push_back(point1);
-		verts.push_back(point2);
-		verts.push_back(point3);*/
 	}
 
 	currentCube->points = points;
@@ -1008,7 +617,7 @@ int AdaptiveCuber::polygoniseAssignToCube(OctreeCube* currentCube){
 }
 
 
-/*! \brief Resuelve los agujeros en el mallado usano proyeccion ortogonal de los puntos que forman el agujero
+/*! \brief Resuelve los agujeros en el mallado usando proyeccion ortogonal de los puntos que forman el agujero
 *
 *  Se recorre el octree y por cada cubo que sea hoja se buscan sus 6 vecinos. 
 *  Se recogen los puntos tantos de los vecinos como del cubo actual y despues se proyectan los puntos del vecino sobre la linea formada en la cara del cubo actual.
@@ -1022,18 +631,16 @@ void AdaptiveCuber::crackPatch(OctreeCube* root){
 	OctreeCube* right, *left, *top, *bottom, *further, *closer;
 
 	int cubeNumber = 0;
-	//Do the same but using the octree vector insted of a queue
+	
 
-		
-
-	std::queue<OctreeCube*> bigQueue;
+	std::queue<OctreeCube*> bigQueue; //Cola para recorrer el arbol en amplitud
 	bigQueue.push(root);
 	while (!bigQueue.empty()){
 		currentCube = bigQueue.front();
 		bigQueue.pop();
 
 
-		cubeNumber++;
+		cubeNumber++; //Para mandar señales de progreso
 		if (cubeNumber % (octreeVector.size() / 50) == 0)
 			emit progressValueChangedSignal(cubeNumber * 100 / (octreeVector.size()));
 
@@ -1059,11 +666,7 @@ void AdaptiveCuber::crackPatch(OctreeCube* root){
 		
 
 
-
-
 		if (currentCube->isLeaf && currentCube->containsVerts){
-			//std::cout << "We need to check it's adyacents of cube "  << count << std::endl;
-			//std::cout << "checking cube  " << count << "of " << model->octreeVector.size() << std::endl;
 
 			findNeighbours(currentCube, root,right,left,top,bottom,further,closer );
 
@@ -1077,323 +680,12 @@ void AdaptiveCuber::crackPatch(OctreeCube* root){
 
 
 
-			/*
-
-			if (currentCube->origin.x == 256 && currentCube->origin.y == 168 && currentCube->origin.z == 56 && currentCube->sizeX == 8){
-			std::cout << "found cube" << std::endl << std::endl;
-			//Grab the points that are on the closer face
-			//get rid of the duplicates
-
-			//grab all the  points from the closer cube
-			//remove those that are not on the face
-
-			if (closer!=NULL)
-			std::cout << "we have a closer cube" << std::endl;
-
-
-			//we grab the points from the cube that are on the closer face
-			std::vector<glm::vec3> pointsOnFace;
-			pointsOnFace.clear();
-			for (int i = 0; i < currentCube->points->size(); i++){
-			if (currentCube->points->at(i).z == (currentCube->origin.z)){
-			pointsOnFace.push_back(currentCube->points->at(i));
-			}
-			}
-
-			for (int i = 0; i < pointsOnFace.size(); i++){
-			std::cout << "all point from currentcube on closer face " << pointsOnFace[i].x << "  " << pointsOnFace[i].y << "  " << pointsOnFace[i].z << std::endl;
-			}
-
-			//Remove the duplicates from points on face
-			std::vector<glm::vec3> pointsOnFaceNoDuplicates;
-			bool skipPoint = false;
-			for (int i = 0; i < pointsOnFace.size(); i++){
-			skipPoint = false;
-			//For each point check if it's not already in the pointOnFaceNoDuplicates
-			for (int j = 0; j < pointsOnFaceNoDuplicates.size(); j++){
-			if (pointsOnFace[i].x == pointsOnFaceNoDuplicates[j].x && pointsOnFace[i].y == pointsOnFaceNoDuplicates[j].y && pointsOnFace[i].z == pointsOnFaceNoDuplicates[j].z){
-			//There is already on in pointface no duplicates with the same value
-			skipPoint = true;
-			}
-			}
-			if (!skipPoint)
-			pointsOnFaceNoDuplicates.push_back(pointsOnFace[i]);
-			}
-
-			//The points from the current cube with no duplicates
-			for (int i = 0; i < pointsOnFaceNoDuplicates.size(); i++){
-			std::cout << "point from currentcube on closer face " << pointsOnFaceNoDuplicates[i].x << "  " << pointsOnFaceNoDuplicates[i].y << "  " << pointsOnFaceNoDuplicates[i].z << std::endl;
-			}
-
-
-
-			//After removing the duplicates , if we have lines (2 points) we continue with the algorithm
-			if (pointsOnFaceNoDuplicates.size() == 2){
-			//Now we get the points from the face on the cube on the right. WE establish an old vector for the points that we read and a new vector of points in witch we store the modified points
-			std::vector<glm::vec3> pointsOnFace2Old;
-			std::vector<glm::vec3> pointsOnFace2New;
-
-			std::queue<OctreeCube*> queue;
-			OctreeCube* child;
-			queue.push(closer);
-			while (!queue.empty()){
-			child = queue.front();
-			queue.pop();
-			if (!child->isLeaf){
-			queue.push(child->children[0]);
-			queue.push(child->children[1]);
-			queue.push(child->children[2]);
-			queue.push(child->children[3]);
-			queue.push(child->children[4]);
-			queue.push(child->children[5]);
-			queue.push(child->children[6]);
-			queue.push(child->children[7]);
-			}
-			//Get the points from that child and put them in pointsOnFace2Old
-			if (child->points != NULL){
-			for (int j = 0; j < child->points->size(); j++){
-			if (child->points->at(j).z == currentCube->origin.z){
-			pointsOnFace2Old.push_back(child->points->at(j));
-			}
-			}
-			}
-			}
-
-
-			std::cout << "the points from the closer cube on the face" << std::endl;
-			for (int i = 0; i < pointsOnFace2Old.size(); i++){
-			std::cout << "point from closer cube on closer face " << pointsOnFace2Old[i].x << "  " << pointsOnFace2Old[i].y << "  " << pointsOnFace2Old[i].z << std::endl;
-			}
-
-
-
-			//Now that we have the points from the cube on the right, we need to get only those which are on the face on the left (Right of current cube)
-
-
-			//No we have the points from the face on the right, We iterate through every point and change the value to be the paralel projection of that point onto the two point from face1. The new point is stored in PointsonFace2New
-			//std::cout << "we have points on the right face" << pointsOnFace2Old.size() << endl;
-			//pointsOnFace2New.reserve(pointsOnFace2Old.size());
-			for (int i = 0; i < pointsOnFace2Old.size(); i++){
-			pointsOnFace2New.push_back(pointOnLine(pointsOnFaceNoDuplicates[0], pointsOnFaceNoDuplicates[1], pointsOnFace2Old[i]));
-
-			//std::cout << "point 1 " << pointsOnFaceNoDuplicates[0].x << "  " << pointsOnFaceNoDuplicates[0].y << "  " << pointsOnFaceNoDuplicates[0].z << std::endl;
-			//std::cout << "point 2 " << pointsOnFaceNoDuplicates[1].x << "  " << pointsOnFaceNoDuplicates[1].y << "  " << pointsOnFaceNoDuplicates[1].z << std::endl;
-			//std::cout << "point for projection " << pointsOnFace2Old[i].x << "  " << pointsOnFace2Old[i].y << "  " << pointsOnFace2Old[i].z << std::endl;
-			//std::cout << "point projected " << pointsOnFace2New[i].x << "  " << pointsOnFace2New[i].y << "  " << pointsOnFace2New[i].z << std::endl;
-			//std::cin.get();
-			//std::cout << "  " << pointsOnFace2New[i].x << "  " << pointsOnFace2New[i].y << "  " << pointsOnFace2New[i].z << endl;
-			}
-
-
-			std::cout  << "the points from the closer cube projected" << std::endl;
-			for (int i = 0; i < pointsOnFace2New.size(); i++){
-			std::cout << "point from closer cube projected " << pointsOnFace2New[i].x << "  " << pointsOnFace2New[i].y << "  " << pointsOnFace2New[i].z << std::endl;
-			}
-
-
-			//We have all the points already changed in the pointsOnFace2New. Iteare throgh the children again and change their points
-
-			std::cout << std::endl << "interchanging old with the new" << std::endl;
-
-			queue.push(closer);
-			while (!queue.empty()){
-			child = queue.front();
-			queue.pop();
-			if (!child->isLeaf){
-			queue.push(child->children[0]);
-			queue.push(child->children[1]);
-			queue.push(child->children[2]);
-			queue.push(child->children[3]);
-			queue.push(child->children[4]);
-			queue.push(child->children[5]);
-			queue.push(child->children[6]);
-			queue.push(child->children[7]);
-			}
-			if (child->points != NULL){
-			for (int j = 0; j < child->points->size(); j++){
-			//For each one of those points, check to see if it matches on in pointsOnFace2old, If it does, change it with the point in the same index in pointsOnFace2New
-			for (int k = 0; k < pointsOnFace2Old.size(); k++){
-			if (child->points->at(j).x == pointsOnFace2Old[k].x && child->points->at(j).y == pointsOnFace2Old[k].y && child->points->at(j).z == pointsOnFace2Old[k].z){
-
-			std::cout << "changing " << pointsOnFace2Old[k].x << "|" << pointsOnFace2Old[k].y << "|" << pointsOnFace2Old[k].z << "|" << " With " <<
-			pointsOnFace2New[k].x << "|" << pointsOnFace2New[k].y << "|" << pointsOnFace2New[k].z << "|" << std::endl;
-
-
-			child->points->at(j).x = pointsOnFace2New[k].x;
-			child->points->at(j).y = pointsOnFace2New[k].y;
-			child->points->at(j).z = pointsOnFace2New[k].z;
-			}
-			}
-
-			}
-			}
-			}
-
-
-			}
-
-
-
-
-			}
-
-			*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+			
 
 
 		}
 	}
 
-
-
-
-
-
-	//Go breath-first through the octree
-	//For each cube, find its neibhours
-	//check if thos eneigbours have a conflict, if there is a conflict then resolve it
-	/*OctreeCube* currentCube;
-	OctreeCube* adyacent;
-	std::queue<OctreeCube*> queue;
-	std::queue<OctreeCube*> queueInternal;
-	int count = 0;
-
-	queue.push(root);
-	while (!queue.empty()){
-	currentCube = queue.front();
-	queue.pop();
-	if (currentCube->children[0] != NULL){
-	queue.push(currentCube->children[0]);
-	queue.push(currentCube->children[1]);
-	queue.push(currentCube->children[2]);
-	queue.push(currentCube->children[3]);
-	queue.push(currentCube->children[4]);
-	queue.push(currentCube->children[5]);
-	queue.push(currentCube->children[6]);
-	queue.push(currentCube->children[7]);
-	}
-
-	std::cout << "iter number " << count << std::endl;
-	count++;
-
-	if (currentCube->children[0] != NULL)	//If the current cube is not a leaf one then it does not polygonons in it so it doesnt need checking  for conflicts with adyacent cubes
-	continue;
-
-	//For this current cube, make another loop so that it finds the nighours
-	queueInternal.push(root);
-	while (!queueInternal.empty()){
-	adyacent = queueInternal.front();
-	queueInternal.pop();
-	if (adyacent->children[0] != NULL){
-	queueInternal.push(adyacent->children[0]);
-	queueInternal.push(adyacent->children[1]);
-	queueInternal.push(adyacent->children[2]);
-	queueInternal.push(adyacent->children[3]);
-	queueInternal.push(adyacent->children[4]);
-	queueInternal.push(adyacent->children[5]);
-	queueInternal.push(adyacent->children[6]);
-	queueInternal.push(adyacent->children[7]);
-	}
-	}
-
-	}*/
-
-
-
-
-	//THe code below is higly unoptimized because is On^6
-	/*for (int cube = 0; cube < model->cubes.size(); cube++){
-	if (model->cubes[cube].isLeaf && model->cubes[cube].needsChecking){
-	// check the adyacent cubes, if there are not leaf that means that they are subdivided and thus the face that divides the two cubes is a transition face
-
-	//we search for the cube that is on the right
-	for (int ady = 0; ady < model->cubes.size(); ady++){
-	if (model->cubes[ady].origin.x == (model->cubes[cube].origin.x + model->cubes[cube].sizeX) &&
-	model->cubes[ady].origin.y == model->cubes[cube].origin.y &&
-	model->cubes[ady].origin.z == model->cubes[cube].origin.z &&
-	!model->cubes[ady].isLeaf){
-	cout << "found a cube on the right that is not leaf" << endl;
-	}
-	}
-
-	//we search for the cube that is on the left
-	for (int ady = 0; ady < model->cubes.size(); ady++){
-	if (model->cubes[ady].origin.x == (model->cubes[cube].origin.x - model->cubes[cube].sizeX) &&
-	model->cubes[ady].origin.y == model->cubes[cube].origin.y &&
-	model->cubes[ady].origin.z == model->cubes[cube].origin.z &&
-	!model->cubes[ady].isLeaf){
-	cout << "found a cube on the left that is not leaf" << endl;
-	}
-	}
-
-	//we search for the cube that is toward the screen
-	for (int ady = 0; ady < model->cubes.size(); ady++){
-	if (model->cubes[ady].origin.x == model->cubes[cube].origin.x &&
-	model->cubes[ady].origin.y == model->cubes[cube].origin.y &&
-	model->cubes[ady].origin.z == (model->cubes[cube].origin.z + model->cubes[cube].sizeZ) &&
-	!model->cubes[ady].isLeaf){
-	cout << "found a cube on the z+ that is not leaf" << endl;
-	}
-	}
-
-	//we search for the cube that is toward me
-	for (int ady = 0; ady < model->cubes.size(); ady++){
-	if (model->cubes[ady].origin.x == model->cubes[cube].origin.x &&
-	model->cubes[ady].origin.y == model->cubes[cube].origin.y &&
-	model->cubes[ady].origin.z == (model->cubes[cube].origin.z - model->cubes[cube].sizeZ) &&
-	!model->cubes[ady].isLeaf){
-	cout << "found a cube on the z- that is not leaf" << endl;
-	}
-	}
-
-	//we search for the cube that is on top
-	for (int ady = 0; ady < model->cubes.size(); ady++){
-	if (model->cubes[ady].origin.x == model->cubes[cube].origin.x &&
-	model->cubes[ady].origin.y == (model->cubes[cube].origin.y + model->cubes[cube].sizeY) &&
-	model->cubes[ady].origin.z == model->cubes[cube].origin.z &&
-	!model->cubes[ady].isLeaf){
-	cout << "found a cube on the top that is not leaf" << endl;
-	}
-	}
-
-	//we search for the cube that is on bottom
-	for (int ady = 0; ady < model->cubes.size(); ady++){
-	if (model->cubes[ady].origin.x == model->cubes[cube].origin.x &&
-	model->cubes[ady].origin.y == (model->cubes[cube].origin.y - model->cubes[cube].sizeY) &&
-	model->cubes[ady].origin.z == model->cubes[cube].origin.z &&
-	!model->cubes[ady].isLeaf){
-	cout << "found a cube on the bottom that is not leaf" << endl;
-	}
-	}
-
-
-	cout << "Finished with that cube" << cube << " of " << model->cubes.size() << endl << endl;
-
-	}
-
-	}*/
 }
 
 /*! \brief Realiza la proyeccion ortogonal del punto x sobre la linea formada por los puntos a y b.
@@ -1401,14 +693,13 @@ void AdaptiveCuber::crackPatch(OctreeCube* root){
 glm::vec3 AdaptiveCuber::pointOnLine(glm::vec3 a, glm::vec3 b, glm::vec3& x){
 
 
+	//Se puede hacer el calculo de dos maneras, usando el modulo o el angulo entre los dos vectores
+	//Ambos dan el mismo resultado. Se puede descomentar la linea div=... para observar 
 
 	float dot = a.x*b.x + a.y*b.y + a.z*b.z;
 	float lenSq1 = a.x*a.x + a.y*a.y + a.z*a.z;
 	float lenSq2 = b.x*b.x + b.y*b.y + b.z*b.z;
 	float angle = acos(dot / sqrt(lenSq1 * lenSq2));
-
-	//std::cout << "the angles is " << angle << std::endl;
-
 
 	glm::vec3 x_b, a_b, a_bDiv, projection;
 	float x_b_a_bDot, a_bModule, a_bModulePow, div, x_bModule, optional;
@@ -1427,12 +718,6 @@ glm::vec3 AdaptiveCuber::pointOnLine(glm::vec3 a, glm::vec3 b, glm::vec3& x){
 	x_bModule = sqrt(x_b.x*x_b.x + x_b.y*x_b.y + x_b.z*x_b.z);
 	a_bModule = sqrt(a_b.x*a_b.x + a_b.y*a_b.y + a_b.z*a_b.z);
 	optional = x_bModule*a_bModule*cos(angle);
-
-	/*if (angle < 0.001){
-	std:cout << "angle is too small" << std::endl;
-	return x;
-	}*/
-
 
 	///////End of optional
 
@@ -1453,9 +738,9 @@ glm::vec3 AdaptiveCuber::pointOnLine(glm::vec3 a, glm::vec3 b, glm::vec3& x){
 	projection.z = b.z + a_bDiv.z;
 
 	return projection;
-}//-See more at : http ://www.dietabaiamonte.info/197386.html#sthash.WtI0J8q1.dpuf
+}
 
-/*! \brief Recorre el arbol y lee los puntos a los que tiene referencia cada cubo. Esos puntos se escriben en un vector con todos los puntos completos.
+/*! \brief Recorre el arbol y lee los puntos a los que tiene referencia cada cubo. Esos puntos se escriben en el mallo.
 */
 int AdaptiveCuber::readPointsFromOctree(OctreeCube* root){
 	OctreeCube* currentCube;
@@ -1475,7 +760,7 @@ int AdaptiveCuber::readPointsFromOctree(OctreeCube* root){
 			queue.push(currentCube->children[7]);
 		}
 
-		//Grab the current cube and polygonise it f it's leaf
+		//Tiene puntos asi que se leen en el mallado
 		if (currentCube->points != NULL){
 			for (int i = 0; i < currentCube->points->size(); i++){
 				mesh->verts.push_back(currentCube->points->at(i));
@@ -1487,7 +772,8 @@ int AdaptiveCuber::readPointsFromOctree(OctreeCube* root){
 	return 0;
 }
 
-
+/*! \brief Funcion que te devuelve los 6 hijos vecinos para uno dado. Es necesario para el algoritmo de crackPatch
+*/
 void AdaptiveCuber::findNeighbours(OctreeCube* currentCube, OctreeCube* initial, OctreeCube*& right, OctreeCube*& left, OctreeCube*& top, OctreeCube*& bottom, OctreeCube*& further, OctreeCube*& closer){
 
 	right = NULL;
@@ -1497,118 +783,6 @@ void AdaptiveCuber::findNeighbours(OctreeCube* currentCube, OctreeCube* initial,
 	further = NULL;
 	closer = NULL;
 	OctreeCube* adyacent=NULL;
-
-	//Brute force code that look in all the cubes thare on the same level. It kinda works but is slow
-	/*for (int j = 0; j < octreeLevels[currentCube->depth].size(); j++){
-
-
-
-		//We check if it adyacent is the one on the right, left, top, bottom, further and closer cube
-		adyacent = octreeLevels[currentCube->depth][j];
-
-		//Right cube
-		if (right == NULL &&
-
-			adyacent->origin.x == currentCube->origin.x + currentCube->sizeX &&
-			adyacent->origin.y == currentCube->origin.y &&
-			adyacent->origin.z == currentCube->origin.z &&
-
-			adyacent->sizeX == currentCube->sizeX &&
-			adyacent->sizeY == currentCube->sizeY &&
-			adyacent->sizeZ == currentCube->sizeZ)
-		{
-			right = adyacent;
-		}
-
-		//Left cube
-		if (left == NULL &&
-
-			adyacent->origin.x == currentCube->origin.x - currentCube->sizeX &&
-			adyacent->origin.y == currentCube->origin.y &&
-			adyacent->origin.z == currentCube->origin.z &&
-
-			adyacent->sizeX == currentCube->sizeX &&
-			adyacent->sizeY == currentCube->sizeY &&
-			adyacent->sizeZ == currentCube->sizeZ)
-		{
-			left = adyacent;
-		}
-
-		//Top cube
-		if (top == NULL &&
-
-			adyacent->origin.x == currentCube->origin.x &&
-			adyacent->origin.y == currentCube->origin.y + currentCube->sizeY &&
-			adyacent->origin.z == currentCube->origin.z &&
-
-			adyacent->sizeX == currentCube->sizeX &&
-			adyacent->sizeY == currentCube->sizeY &&
-			adyacent->sizeZ == currentCube->sizeZ)
-		{
-			top = adyacent;
-		}
-
-		//bottom cube
-		if (bottom == NULL &&
-
-			adyacent->origin.x == currentCube->origin.x &&
-			adyacent->origin.y == currentCube->origin.y - currentCube->sizeY &&
-			adyacent->origin.z == currentCube->origin.z &&
-
-			adyacent->sizeX == currentCube->sizeX &&
-			adyacent->sizeY == currentCube->sizeY &&
-			adyacent->sizeZ == currentCube->sizeZ)
-		{
-			bottom = adyacent;
-		}
-
-		//further cube
-		if (further == NULL &&
-
-			adyacent->origin.x == currentCube->origin.x &&
-			adyacent->origin.y == currentCube->origin.y &&
-			adyacent->origin.z == currentCube->origin.z + currentCube->sizeZ &&
-
-			adyacent->sizeX == currentCube->sizeX &&
-			adyacent->sizeY == currentCube->sizeY &&
-			adyacent->sizeZ == currentCube->sizeZ)
-		{
-			further = adyacent;
-		}
-
-
-		//closer cube
-		if (closer == NULL &&
-
-			adyacent->origin.x == currentCube->origin.x &&
-			adyacent->origin.y == currentCube->origin.y &&
-			adyacent->origin.z == currentCube->origin.z - currentCube->sizeZ &&
-
-			adyacent->sizeX == currentCube->sizeX &&
-			adyacent->sizeY == currentCube->sizeY &&
-			adyacent->sizeZ == currentCube->sizeZ)
-		{
-			closer = adyacent;
-		}
-
-		if (right != NULL && left != NULL && top != NULL && bottom != NULL && further != NULL && closer != NULL){
-			break;	//WE stop searching because we found all the neihbours
-		}
-
-
-	}*/
-
-
-
-
-	int x = 240;
-	int y = 160;
-	int z = 32 ;
-
-
-	
-
-
 
 
 	//Findlocational code for each direction
@@ -1638,44 +812,16 @@ void AdaptiveCuber::findNeighbours(OctreeCube* currentCube, OctreeCube* initial,
 	neighLoc = getLocationalOfNeighbours(currentCube->locationalCode, currentCube->depth, CLOSER);
 	closer = traverseWithLocation(initial, neighLoc, currentCube->depth);
 
-
-	if (currentCube->origin.x == 240 && currentCube->origin.y == 160 && currentCube->origin.z == 32 && currentCube->sizeX == 8){
-		std::cout << "found the cube" << std::endl;
-
-		if (closer != NULL){
-			std::cout << "found the closer" << std::endl;
-			std::cout << "it has dims " << closer->origin.x << " " << closer->origin.y << " " << closer->origin.z << " " << closer->sizeX << std::endl;
-		}
-
-		if (further != NULL){
-			std::cout << "found the further" << std::endl;
-			std::cout << "it has dims " << further->origin.x << " " << further->origin.y << " " << further->origin.z << " " << further->sizeX << std::endl;
-		}
-	}
-
-
-	
-
-
-	/*std::cout << "depth of the current cube is " << currentCube->depth << std::endl;
-	std::cout << "on the right, from the locational code  ";
-	for (int i = 0; i < currentCube->locationalCode.size(); i++){
-		std::cout << "| " << currentCube->locationalCode[i] << " | ";
-	}
-	std::cout << std::endl;
-	std::cout << "we get to  ";
-	for (int i = 0; i < neighLoc.size(); i++){
-		std::cout << "| " << neighLoc[i] << " | ";
-	}
-	std::cout << std::endl;
-	std::cout << std::endl;
-	std::cout << std::endl;*/
-
 	return;
 }
 
 
 //Function that given a locational code, a depth and a direction return the locationalCode of the neighbour weather it exists or not
+
+/*! \brief Dado un codigo de localizacion, una profundidad y una direccion, te calcula el codigo del vecino en esa direccion
+*
+*	Se pasa el codigo de localizacion dado a binario y se recorre desde el bit menos significativo hacia el mas, realizando sumas o restas dependiendo de la direccion escogida
+*/
 std::vector<int> AdaptiveCuber::getLocationalOfNeighbours(std::vector<int> currentLocation, int depth, int direction){
 
 
@@ -1683,18 +829,14 @@ std::vector<int> AdaptiveCuber::getLocationalOfNeighbours(std::vector<int> curre
 
 
 
-
-	
-
 	for (int i = depth - 1; i >= 0; i--){
 		//move the number at index i in the direction, if it changes subsection, continue moving them, if not then break from the loop
-		//neighLoc[i];
 		unsigned long value = 0;
 		value = neighLoc[i];
 		boost::dynamic_bitset<> valueInBits (3, value);
 
 
-		//in the Value in bits the 0 index is the least significant one
+		//in the ValueInBits the 0 index is the least significant one
 		if (direction == RIGHT){
 			if (valueInBits[0] == 0){
 				valueInBits[0] = 1;
@@ -1781,7 +923,8 @@ std::vector<int> AdaptiveCuber::getLocationalOfNeighbours(std::vector<int> curre
 
 }
 
-
+/*! \brief Dado un codigo de localizacion, itera sobre el arbol hasta encontrar el nodo con ese código. Devuelve null si no existe
+*/
 OctreeCube* AdaptiveCuber::traverseWithLocation(OctreeCube* root, std::vector<int> neighLoc, int depth){
 
 
@@ -1800,6 +943,12 @@ OctreeCube* AdaptiveCuber::traverseWithLocation(OctreeCube* root, std::vector<in
 
 }
 
+/*! \brief Dados dos cubos y la direccion entre ellos, arregla el agujero que hay en la cara que los separa
+* 
+*	Se recorre el vector del nodo actual para recoger sus puntos. Se escogen solo los que estan en la cara indicada por la direccion. 
+*   Si hay solo dos puntos, forman una recta asi que puede haber un agujero. El cubo de alta resolucion se recorre en amplitud para recoger los puntos de todos sus hijos
+*   Estos puntos se proyectan sobre la recta anteriormente hallada y de esta manera se tapa el agujero
+*/
 void AdaptiveCuber::patchFace(OctreeCube* lowRes, OctreeCube* highRes, int direction){
 
 	std::vector<glm::vec3> pointsOnLowResFace;
@@ -1816,7 +965,7 @@ void AdaptiveCuber::patchFace(OctreeCube* lowRes, OctreeCube* highRes, int direc
 	if (highRes != NULL && !highRes->isLeaf){
 
 
-		//we grab the points from the cube that are on the right face
+		//we grab the points from the cube that are on the face indicated by the direction
 
 		//The first one is the cube from where we get the points, the second is the one used as reference for the faces, we append the points to the vector
 		getPointsFromFace(lowRes, lowRes, pointsOnLowResFace, direction);
@@ -1824,7 +973,7 @@ void AdaptiveCuber::patchFace(OctreeCube* lowRes, OctreeCube* highRes, int direc
 
 		//After removing the duplicates , if we have lines (2 points) we continue with the algorithm
 		if (pointsOnLowResFace.size() == 2){
-			//Now we get the points from the face on the cube on the right. WE establish an old vector for the points that we read and a new vector of points in witch we store the modified points
+			//Now we get the points from the face on the cube of higer resolution. WE establish an old vector for the points that we read and a new vector of points in witch we store the modified points
 			std::vector<glm::vec3> pointsOnFace2Old;
 			std::vector<glm::vec3> pointsOnFace2New;
 
@@ -1847,11 +996,9 @@ void AdaptiveCuber::patchFace(OctreeCube* lowRes, OctreeCube* highRes, int direc
 				if (child->containsVerts)
 					getPointsFromFace(child, lowRes, pointsOnFace2Old, direction);
 			}
-
-			//Now that we have the points from the cube on the right, we need to get only those which are on the face on the left (Right of current cube)
 			
 
-			//No we have the points from the face on the right, We iterate through every point and change the value to be the paralel projection of that point onto the two point from face1. The new point is stored in PointsonFace2New
+			//we project the points and store the new values in pointsOnFace2New
 			//std::cout << "we have points on the right face" << pointsOnFace2Old.size() << endl;
 			for (int i = 0; i < pointsOnFace2Old.size(); i++){
 				pointsOnFace2New.push_back(pointOnLine(pointsOnLowResFace[0], pointsOnLowResFace[1], pointsOnFace2Old[i]));
@@ -1895,7 +1042,8 @@ void AdaptiveCuber::patchFace(OctreeCube* lowRes, OctreeCube* highRes, int direc
 }
 
 
-//Receives a cube and a direction and returns the points of the cube that are on that face. Also removes duplicates
+/*! \brief Dado un cubo del cual se reciben los puntos y otro cubo que se usará como referencia para la direccion, se devuelven los puntos sobre que estan en la cara
+*/
 void AdaptiveCuber::getPointsFromFace(OctreeCube* cube, OctreeCube* reference, std::vector<glm::vec3>& vec, int direction){
 
 
@@ -1946,7 +1094,12 @@ void AdaptiveCuber::getPointsFromFace(OctreeCube* cube, OctreeCube* reference, s
 
 }
 
-
+/*! \brief Dados dos cubos y la direccion entre ellos, arregla el agujero que hay en la cara que los separa
+*
+*	Es necesario ya que dados dos triangulos que comparten arista, significa que los 2 puntos que tienen en comun son realmetne 4 puntos pero que se superponen 2 a 2.
+*   Para el algoritmo de cack patch tenemos que ver si en la cara de transicion se forma una recta, es decir 2 puntos pero que estos dos puntos no coincida. 
+*   Por lo tanto es necesario quitar los puntos que coinciden en el espacio, es decir los duplicados
+*/
 std::vector<glm::vec3>  AdaptiveCuber::removeDuplicates(std::vector<glm::vec3> vec){
 
 	std::vector<glm::vec3> pointsOnFaceNoDuplicates;
@@ -1969,7 +1122,13 @@ std::vector<glm::vec3>  AdaptiveCuber::removeDuplicates(std::vector<glm::vec3> v
 	return pointsOnFaceNoDuplicates;
 }
 
-
+/*! \brief Intento de arreglar el hecho de que crackPatch parchea agujeros que no deberia a veces
+*
+*	CrackPatch a veces tapa agujeros indebidos como la separacion entre los dedos. Esto se debe a que interpreta estas separaciones como agujeros
+*	La solucion viene por comprobar los gradientes, es decir los angulos de la superficie entre los dos cubos que se deben aprchear
+*	Si los gradientes apuntan en mas o menos la misma dirreción, se deberia parchear ya que representan la continuacion de la misma superficie
+*	Si los angulos de los gradientes están enfrentados significa que la superficie no es ontinua, es decir, representan formas distintas asi que no se deberian parchear esos dos cubos
+*/
 bool AdaptiveCuber::checkSurfaceOrientation(OctreeCube* lowRes, OctreeCube* highRes){
 	//Go through all the gradients of each cube and calculate the average gradient
 

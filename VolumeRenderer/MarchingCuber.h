@@ -43,27 +43,24 @@ public:
 	std::vector<int>  edgeTable;
 	std::vector< std::vector<int> > triTable;
 
-	//unsigned char*** pixelData;
 
-	PixelData* pixelData;
+	PixelData* pixelData;	//!< El volumen de pixeles que se va a polgonizar
 
-	Mesh* mesh;
+	Mesh* mesh;		//!< MEsh donde se van a escribir el mallado creado
 
-	int isoLevel; //!< Detailed Representa el valor umbral con el que se segmenta el volumen de datos 
+	int isoLevel; //!< Representa el valor umbral con el que se segmenta el volumen de datos 
 	int frames;
 	int pixelDataHeight;
 	int pixelDataWidth;
 	int cellSizeX;
 	int cellSizeY;
 	int cellSizeZ;
-	int pointerOffset;
-	int interpolateDepth;
-	bool linearInterpolation;
+	int interpolateDepth;//!< El numero de veces que va a iterar el bucle de interpolacion. Cuando mayor, mas se acercarán lso vertices a la superficie
 
 signals:
 	void finishedMeshSignal();
-	void progressValueChangedSignal(int);
-	void progressTextSignal(QString);
+	void progressValueChangedSignal(int);//!< Señal que se envia periodicamente a una barra de progreso en la interfaz
+	void progressTextSignal(QString); // !< Señal que se envia con un texto mostrando en que fase se encuentra el algoritmo
 
 
 };

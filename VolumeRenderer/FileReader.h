@@ -22,9 +22,9 @@ public:
 	int FileReader::loadOBJFile(QString fileName, PixelData*pixelData,Mesh* mesh);
 
 signals:
-	void dataFinishedReadingSignal();
-	void objFinishedReadingSignal();	//When you finish reading the obj it is the same as when you finish the normals because you completely change the verts and the normals of the mesh
-	void progressValueChangedSignal(int);
-	void progressTextSignal(QString);
+	void dataFinishedReadingSignal(); //!< Señal que se envia cuando se han acabado de leer los archivos DICOM. El controlador tiene un slot asociado y va empezar el MarchingCuber
+	void objFinishedReadingSignal();	//!< Señal que se envia cuando se ha acabado de leer un obj. Hay un slot asociado en la vista 3D que va a empezar a representarlo
+	void progressValueChangedSignal(int);	//!< Señal que se envia periodicamente a una barra de progreso en la interfaz
+	void progressTextSignal(QString);	//!< Señal que se envia con un texto mostrando en que fase se encuentra el reader
 };
 
